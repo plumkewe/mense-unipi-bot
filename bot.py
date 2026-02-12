@@ -31,6 +31,7 @@ from uuid import uuid4
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler
+from keep_alive import keep_alive # Import per ping e web server
 
 # Configurazione del logging
 logging.basicConfig(
@@ -432,6 +433,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 def main() -> None:
     """Avvia il bot."""
+    # Avvia il server web in background per Render
+    keep_alive()
+
     # Recupera il token dalle variabili d'ambiente (GitHub Secrets)
     token = os.getenv("BOT_TOKEN")
     

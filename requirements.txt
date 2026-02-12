@@ -1,0 +1,7 @@
+python-telegram-bot>=20.0
+flask
+requests
+beautifulsoup4
+apscheduler
+pytz
+gunicorn
