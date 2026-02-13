@@ -624,7 +624,8 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                                      canteen_list.append(c.replace("Mensa ", "").upper())
                              canteen_desc = ", ".join(canteen_list)
                              
-                             description_text = f"{date_fmt}"
+                             meal_short = "P" if meal == "Pranzo" else "C"
+                             description_text = f"{date_fmt}  {meal_short}"
                              if canteen_desc:
                                  description_text += f"\n{canteen_desc}"
                              
@@ -735,8 +736,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         if canteen_id == "reset":
             text = "*Seleziona una mensa per vedere il menù:*"
             reply_markup = get_canteen_selection_keyboard()
-            # Messaggio nuovo invece di modifica
-            await query.message.reply_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+            # Modifica il messaggio esistente
+            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
             return
             
         # Selezionata una mensa, mostra il menù di oggi
@@ -747,8 +748,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         text = get_menu_text(current_date, meal_type, canteen_name)
         reply_markup = get_keyboard(current_date, meal_type, canteen_id)
         
-        # Messaggio nuovo invece di modifica
-        await query.message.reply_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        # Modifica il messaggio esistente
+        await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
         return
 
     if action == "upd":
