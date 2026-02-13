@@ -2,6 +2,8 @@ import os
 import json
 import logging
 import pytz
+import asyncio
+import requests
 
 # --- FIX per APScheduler < 3.10 su Python recenti ---
 # APScheduler 3.6.3 (usato da python-telegram-bot su certi setup) crasha
@@ -32,7 +34,6 @@ from uuid import uuid4
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler
-from keep_alive import keep_alive # Import per ping e web server
 
 # Configurazione del logging
 logging.basicConfig(
@@ -452,7 +453,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     id=str(uuid4()),
                     title=clean_name,
                     description=f"Visualizza il menù di oggi...",
-                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png", 
+                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png?v=2", 
                     input_message_content=InputTextMessageContent(text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
                     reply_markup=reply_markup
                 )
@@ -465,14 +466,14 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 "title": "Cerca Piatto",
                 "desc": "p:<piatto> (es. p:Carbonara)",
                 "text": "@cibounipibot p: ",
-                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png"
+                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             },
             {
                 "id": "inst_i",
-                "title": "Info Mense",
+                "title": "Informazioni Mense",
                 "desc": "i:<mensa> (es. i:Martiri)",
                 "text": "@cibounipibot i: ",
-                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png"
+                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             }
         ]
 
@@ -794,11 +795,18 @@ async def post_init(application: Application) -> None:
         ("help", "Guida all'uso")
     ])
 
+async def self_ping(context: ContextTypes.DEFAULT_TYPE):
+    """Pinga il server per evitare che vada in sleep su Render."""
+    url = os.environ.get("RENDER_EXTERNAL_URL")
+    if url:
+        try:
+            logger.info(f"Pinging {url}...")
+            await asyncio.to_thread(requests.get, url, timeout=10)
+        except Exception as e:
+            logger.error(f"Ping fallito: {e}")
+
 def main() -> None:
     """Avvia il bot."""
-    # Avvia il server web in background per Render
-    keep_alive()
-
     # Recupera il token dalle variabili d'ambiente (GitHub Secrets)
     token = os.getenv("BOT_TOKEN")
     
@@ -807,9 +815,9 @@ def main() -> None:
         print("Per favore imposta la variabile d'ambiente BOT_TOKEN.")
         return
 
-    # Risoluzione problema timezone per APScheduler (usato internamente da python-telegram-bot)
-    # Disabilitiamo il job_queue se non serve per evitare problemi con APScheduler e aggiungiamo post_init
-    application = Application.builder().token(token).job_queue(None).post_init(post_init).build()
+    # Risoluzione problema timezone per APScheduler e setup applicazione
+    # Rimosso .job_queue(None) per permettere l'uso di run_repeating per il ping
+    application = Application.builder().token(token).post_init(post_init).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("menu", menu_command))
@@ -817,8 +825,24 @@ def main() -> None:
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(InlineQueryHandler(inline_query))
 
-    # Avvia il bot
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    # Configurazione Webhook (per Render) o Polling (locale)
+    PORT = int(os.environ.get("PORT", "8443"))
+    WEBHOOK_URL = os.environ.get("RENDER_EXTERNAL_URL")
+
+    if WEBHOOK_URL:
+        logger.info(f"Avvio in modalità WEBHOOK su porta {PORT}")
+        application.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=token,
+            webhook_url=f"{WEBHOOK_URL}/{token}"
+        )
+        # Avvia il ping periodico ogni 14 minuti (840 secondi)
+        if application.job_queue:
+            application.job_queue.run_repeating(self_ping, interval=840, first=60)
+    else:
+        logger.info("Avvio in modalità POLLING")
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
         
 if __name__ == "__main__":
     main()
