@@ -1,4 +1,4 @@
-python-telegram-bot>=20.0
+python-telegram-bot[webhooks,job-queue]>=20.0
 flask
 requests
 beautifulsoup4
@@ -6,3 +6,4 @@ apscheduler
 pytz
 gunicorn
 psycopg2-binary
+tornado

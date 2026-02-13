@@ -81,25 +81,9 @@ FEEDBACK_TEXT = (
     "Scrivici su Telegram: @doveunipi"
 )
 
-# --- FIX APSCHEDULER TIMEZONE ---
-def patch_apscheduler():
-    try:
-        import apscheduler.util
-        import pytz as pz
-        
-        orig_astimezone = apscheduler.util.astimezone
-        def patched_astimezone(obj):
-            try:
-                return orig_astimezone(obj)
-            except TypeError:
-                if obj is None:
-                    return pz.UTC
-                return orig_astimezone(pz.timezone(str(obj)))
-        apscheduler.util.astimezone = patched_astimezone
-    except Exception:
-        pass
 
-patch_apscheduler()
+# --- RIMOSSO PATCH APSCHEDULER RIDONDANTE ---
+
 
 def get_menu_text(date_str, meal_type, canteen_name=None):
     """Recupera il testo del menù per una data, un tipo di pasto e una mensa specifica."""
@@ -831,15 +815,23 @@ def main() -> None:
 
     if WEBHOOK_URL:
         logger.info(f"Avvio in modalità WEBHOOK su porta {PORT}")
-        application.run_webhook(
-            listen="0.0.0.0",
-            port=PORT,
-            url_path=token,
-            webhook_url=f"{WEBHOOK_URL}/{token}"
-        )
+        
         # Avvia il ping periodico ogni 14 minuti (840 secondi)
         if application.job_queue:
             application.job_queue.run_repeating(self_ping, interval=840, first=60)
+        else:
+            logger.error("JobQueue non disponibile! Il self-ping non funzionerà.")
+
+        try:
+            application.run_webhook(
+                listen="0.0.0.0",
+                port=PORT,
+                url_path=token,
+                webhook_url=f"{WEBHOOK_URL}/{token}"
+            )
+        except Exception as e:
+            logger.critical(f"Errore critico durante l'avvio del webhook: {e}")
+            raise e
     else:
         logger.info("Avvio in modalità POLLING")
         application.run_polling(allowed_updates=Update.ALL_TYPES)
