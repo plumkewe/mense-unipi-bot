@@ -31,7 +31,7 @@ except ImportError:
 from datetime import datetime, timedelta, time
 import re
 from uuid import uuid4
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler
 
@@ -549,7 +549,10 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     )
                 )
         
-        await update.inline_query.answer(results, cache_time=0)
+        button = None
+        if not results:
+            button = InlineQueryResultsButton(text="Rimaniamo a Pisa...", start_parameter="help")
+        await update.inline_query.answer(results, cache_time=0, button=button)
         return
 
     # Intercetta solo le query che iniziano con "p:"
@@ -614,8 +617,8 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                              if canteen_desc:
                                  description_text += f"\n{canteen_desc}"
                              
-                             # Immagine con il numero di giorni (Bold tramite ui-avatars)
-                             thumb_url = f"https://ui-avatars.com/api/?background=007bff&color=ffffff&bold=true&name={days_diff}&length={len(str(days_diff))}&size=100"
+                             # Immagine con il numero di giorni (#4cadfd, Bold, Transparent)
+                             thumb_url = f"https://placehold.co/128x128/transparent/4cadfd.png?text={days_diff}&font=oswald"
                              
                              # ID Univoco per il risultato
                              result_id = str(uuid4())
@@ -636,7 +639,10 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                              )
                              count += 1
     
-    await update.inline_query.answer(results, cache_time=5)
+    button = None
+    if not results:
+        button = InlineQueryResultsButton(text="Piatto che non servono!", start_parameter="help")
+    await update.inline_query.answer(results, cache_time=5, button=button)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /start."""
