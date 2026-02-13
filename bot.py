@@ -26,7 +26,8 @@ except ImportError:
     pass
 # ----------------------------------------------------
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+import re
 from uuid import uuid4
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent
 from telegram.constants import ParseMode
@@ -50,6 +51,35 @@ def load_menu():
 
 MENU = load_menu()
 
+# Carica il file canteens.json
+def load_canteens():
+    try:
+        with open("canteens.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            # Mappa id -> nome per filtro e nome -> id visualizzazione se serve
+            return {c["id"]: c["name"] for c in data}
+    except FileNotFoundError:
+        logger.error("Errore: canteens.json non trovato!")
+        return {}
+
+def load_canteens_full():
+    try:
+        with open("canteens.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error("Errore: canteens.json non trovato!")
+        return []
+
+CANTEENS = load_canteens()
+CANTEENS_FULL = load_canteens_full()            
+
+FEEDBACK_TEXT = (
+    "\n\n*Feedback e Supporto*\n"
+    "Hai suggerimenti o vuoi segnalare un bug?\n"
+    "Invia una mail: `lyubomyr.malay@gmail.com`\n"
+    "Scrivici su Telegram: @doveunipi"
+)
+
 # --- FIX APSCHEDULER TIMEZONE ---
 def patch_apscheduler():
     try:
@@ -70,19 +100,20 @@ def patch_apscheduler():
 
 patch_apscheduler()
 
-def get_menu_text(date_str, meal_type):
-    """Recupera il testo del menù per una data e un tipo di pasto specifici."""
+def get_menu_text(date_str, meal_type, canteen_name=None):
+    """Recupera il testo del menù per una data, un tipo di pasto e una mensa specifica."""
     day_menu = MENU.get(date_str)
     
     # Intestazione Data Decorativa
     header = ""
     try:
         dt = datetime.strptime(date_str, "%Y-%m-%d")
-        # Usa format_date_it se disponibile, altrimenti fai una format base
-        # Nota: format_date_it deve essere definita nel modulo
         date_pretty = format_date_it(dt)
-        # Stile "antico/decorativo" con caratteri speciali ai lati
-        header = f"꧁   {date_pretty}   ꧂\n\n"
+        if canteen_name:
+            canteen_clean = canteen_name.replace("Mensa ", "").upper()
+            header = f"꧁   {canteen_clean}   ꧂\n_{date_pretty}_\n\n"
+        else:
+            header = f"꧁   {date_pretty}   ꧂\n\n"
     except Exception:
         header = f"꧁   {date_str}   ꧂\n\n"
 
@@ -96,55 +127,90 @@ def get_menu_text(date_str, meal_type):
          return f"{header}Nessun menù disponibile per il {meal_type.lower()}."
     
     text = header
-    
+    has_dishes = False
+
     # Itera sulle categorie (es. Primi Piatti, Secondi Piatti)
-    # L'ordine delle categorie dipende dal JSON, ma di solito è meglio averne uno fisso se possibile,
-    # altrimenti iteriamo quello che c'è.
     for category, dishes in meal_menu.items():
-        if dishes: # Mostra la categoria solo se ci sono piatti
-            # Rimuove "PIATTI" dal nome della categoria per accorciare i titoli
-            clean_category = category.upper().replace(" PIATTI", "")
-            
-            # Titoli semplificati: *CATEGORIA*
-            text += f"*{clean_category}*\n"
+        if dishes: 
+            # Filtra i piatti per mensa
+            filtered_dishes = []
             for dish in dishes:
                 if isinstance(dish, dict):
-                    name = dish.get("name", "").strip().capitalize()
-                    link = dish.get("link")
-                    if link:
-                        text += f"- {name} [↗]({link})\n"
+                    # Se il piatto ha la lista 'available_at', controlliamo se la mensa è inclusa
+                    available = dish.get("available_at", [])
+                    if canteen_name and available:
+                        if canteen_name in available:
+                            filtered_dishes.append(dish)
                     else:
-                        text += f"- {name}\n"
+                        # Se non c'è filtro mensa o non c'è lista, mostriamo tutto (comportamento fallback)
+                        filtered_dishes.append(dish)
                 else:
-                    text += f"- {dish.capitalize()}\n"
-            text += "\n"
+                    # Stringa semplice (vecchio formato), mostra sempre
+                    filtered_dishes.append(dish)
+
+            if filtered_dishes:
+                has_dishes = True
+                clean_category = category.upper().replace(" PIATTI", "")
+                text += f"*{clean_category}*\n"
+                for dish in filtered_dishes:
+                    if isinstance(dish, dict):
+                        name = dish.get("name", "").strip().capitalize()
+                        link = dish.get("link")
+                        if link:
+                            text += f"- {name} [↗]({link})\n"
+                        else:
+                            text += f"- {name}\n"
+                    else:
+                        text += f"- {dish.capitalize()}\n"
+                text += "\n"
             
+    if not has_dishes:
+        return f"{header}Nessun piatto disponibile per questa mensa."
+
     return text
 
-def get_keyboard(date_str, meal_type):
+def get_canteen_selection_keyboard():
+    """Tastiera per selezionare la mensa."""
+    buttons = []
+    # Ordina per nome per consistenza
+    sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
+    
+    for c_id, c_name in sorted_canteens:
+        # Pulisci o accorcia il nome se serve, per ora usiamo il nome completo
+        clean_name = c_name.replace("Mensa ", "")
+        buttons.append([InlineKeyboardButton(clean_name, callback_data=f"sel_canteen|{c_id}")])
+        
+    return InlineKeyboardMarkup(buttons)
+
+def get_keyboard(date_str, meal_type, canteen_id):
     """Crea la tastiera inline con i pulsanti di navigazione."""
     
     # Bottone per cambiare pasto (Pranzo <-> Cena)
     other_meal = "Cena" if meal_type == "Pranzo" else "Pranzo"
-    # callback_data format: action|date|meal
-    toggle_button = InlineKeyboardButton(other_meal.upper(), callback_data=f"toggle|{date_str}|{other_meal}")
+    # callback_data format: action|date|meal|canteen_id
+    toggle_button = InlineKeyboardButton(other_meal.upper(), callback_data=f"toggle|{date_str}|{other_meal}|{canteen_id}")
     
-    # Bottoni navigazione
     try:
         current_date_obj = datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError:
-        # Fallback se la data è corrotta, torniamo a oggi
         current_date_obj = datetime.now()
 
     prev_date = (current_date_obj - timedelta(days=1)).strftime("%Y-%m-%d")
     next_date = (current_date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
     today_date = datetime.now().strftime("%Y-%m-%d")
 
-    # ○: oggi, con il pasto corrente
+    # Logica bottone centrale (Oggi/Home)
+    # Se siamo già alla data di oggi (o la data richiesta è oggi), il bottone torna alla selezione mensa
+    if date_str == today_date:
+        center_callback = "sel_canteen|reset" # Torna alla lista mense
+    else:
+        # Altrimenti torna a oggi mantenendo la mensa
+        center_callback = f"nav|{today_date}|{meal_type}|{canteen_id}"
+
     nav_buttons = [
-        InlineKeyboardButton("◀", callback_data=f"nav|{prev_date}|{meal_type}"),
-        InlineKeyboardButton("○", callback_data=f"nav|{today_date}|{meal_type}"),
-        InlineKeyboardButton("▶", callback_data=f"nav|{next_date}|{meal_type}"),
+        InlineKeyboardButton("◀", callback_data=f"nav|{prev_date}|{meal_type}|{canteen_id}"),
+        InlineKeyboardButton("○", callback_data=center_callback),
+        InlineKeyboardButton("▶", callback_data=f"nav|{next_date}|{meal_type}|{canteen_id}"),
     ]
     
     keyboard = [
@@ -180,52 +246,76 @@ def get_dish_schedule(dish_name):
         
         for meal in ["Pranzo", "Cena"]:
              if meal in day_menu:
-                 all_dishes = []
-                 for cat_dishes in day_menu[meal].values():
-                     for d in cat_dishes:
-                         if isinstance(d, dict):
-                             all_dishes.append(d.get("name", "").strip().upper())
-                         else:
-                             all_dishes.append(d.strip().upper())
+                 found_canteens = []
+                 found = False
                  
-                 if target_clean in all_dishes:
+                 for cat_dishes in day_menu[meal].values():
+                     if not cat_dishes: continue
+                     
+                     for d in cat_dishes:
+                         d_name = ""
+                         d_canteens = []
+                         if isinstance(d, dict):
+                             d_name = d.get("name", "").strip().upper()
+                             d_canteens = d.get("available_at", [])
+                         else:
+                             d_name = d.strip().upper()
+                             
+                         if d_name == target_clean:
+                             found = True
+                             if d_canteens:
+                                 found_canteens.extend(d_canteens)
+                 
+                 if found:
+                     unique_canteens = sorted(list(set(found_canteens)))
                      occurrences.append({
                          "date": menu_date,
                          "diff": days_diff,
-                         "meal": "P" if meal == "Pranzo" else "C"
+                         "meal": "P" if meal == "Pranzo" else "C",
+                         "canteens": unique_canteens
                      })
     
     if not occurrences:
-        return f"*{target_clean}*\nNessuna occorrenza futura trovata."
+        return f"*{target_clean}*\n\nNessuna occorrenza futura trovata."
 
     # Costruisci il messaggio
     # Header: nome piatto in caps e bold
-    text_lines = [f"*{target_clean}*"]
-    
-    # Lista formattata monospaced
-    # MAR 17 MARZO   33 GG   P
+    # SPAZIO TRA TITOLO E LISTA
+    text_lines = [f"*{target_clean}*", ""]
     
     list_lines = []
     
     # Helper per formattazione data lista
     days_short = ["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"]
-    months_it = ["", "GENNAIO", "FEBBRAIO", "MARZO", "APRILE", "MAGGIO", "GIUGNO", "LUGLIO", "AGOSTO", "SETTEMBRE", "OTTOBRE", "NOVEMBRE", "DICEMBRE"]
+    # Mesi abbreviati per risparmiare spazio e far entrare le mense
+    months_short = ["", "GEN", "FEB", "MAR", "APR", "MAG", "GIU", "LUG", "AGO", "SET", "OTT", "NOV", "DIC"]
 
     for occ in occurrences:
         d = occ["date"]
         wd = days_short[d.weekday()]
-        day_month = f"{d.day} {months_it[d.month]}"
-        diff_str = f"{occ['diff']} GG"
+        day_month = f"{d.day} {months_short[d.month]}"
+        diff_str = f"{occ['diff']}G" # Accorciato GG in G
         meal_flag = occ["meal"]
         
-        # Allineamento
-        # MAR (3 chars) + 1 space -> 4
-        # 17 MARZO (approx 12 chars) -> 13
-        # 33 GG (approx 6 chars) -> 7
-        # P -> 1
+        # Mense: M. Martiri -> Martiri
+        c_list = []
+        for c in occ["canteens"]:
+            c_clean = c.replace("Mensa ", "").upper()
+            c_list.append(c_clean)
         
-        # Uso ljust per padding
-        line = f"{wd:<3} {day_month:<13} {diff_str:<6} {meal_flag}"
+        c_str = ", ".join(c_list)
+        if not c_str:
+             c_str = "-"
+
+        # Allineamento ottimizzato per colonna Mense
+        # ES: MAR 17 MAR  33G P Martiri
+        # wd (3) + 1
+        # day_month (6) + 1 ("17 MAR")
+        # diff (4) + 1 ("33G")
+        # meal (1) + 1 ("P")
+        # c_str
+        
+        line = f"{wd:<3} {day_month:<6} {diff_str:<4} {meal_flag} {c_str}"
         list_lines.append(line)
     
     # Unico blocco codice per allineamento
@@ -247,31 +337,236 @@ def get_update_keyboard(dish_name):
         [InlineKeyboardButton("AGGIORNA", callback_data=f"upd|{safe_name}")]
     ])
 
+# --- FUNZIONI PER ORARI MENSE ---
+DAYS_REV = ["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"]
+
+def get_canteen_status_info(schedule_map, service_name=""):
+    """Calcola stato attuale (Aperta/Chiusa) e orari formattati per ogni giorno."""
+    tz = pytz.timezone('Europe/Rome')
+    now = datetime.now(tz)
+    now_time = now.time()
+    today_idx = now.weekday()
+    
+    # Determina genere grammaticale
+    # Default femminile (Mensa, Pizzeria), maschile se "Prendi e vai"
+    is_female = True
+    if "prendi" in service_name.lower():
+        is_female = False
+        
+    txt_open = "APERTA" if is_female else "APERTO"
+    txt_closed = "CHIUSA" if is_female else "CHIUSO"
+    
+    # 1. Calcola Stato
+    status = txt_closed
+    
+    # Recupera gli slot di ogg (da JSON sono stringhe "HH:MM-HH:MM")
+    # schedule_map ha chiavi stringa "0".."6"
+    today_slots_str = schedule_map.get(str(today_idx), [])
+    
+    # Converti in oggetti time per confronto
+    today_slots_objs = []
+    for slot in today_slots_str:
+        times = re.findall(r"(\d{1,2})[:.](\d{2})", slot)
+        if len(times) == 2:
+            try:
+                t1 = time(int(times[0][0]), int(times[0][1]))
+                t2 = time(int(times[1][0]), int(times[1][1]))
+                today_slots_objs.append((t1, t2))
+            except ValueError:
+                pass
+    
+    today_slots_objs.sort(key=lambda x: x[0])
+    
+    is_open = False
+    next_open = None
+    
+    for start_t, end_t in today_slots_objs:
+        if start_t <= now_time <= end_t:
+            is_open = True
+            # Controlla chiusura imminente (es. entro 30 min)
+            today_date = now.date()
+            dt_end = tz.localize(datetime.combine(today_date, end_t))
+            
+            closing_in = dt_end - now
+            if closing_in < timedelta(minutes=30):
+                status = f"CHIUDE ALLE {end_t.strftime('%H:%M')}"
+            else:
+                status = f"{txt_open} FINO ALLE {end_t.strftime('%H:%M')}"
+            break
+        elif now_time < start_t:
+            if next_open is None:
+                next_open = start_t
+                
+    if not is_open:
+        if next_open:
+            status = f"{txt_closed} (Apre {next_open.strftime('%H:%M')})"
+        else:
+            status = txt_closed
+
+    # 2. Formatta Tabella Orari (Lun ... Dom)
+    lines = []
+    for i in range(7):
+        day_name = DAYS_REV[i]
+        # Recupera stringhe orari
+        slots_str = schedule_map.get(str(i), [])
+        
+        if not slots_str:
+             lines.append(f"{day_name:<3} Chiuso")
+             continue
+            
+        first_slot = True
+        for slot in slots_str:
+            # Slot è già "HH:MM-HH:MM", lo usiamo così
+            if first_slot:
+                lines.append(f"{day_name:<3} {slot}")
+                first_slot = False
+            else:
+                lines.append(f"    {slot}")
+                
+    formatted_schedule = "\n".join(lines) if lines else "    Chiuso"
+    
+    return status, formatted_schedule
+
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce le ricerche inline dei piatti."""
     query = update.inline_query.query
     results = []
 
-    # Se la query è vuota, mostra il risultato "MENU DI OGGI"
+    # Se la query è vuota, mostra il menu di ogni mensa
     if not query:
         today = datetime.now().strftime("%Y-%m-%d")
         meal_type = "Pranzo"
-        text = get_menu_text(today, meal_type)
-        reply_markup = get_keyboard(today, meal_type)
         
-        results.append(
-            InlineQueryResultArticle(
-                id=str(uuid4()),
-                title="MENU DI OGGI",
-                description="Visualizza il menu di oggi...",
-                thumbnail_url="https://img.icons8.com/color/48/restaurant-menu.png", 
-                input_message_content=InputTextMessageContent(text, parse_mode=ParseMode.MARKDOWN),
-                reply_markup=reply_markup
+        # Ordiniamo le mense alfabeticamente
+        sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
+        
+        for c_id, c_name in sorted_canteens:
+            # Testo e tastiera specifici per ogni mensa
+            text = get_menu_text(today, meal_type, canteen_name=c_name)
+            reply_markup = get_keyboard(today, meal_type, canteen_id=c_id)
+            
+            clean_name = c_name.upper() # Nome mensa in CAPS
+            
+            results.append(
+                InlineQueryResultArticle(
+                    id=str(uuid4()),
+                    title=clean_name,
+                    description=f"Visualizza il menù di oggi...",
+                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png", 
+                    input_message_content=InputTextMessageContent(text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
+                    reply_markup=reply_markup
+                )
             )
-        )
+
+        # --- ISTRUZIONI DI UTILIZZO (stile vecchiobot) ---
+        instructions = [
+            {
+                "id": "inst_p",
+                "title": "Cerca Piatto",
+                "desc": "p:<piatto> (es. p:Carbonara)",
+                "text": "@cibounipibot p: ",
+                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png"
+            },
+            {
+                "id": "inst_i",
+                "title": "Info Mense",
+                "desc": "i:<mensa> (es. i:Martiri)",
+                "text": "@cibounipibot i: ",
+                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png"
+            }
+        ]
+
+        for inst in instructions:
+            results.append(
+                InlineQueryResultArticle(
+                    id=inst["id"],
+                    title=inst["title"],
+                    description=inst["desc"],
+                    input_message_content=InputTextMessageContent(
+                        message_text=inst["text"],
+                        parse_mode=ParseMode.MARKDOWN
+                    ),
+                    thumbnail_url=inst["thumb"],
+                    thumbnail_width=48, 
+                    thumbnail_height=48
+                )
+            )
+        
         await update.inline_query.answer(results, cache_time=0)
         return
     
+    # Intercetta query che iniziano con "i:" per info mensa
+    if query.lower().startswith("i:"):
+        # Se la query è solo "i:", mostra lista mense per info
+        search_term = query[2:].strip().lower()
+        
+        for canteen in CANTEENS_FULL:
+            c_name = canteen["name"]
+            
+            if search_term in c_name.lower() or not search_term:
+                # Titolo e Descrizione risultato inline
+                seats = canteen.get("seats", "N/D")
+                
+                # Costruzione del messaggio HTML
+                message_lines = [f"<b>{c_name.upper()}</b>", ""]
+                
+                if "services" in canteen:
+                    services = ", ".join(canteen["services"])
+                    message_lines.append(f"<b>Servizi:</b> {services}")
+                    
+                message_lines.append(f"<b>Capienza:</b> {seats} posti")
+                message_lines.append("") # Spacer
+                
+                # Orari e Stato
+                if "opening_hours" in canteen:
+                    oh = canteen["opening_hours"]
+                    # Iteriamo su tutti i tipi di orari (mensa, prendi_e_vai, ecc)
+                    for service_type, schedule_map in oh.items():
+                        # Status
+                        status_text, schedule_block = get_canteen_status_info(schedule_map, service_name=service_type)
+                        
+                        # Pretty service name
+                        svc_title = service_type.replace("_", " ").capitalize()
+                        if svc_title.lower() == "mensa":
+                            svc_title = "Mensa" # Just explicit
+                        
+                        message_lines.append(f"<b>{svc_title}</b> {status_text}")
+                        message_lines.append(f"<pre>{schedule_block}</pre>")
+                        message_lines.append("")
+
+                # Link sito e Google Maps
+                links = []
+                if "website" in canteen:
+                    links.append(f"<a href='{canteen['website']}'>SITO↗</a>")
+                    
+                lat = canteen.get("coordinates", {}).get("lat")
+                lon = canteen.get("coordinates", {}).get("lon")
+                
+                if lat and lon:
+                     maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+                     links.append(f"<a href='{maps_url}'>GOOGLE MAPS↗</a>")
+                
+                if links:
+                    message_lines.append("  ".join(links))
+
+                message_text = "\n".join(message_lines)
+
+                reply_markup = None
+
+                results.append(
+                    InlineQueryResultArticle(
+                        id=str(uuid4()),
+                        title=f"{c_name} (Informazioni)",
+                        description=f"Capienza: {seats} posti",
+                        thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png", 
+                        input_message_content=InputTextMessageContent(message_text, parse_mode=ParseMode.HTML, disable_web_page_preview=True),
+                        reply_markup=reply_markup
+                    )
+                )
+        
+        await update.inline_query.answer(results, cache_time=0)
+        return
+
     # Intercetta solo le query che iniziano con "p:"
     if not query.lower().startswith("p:"):
         return
@@ -321,6 +616,18 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                              clean_dish_name = dish_str.strip().upper()
                              date_fmt = format_date_it(menu_date)
                              
+                             # Recupera le mense per questo piatto specifico
+                             canteen_list = []
+                             if isinstance(dish, dict):
+                                 avail = dish.get("available_at", [])
+                                 for c in avail:
+                                     canteen_list.append(c.replace("Mensa ", "").upper())
+                             canteen_desc = ", ".join(canteen_list)
+                             
+                             description_text = f"{date_fmt}"
+                             if canteen_desc:
+                                 description_text += f"\n{canteen_desc}"
+                             
                              # Immagine con il numero di giorni (Bold tramite ui-avatars)
                              thumb_url = f"https://ui-avatars.com/api/?background=007bff&color=ffffff&bold=true&name={days_diff}&length={len(str(days_diff))}&size=100"
                              
@@ -335,9 +642,9 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                                  InlineQueryResultArticle(
                                      id=result_id,
                                      title=clean_dish_name,
-                                     description=f"{date_fmt}",
+                                     description=description_text,
                                      thumbnail_url=thumb_url,
-                                     input_message_content=InputTextMessageContent(content_text, parse_mode=ParseMode.MARKDOWN),
+                                     input_message_content=InputTextMessageContent(content_text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
                                      reply_markup=reply_markup
                                  )
                              )
@@ -349,87 +656,134 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /start."""
     user = update.effective_user.first_name
     text = (
-        f"*{user}, benvenuto su MARTIRI BOT!*\n\n"
-        "Questo bot ti permette di consultare il menù della mensa Martiri in modo rapido e veloce.\n\n"
-        "*Ricerca Inline*\n"
-        "In qualsiasi chat, digita:\n"
-        "`@cibounipibot p:nome piatto`\n"
-        "_(es. @cibounipibot p:Peposo)_\n\n"
+        f"*CIBOUNIPI BOT*\n\n"
+        "Consulta i menù delle mense universitarie di Pisa.\n\n"
+        "*Ricerca Piatto*\n"
+        "Digita `@cibounipibot p:nome piatto` in qualsiasi chat.\n\n"
+        "*Menu di Oggi*\n"
+        "Digita `@cibounipibot` (seguito da spazio) in qualsiasi chat e seleziona la mensa.\n\n"
+        "*Info & Orari*\n"
+        "Digita `@cibounipibot i:` in qualsiasi chat per orari e stato.\n\n"
         "*Comandi*\n"
-        "/menu - Mostra il menù di oggi\n"
-        "/help - Guida all'uso\n\n"
-        "*Feedback*\n"
-        "Hai suggerimenti o vuoi segnalare un bug?\n"
-        "Scrivi a: `lyubomyr.malay@gmail.com`"
+        "/menu - Seleziona mensa\n"
+        "/help - Guida completa" +
+        FEEDBACK_TEXT
     )
-    await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+    
+    keyboard = [
+        [InlineKeyboardButton("Menu di Oggi", switch_inline_query_current_chat="")],
+        [InlineKeyboardButton("Cerca Piatto", switch_inline_query_current_chat="p:")],
+        [InlineKeyboardButton("Informazioni Mense", switch_inline_query_current_chat="i:")],
+        [InlineKeyboardButton("Scegli Mensa", callback_data="sel_canteen|reset")],
+        [InlineKeyboardButton("Guida", callback_data="show_help")]
+    ]
+    
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN)
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il comando /menu. Mostra il menù di oggi."""
-    today = datetime.now().strftime("%Y-%m-%d")
-    meal_type = "Pranzo"
-    text = get_menu_text(today, meal_type)
-    reply_markup = get_keyboard(today, meal_type)
-    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+    """Gestisce il comando /menu. Mostra la selezione della mensa."""
+    text = "*Seleziona una mensa per vedere il menù:*"
+    reply_markup = get_canteen_selection_keyboard()
+    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /help."""
     text = (
         "*GUIDA ALL'USO*\n\n"
         "*Comandi Principali*\n"
-        "/start - Avvia il bot e mostra il benvenuto\n"
-        "/menu - Mostra il menù del giorno\n"
+        "/start - Avvia il bot e mostra il menu principale\n"
+        "/menu - Seleziona una mensa specifica\n"
         "/help - Mostra questo messaggio\n\n"
         "*1. Ricerca Piatto*\n"
-        "Puoi cercare quando verrà servito un piatto direttamente in qualsiasi chat.\n"
-        "Digita il nome del bot seguito da `p:` e il nome del piatto:\n\n"
-        "Esempio:\n"
-        "`@cibounipibot p:Pollo`\n\n"
-        "*Output:*\n"
-        "Una lista con tutte le date future in cui quel piatto sarà disponibile.\n"
-        "Cliccando sul risultato invierai un messaggio con il calendario dettagliato.\n\n"
-        "*Navigazione Menù*\n"
-        "Nel messaggio del menù (/menu), usa i pulsanti:\n"
-        "◀ ▶ : Cambia giorno\n"
-        "○ : Torna a oggi\n"
-        "PRANZO / CENA : Cambia il pasto visualizzato\n\n"
-        "*Feedback e Supporto*\n"
-        "Hai suggerimenti o vuoi segnalare un bug?\n"
-        "Invia una mail: `lyubomyr.malay@gmail.com`"
+        "Puoi cercare un piatto specifico (es. \"Pollo\") per scoprire quando e dove verrà servito.\n"
+        "Digita `@cibounipibot p:Pollo` in qualsiasi chat.\n\n"
+        "*2. Menu di Oggi*\n"
+        "Per vedere rapidamente il menu di oggi:\n"
+        "Digita `@cibounipibot` (seguito da spazio) in qualsiasi chat e seleziona la mensa.\n\n"
+        "*3. Info & Orari*\n"
+        "Vuoi sapere se una mensa è aperta?\n"
+        "Digita `@cibounipibot i:` in qualsiasi chat e seleziona la mensa per vedere orari e stato.\n\n"
+        "*4. Navigazione Menu*\n"
+        "Una volta aperto un menu:\n"
+        "◀ ▶ : Scorri i giorni (Precedente / Successivo)\n"
+        "○ : Torna ad oggi (o alla lista mense)\n"
+        "PRANZO / CENA : Cambia il pasto visualizzato" +
+        FEEDBACK_TEXT
     )
-    await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+    
+    if update.callback_query:
+        await update.callback_query.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+    else:
+        await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce i click sui bottoni inline."""
+    """Gestisce i cl sui bottoni inline."""
     query = update.callback_query
-    await query.answer() # Importante per fermare l'animazione di caricamento sul client
+    await query.answer() 
 
     data = query.data.split("|")
     action = data[0]
 
+    if action == "show_help":
+        await help_command(update, context)
+        return
+
+    if action == "sel_canteen":
+        # Data format: sel_canteen|canteen_id
+        canteen_id = data[1]
+        
+        if canteen_id == "reset":
+            text = "*Seleziona una mensa per vedere il menù:*"
+            reply_markup = get_canteen_selection_keyboard()
+            # Messaggio nuovo invece di modifica
+            await query.message.reply_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+            return
+            
+        # Selezionata una mensa, mostra il menù di oggi
+        canteen_name = CANTEENS.get(canteen_id)
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        meal_type = "Pranzo" # Default
+        
+        text = get_menu_text(current_date, meal_type, canteen_name)
+        reply_markup = get_keyboard(current_date, meal_type, canteen_id)
+        
+        # Messaggio nuovo invece di modifica
+        await query.message.reply_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        return
+
     if action == "upd":
         dish_name = data[1]
         text = get_dish_schedule(dish_name)
-        # La tastiera rimane la stessa (o rigenerata)
         reply_markup = get_update_keyboard(dish_name)
         try:
             await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
         except Exception:
-            pass # Ignora se il messaggio non è cambiato
+            pass
+        return
+
+    # Navigazione o Toggle: nav|date|meal|canteen_id
+    if len(data) < 4:
+        # Fallback per vecchi bottoni o errori
         return
 
     date_str = data[1]
     meal_type = data[2]
+    canteen_id = data[3]
+    
+    # Gestione "None" o id non valido
+    canteen_name = CANTEENS.get(canteen_id)
+    
+    # Se canteen_id è "None" (stringa) o non trovato, canteen_name è None -> mostra tutto
+    if canteen_id == "None":
+        canteen_name = None
 
-    text = get_menu_text(date_str, meal_type)
-    reply_markup = get_keyboard(date_str, meal_type)
+    text = get_menu_text(date_str, meal_type, canteen_name)
+    reply_markup = get_keyboard(date_str, meal_type, canteen_id)
 
-    # Modifica il messaggio esistente
-    # A volte telegram da errore se il contenuto è identico, lo gestiamo col try-except
     try:
         await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
     except Exception as e:
-        logger.warning(f"Non è stato possibile aggiornare il messaggio (forse identico?): {e}")
+        logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
 
 def main() -> None:
     """Avvia il bot."""

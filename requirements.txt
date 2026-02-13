@@ -5,3 +5,4 @@ beautifulsoup4
 apscheduler
 pytz
 gunicorn
+psycopg2-binary
