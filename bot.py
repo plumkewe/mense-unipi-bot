@@ -785,6 +785,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     except Exception as e:
         logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
 
+async def post_init(application: Application) -> None:
+    """Inizializza i comandi del bot."""
+    await application.bot.set_my_commands([
+        ("start", "Messaggio di benvenuto"),
+        ("menu", "Menù delle mense"),
+        ("help", "Guida all'uso")
+    ])
+
 def main() -> None:
     """Avvia il bot."""
     # Avvia il server web in background per Render
@@ -799,8 +807,8 @@ def main() -> None:
         return
 
     # Risoluzione problema timezone per APScheduler (usato internamente da python-telegram-bot)
-    # Disabilitiamo il job_queue se non serve per evitare problemi con APScheduler
-    application = Application.builder().token(token).job_queue(None).build()
+    # Disabilitiamo il job_queue se non serve per evitare problemi con APScheduler e aggiungiamo post_init
+    application = Application.builder().token(token).job_queue(None).post_init(post_init).build()
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("menu", menu_command))
