@@ -142,7 +142,7 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                         name = dish.get("name", "").strip().capitalize()
                         link = dish.get("link")
                         if link:
-                            text += f"- {name} [↗]({link})\n"
+                            text += f"- {name} [↗︎\uFE0E]({link})\n"
                         else:
                             text += f"- {name}\n"
                     else:
@@ -193,9 +193,9 @@ def get_keyboard(date_str, meal_type, canteen_id):
         center_callback = f"nav|{today_date}|{meal_type}|{canteen_id}"
 
     nav_buttons = [
-        InlineKeyboardButton("◀", callback_data=f"nav|{prev_date}|{meal_type}|{canteen_id}"),
-        InlineKeyboardButton("○", callback_data=center_callback),
-        InlineKeyboardButton("▶", callback_data=f"nav|{next_date}|{meal_type}|{canteen_id}"),
+        InlineKeyboardButton("◀︎\uFE0E", callback_data=f"nav|{prev_date}|{meal_type}|{canteen_id}"),
+        InlineKeyboardButton("○︎\uFE0E", callback_data=center_callback),
+        InlineKeyboardButton("▶︎\uFE0E", callback_data=f"nav|{next_date}|{meal_type}|{canteen_id}"),
     ]
     
     keyboard = [
@@ -522,14 +522,14 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 # Link sito e Google Maps
                 links = []
                 if "website" in canteen:
-                    links.append(f"<a href='{canteen['website']}'>SITO↗</a>")
+                    links.append(f"<a href='{canteen['website']}'>SITO↗︎\uFE0E</a>")
                     
                 lat = canteen.get("coordinates", {}).get("lat")
                 lon = canteen.get("coordinates", {}).get("lon")
                 
                 if lat and lon:
                      maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
-                     links.append(f"<a href='{maps_url}'>GOOGLE MAPS↗</a>")
+                     links.append(f"<a href='{maps_url}'>GOOGLE MAPS↗︎\uFE0E</a>")
                 
                 if links:
                     message_lines.append("  ".join(links))
@@ -543,7 +543,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                         id=str(uuid4()),
                         title=f"{c_name} (Informazioni)",
                         description=f"Capienza: {seats} posti",
-                        thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png", 
+                        thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png?v=3", 
                         input_message_content=InputTextMessageContent(message_text, parse_mode=ParseMode.HTML, disable_web_page_preview=True),
                         reply_markup=reply_markup
                     )
@@ -697,8 +697,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "Digita `@cibounipibot i:` in qualsiasi chat e seleziona la mensa per vedere orari e stato.\n\n"
         "*4. Navigazione Menu*\n"
         "Una volta aperto un menu:\n"
-        "◀ ▶ : Scorri i giorni (Precedente / Successivo)\n"
-        "○ : Torna ad oggi (o alla lista mense)\n"
+        "◀︎\uFE0E ▶︎\uFE0E : Scorri i giorni (Precedente / Successivo)\n"
+        "○︎\uFE0E : Torna ad oggi (o alla lista mense)\n"
         "PRANZO / CENA : Cambia il pasto visualizzato" +
         FEEDBACK_TEXT
     )
