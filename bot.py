@@ -666,10 +666,10 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             results.append(
                 InlineQueryResultPhoto(
                     id=str(uuid4()),
-                    title="TARIFFE MENSA",
-                    description="Visualizza tutte le tariffe...",
-                    photo_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/img/table.png",
-                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/table.png",
+                    title="TARIFFE",
+                    description="Visualizza le tariffe della mensa...",
+                    photo_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/img/table.png?v=1",
+                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/table.png?v=1",
                     caption="Verifica le agevolazioni e i dettagli direttamente sul sito di DSU: https://www.dsu.toscana.it/-/tariffa-agevolata-su-base-isee",
                     parse_mode=ParseMode.MARKDOWN
                 )
@@ -677,11 +677,23 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             await update.inline_query.answer(results, cache_time=0)
             return
             
-        # Caso 2: t:<isee> -> Calcola tariffe specifiche
+        # Caso 2: t:<isee> -> Calcola tariffe specifiche (anche per borsa di studio)
         try:
-            # Sostituisci virgola con punto per decimali
-            isee_val = float(search_term.replace(",", "."))
-            band = get_rates_for_isee(isee_val)
+            isee_val = None
+            band = None
+            
+            # Controlla se è una keyword per borsa di studio
+            scholarship_keywords = ["borsa", "dsu", "borsista", "scholarship", "gratis", "idoneo"]
+            if any(k in search_term.lower() for k in scholarship_keywords):
+                # Cerca la fascia con "scholarship": true nei dati RATES
+                for r in RATES:
+                    if r.get("scholarship") is True:
+                        band = r
+                        break
+            else:
+                # Altrimenti prova a parsare come numero
+                isee_val = float(search_term.replace(",", "."))
+                band = get_rates_for_isee(isee_val)
             
             if band:
                 # 1. Costruisci il messaggio completo (che verrà inviato al click)
@@ -697,7 +709,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     ("pasto_ridotto_c", "PASTO RIDOTTO C")
                 ]
                 
-                thumb_money = "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/money.png"
+                thumb_money = "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/money.png?v=2"
                 
                 # Iteriamo per costruire il messaggio finale
                 first = True
@@ -754,7 +766,14 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     )
                         
         except ValueError:
-            pass # Non è un numero valido, ignora o non mostrare nulla
+            # Se il formato non è valido, non mostriamo risultati ma usiamo il bottone in alto
+            results = []
+            button = InlineQueryResultsButton(
+                text="Usa solo i numeri!", 
+                start_parameter="help"
+            )
+            await update.inline_query.answer(results, cache_time=0, button=button)
+            return
             
         await update.inline_query.answer(results, cache_time=0)
         return
