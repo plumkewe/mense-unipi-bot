@@ -31,7 +31,7 @@ except ImportError:
 from datetime import datetime, timedelta, time
 import re
 from uuid import uuid4
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton, InlineQueryResultPhoto
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler
@@ -73,7 +73,29 @@ def load_canteens_full():
         return []
 
 CANTEENS = load_canteens()
-CANTEENS_FULL = load_canteens_full()            
+CANTEENS_FULL = load_canteens_full()
+
+# Carica il file rates.json
+def load_rates():
+    try:
+        with open("rates.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error("Errore: rates.json non trovato!")
+        return []
+
+RATES = load_rates()
+
+# Carica il file combinations.json
+def load_combinations():
+    try:
+        with open("combinations.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error("Errore: combinations.json non trovato!")
+        return {}
+
+COMBINATIONS = load_combinations()
 
 FEEDBACK_TEXT = (
     "\n\n*Feedback e Supporto*\n"
@@ -467,6 +489,66 @@ def get_info_keyboard(canteen_id):
         [InlineKeyboardButton("AGGIORNA", callback_data=f"upd_info|{canteen_id}")]
     ])
 
+def get_rates_for_isee(isee_value):
+    """Trova la fascia di prezzo corrispondente al valore ISEE."""
+    if isee_value < 0:
+        return None
+        
+    for band in RATES:
+        min_i = band.get("min_isee")
+        max_i = band.get("max_isee")
+        
+        # Scholarship logic separately handled or treated as band? 
+        # The user provided a numeric value, so we check numeric bands.
+        
+        # Check if isee_value is within [min_i, max_i]
+        # Logic: min_isee < isee <= max_isee generally, but the first band is 0 to 27000? 
+        # Let's look at rates.json again.
+        # First band: min 0, max 27000. Label "<= 27000". So it includes 27000.
+        # Second band: min 27000, max 30000. Label "> 27000 <= 30000". So > 27000.
+        
+        if min_i is not None:
+             if isee_value <= min_i:
+                 continue
+                 
+        if max_i is not None:
+            if isee_value > max_i:
+                continue
+                
+        # Special case for the first band which likely starts from 0 inclusive?
+        # If I entered 0, and first band is min 0 max 27000... 
+        # The code above says: isee_value <= min_i (0) -> continue. So 0 won't match first band?
+        # Let's correct logic.
+        
+        # Correct Logic based on ranges:
+        # Band 1: 0 - 27000. (We assume >= 0)
+        # Band 2: 27000 - 30000.
+        
+        # If I use: min_isee < value <= max_isee
+        # For 0: min 0. 0 is not > 0.
+        # But wait, usually ranges are inclusive at start or end.
+        # "≤ € 27.000" implies 0 to 27000. 
+        # "> € 27.000" implies 27000.01 to ...
+        
+        match = True
+        if min_i is not None:
+             # For the very first band (starts at 0), we want to include 0 probably.
+             if min_i == 0:
+                 if isee_value < 0: match = False
+             else:
+                 if isee_value <= min_i: match = False
+                 
+        if max_i is not None and match:
+            if isee_value > max_i:
+                match = False
+                
+        if match:
+            return band
+            
+    # If no band matched (e.g. > max of all bands? Last band has max_isee: null)
+    # The last band has max_isee: null, so it catches everything above 100000.
+    return None
+
 
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce le ricerche inline dei piatti."""
@@ -504,7 +586,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             {
                 "id": "inst_p",
                 "title": "Cerca Piatto",
-                "desc": "p:<piatto> (es. p:Carbonara)",
+                "desc": "p:<piatto> (es. p:Arista)",
                 "text": "@cibounipibot p: ",
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             },
@@ -513,6 +595,13 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 "title": "Informazioni Mense",
                 "desc": "i:<mensa> (es. i:Martiri)",
                 "text": "@cibounipibot i: ",
+                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
+            },
+            {
+                "id": "inst_t",
+                "title": "Tariffe & ISEE",
+                "desc": "t: <isee> (es. t:21065)",
+                "text": "@cibounipibot t: ",
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             }
         ]
@@ -566,6 +655,108 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         if not results:
             button = InlineQueryResultsButton(text="Rimaniamo a Pisa...", start_parameter="help")
         await update.inline_query.answer(results, cache_time=0, button=button)
+        return
+
+    # Intercetta query che iniziano con "t:" per tariffe
+    if query.lower().startswith("t:"):
+        search_term = query[2:].strip()
+        
+        # Caso 1: Solo "t:" -> Mostra immagine tabella generale
+        if not search_term:
+            results.append(
+                InlineQueryResultPhoto(
+                    id=str(uuid4()),
+                    title="TARIFFE MENSA",
+                    description="Visualizza tutte le tariffe...",
+                    photo_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/img/table.png",
+                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/table.png",
+                    caption="Verifica le agevolazioni e i dettagli direttamente sul sito di DSU: https://www.dsu.toscana.it/-/tariffa-agevolata-su-base-isee",
+                    parse_mode=ParseMode.MARKDOWN
+                )
+            )
+            await update.inline_query.answer(results, cache_time=0)
+            return
+            
+        # Caso 2: t:<isee> -> Calcola tariffe specifiche
+        try:
+            # Sostituisci virgola con punto per decimali
+            isee_val = float(search_term.replace(",", "."))
+            band = get_rates_for_isee(isee_val)
+            
+            if band:
+                # 1. Costruisci il messaggio completo (che verrà inviato al click)
+                # Header in BOLD
+                header_msg = f"*TARIFFE PER FASCIA {band.get('original_label', '')}*"
+
+                code_lines = []
+                
+                items_ord = [
+                    ("pasto_completo", "PASTO COMPLETO"),
+                    ("pasto_ridotto_a", "PASTO RIDOTTO A"),
+                    ("pasto_ridotto_b", "PASTO RIDOTTO B"),
+                    ("pasto_ridotto_c", "PASTO RIDOTTO C")
+                ]
+                
+                thumb_money = "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/money.png"
+                
+                # Iteriamo per costruire il messaggio finale
+                first = True
+                for key, label in items_ord:
+                    if not first:
+                        code_lines.append("-----------")
+                    first = False
+                    
+                    price = band.get(key)
+                    price_fmt = ""
+                    if price is not None:
+                        if price == 0:
+                            price_fmt = "GRATUITO"
+                        else:
+                            price_fmt = f"€ {price:.2f}"
+                    else:
+                        price_fmt = "N/A"
+                    
+                    desc = COMBINATIONS.get(key, "")
+                    
+                    # Titolo del pasto in MAIUSCOLO (non bold perché è nel code block)
+                    code_lines.append(f"{label} {price_fmt}")
+                    if desc:
+                        code_lines.append(desc)
+
+                # Costruisci messaggio finale con header e blocco codice
+                final_msg = f"{header_msg}\n\n```\n" + "\n".join(code_lines) + "\n```"
+
+                # 2. Genera i risultati singoli per la visualizzazione inline (come prima)
+                # Ognuno però invierà lo stesso final_msg
+                for key, label in items_ord:
+                    price = band.get(key)
+                    
+                    price_text = ""
+                    if price is not None:
+                        if price == 0:
+                            price_text = "Gratuito"
+                        else:
+                            price_text = f"€ {price:.2f}"
+                    else:
+                        price_text = "N/A"
+
+                    # Titolo formattato (es. Pasto Completo)
+                    display_title = label.replace("_", " ").title()
+                    
+                    results.append(
+                        InlineQueryResultArticle(
+                            id=str(uuid4()),
+                            title=display_title,
+                            description=price_text,
+                            thumbnail_url=thumb_money,
+                            input_message_content=InputTextMessageContent(final_msg, parse_mode=ParseMode.MARKDOWN)
+                        )
+                    )
+                        
+        except ValueError:
+            pass # Non è un numero valido, ignora o non mostrare nulla
+            
+        await update.inline_query.answer(results, cache_time=0)
         return
 
     # Intercetta solo le query che iniziano con "p:"
@@ -669,6 +860,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Digita `@cibounipibot` (seguito da spazio) in qualsiasi chat e seleziona la mensa.\n\n"
         "*Info & Orari*\n"
         "Digita `@cibounipibot i:` in qualsiasi chat per orari e stato.\n\n"
+        "*Tariffe ISEE*\n"
+        "Digita `@cibounipibot t:` per tabella, o `t:isee` (es. `t:20000`) per calcolo personalizzato.\n\n"
         "*Comandi*\n"
         "/menu - Seleziona mensa\n"
         "/help - Guida completa" +
@@ -679,6 +872,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("Menu di Oggi", switch_inline_query_current_chat="")],
         [InlineKeyboardButton("Cerca Piatto", switch_inline_query_current_chat="p:")],
         [InlineKeyboardButton("Informazioni Mense", switch_inline_query_current_chat="i:")],
+         [InlineKeyboardButton("Calcola Tariffa", switch_inline_query_current_chat="t:")],
         [InlineKeyboardButton("Scegli Mensa", callback_data="sel_canteen|reset")],
         [InlineKeyboardButton("Guida", callback_data="show_help")]
     ]
@@ -701,14 +895,17 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/help - Mostra questo messaggio\n\n"
         "*1. Ricerca Piatto*\n"
         "Puoi cercare un piatto specifico (es. \"Pollo\") per scoprire quando e dove verrà servito.\n"
-        "Digita `@cibounipibot p:Pollo` in qualsiasi chat.\n\n"
+        "Digita `@cibounipibot p:Arista` in qualsiasi chat.\n\n"
         "*2. Menu di Oggi*\n"
         "Per vedere rapidamente il menu di oggi:\n"
         "Digita `@cibounipibot` (seguito da spazio) in qualsiasi chat e seleziona la mensa.\n\n"
         "*3. Info & Orari*\n"
         "Vuoi sapere se una mensa è aperta?\n"
         "Digita `@cibounipibot i:` in qualsiasi chat e seleziona la mensa per vedere orari e stato.\n\n"
-        "*4. Navigazione Menu*\n"
+        "*4. Tariffe su base ISEE*\n"
+        "Digita `@cibounipibot t:` per visualizzare la tabella riassuntiva.\n"
+        "Digita `@cibounipibot t:<valore>` (es. `t:20000`) per calcolare la tua tariffa specifica.\n\n"
+        "*5. Navigazione Menu*\n"
         "Una volta aperto un menu:\n"
         "◀︎\uFE0E ▶︎\uFE0E : Scorri i giorni (Precedente / Successivo)\n"
         "○︎\uFE0E : Torna ad oggi (o alla lista mense)\n"

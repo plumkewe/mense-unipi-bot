@@ -7,3 +7,5 @@ pytz
 gunicorn
 psycopg2-binary
 tornado
+pandas
+matplotlib

@@ -1,0 +1,82 @@
+[
+    {
+        "min_isee": 0.0,
+        "max_isee": 0.0,
+        "scholarship": true,
+        "pasto_completo": 0.0,
+        "pasto_ridotto_a": 0.0,
+        "pasto_ridotto_b": 0.0,
+        "pasto_ridotto_c": 0.0,
+        "original_label": "idonei borsa di studio ARDSU"
+    },
+    {
+        "min_isee": 0.0,
+        "max_isee": 27000.0,
+        "scholarship": false,
+        "pasto_completo": 2.8,
+        "pasto_ridotto_a": 1.8,
+        "pasto_ridotto_b": 2.3,
+        "pasto_ridotto_c": 1.4,
+        "original_label": "≤ € 27.000"
+    },
+    {
+        "min_isee": 27000.0,
+        "max_isee": 30000.0,
+        "scholarship": false,
+        "pasto_completo": 3.0,
+        "pasto_ridotto_a": 2.0,
+        "pasto_ridotto_b": 2.5,
+        "pasto_ridotto_c": 1.8,
+        "original_label": "> € 27.000 ≤ € 30.000"
+    },
+    {
+        "min_isee": 30000.0,
+        "max_isee": 45000.0,
+        "scholarship": false,
+        "pasto_completo": 4.5,
+        "pasto_ridotto_a": 3.0,
+        "pasto_ridotto_b": 3.5,
+        "pasto_ridotto_c": 2.3,
+        "original_label": "> € 30.000 ≤ € 45.000"
+    },
+    {
+        "min_isee": 45000.0,
+        "max_isee": 60000.0,
+        "scholarship": false,
+        "pasto_completo": 5.5,
+        "pasto_ridotto_a": 3.6,
+        "pasto_ridotto_b": 4.2,
+        "pasto_ridotto_c": 2.7,
+        "original_label": "> € 45.000 ≤ € 60.000"
+    },
+    {
+        "min_isee": 60000.0,
+        "max_isee": 75000.0,
+        "scholarship": false,
+        "pasto_completo": 6.5,
+        "pasto_ridotto_a": 4.2,
+        "pasto_ridotto_b": 4.9,
+        "pasto_ridotto_c": 3.2,
+        "original_label": "> € 60.000 ≤ € 75.000"
+    },
+    {
+        "min_isee": 75000.0,
+        "max_isee": 100000.0,
+        "scholarship": false,
+        "pasto_completo": 7.5,
+        "pasto_ridotto_a": 4.8,
+        "pasto_ridotto_b": 5.6,
+        "pasto_ridotto_c": 3.6,
+        "original_label": "> € 75.000 ≤ € 100.000"
+    },
+    {
+        "min_isee": 100000.0,
+        "max_isee": null,
+        "scholarship": false,
+        "pasto_completo": 8.5,
+        "pasto_ridotto_a": 5.4,
+        "pasto_ridotto_b": 6.3,
+        "pasto_ridotto_c": 4.0,
+        "original_label": "> € 100.000"
+    }
+]
