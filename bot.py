@@ -201,11 +201,11 @@ def get_keyboard(date_str, meal_type, canteen_id):
     try:
         current_date_obj = datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError:
-        current_date_obj = datetime.now()
+        current_date_obj = datetime.now(pytz.timezone('Europe/Rome'))
 
     prev_date = (current_date_obj - timedelta(days=1)).strftime("%Y-%m-%d")
     next_date = (current_date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
-    today_date = datetime.now().strftime("%Y-%m-%d")
+    today_date = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
 
     # Logica bottone centrale (Oggi/Home)
     # Se siamo già alla data di oggi (o la data richiesta è oggi), il bottone torna alla selezione mensa
@@ -237,7 +237,7 @@ def get_dish_schedule(dish_name):
     """Genera il testo con la lista delle future occorrenze del piatto (senza emoji)."""
     target_clean = dish_name.strip().upper()
     occurrences = []
-    today = datetime.now().date()
+    today = datetime.now(pytz.timezone('Europe/Rome')).date()
     sorted_dates = sorted(MENU.keys())
     
     for date_str in sorted_dates:
@@ -557,7 +557,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     # Se la query è vuota, mostra il menu di ogni mensa
     if not query:
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
         meal_type = "Pranzo"
         
         # Ordiniamo le mense alfabeticamente
@@ -787,7 +787,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     #     return
 
     results = []
-    today = datetime.now().date()
+    today = datetime.now(pytz.timezone('Europe/Rome')).date()
     
     # Ordina le date del menu
     sorted_dates = sorted(MENU.keys())
@@ -962,7 +962,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             
         # Selezionata una mensa, mostra il menù di oggi
         canteen_name = CANTEENS.get(canteen_id)
-        current_date = datetime.now().strftime("%Y-%m-%d")
+        current_date = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
         meal_type = "Pranzo" # Default
         
         text = get_menu_text(current_date, meal_type, canteen_name)
