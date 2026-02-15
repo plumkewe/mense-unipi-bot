@@ -33,6 +33,7 @@ import re
 from uuid import uuid4
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton
 from telegram.constants import ParseMode
+from telegram.error import BadRequest
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler
 
 # Configurazione del logging
@@ -412,6 +413,61 @@ def get_canteen_status_info(schedule_map, service_name=""):
     
     return status, formatted_schedule
 
+def format_canteen_info(canteen):
+    """Genera il testo HTML con le informazioni della mensa (stato, orari, ecc)."""
+    c_name = canteen["name"]
+    seats = canteen.get("seats", "N/D")
+    
+    message_lines = [f"<b>{c_name.upper()}</b>", ""]
+    
+    if "services" in canteen:
+        services = ", ".join(canteen["services"])
+        message_lines.append(f"<b>Servizi:</b> {services}")
+        
+    message_lines.append(f"<b>Capienza:</b> {seats} posti")
+    message_lines.append("") # Spacer
+    
+    # Orari e Stato
+    if "opening_hours" in canteen:
+        oh = canteen["opening_hours"]
+        # Iteriamo su tutti i tipi di orari (mensa, prendi_e_vai, ecc)
+        for service_type, schedule_map in oh.items():
+            # Status
+            status_text, schedule_block = get_canteen_status_info(schedule_map, service_name=service_type)
+            
+            # Pretty service name
+            svc_title = service_type.replace("_", " ").capitalize()
+            if svc_title.lower() == "mensa":
+                svc_title = "Mensa" # Just explicit
+            
+            message_lines.append(f"<b>{svc_title}</b> {status_text}")
+            message_lines.append(f"<pre>{schedule_block}</pre>")
+            message_lines.append("")
+
+    # Link sito e Google Maps
+    links = []
+    if "website" in canteen:
+        links.append(f"<a href='{canteen['website']}'>SITO↗︎\uFE0E</a>")
+        
+    lat = canteen.get("coordinates", {}).get("lat")
+    lon = canteen.get("coordinates", {}).get("lon")
+    
+    if lat and lon:
+            maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+            links.append(f"<a href='{maps_url}'>GOOGLE MAPS↗︎\uFE0E</a>")
+    
+    if links:
+        message_lines.append("  ".join(links))
+
+    return "\n".join(message_lines)
+
+def get_info_keyboard(canteen_id):
+    """Tastiera per aggiornare le info della mensa."""
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("AGGIORNA", callback_data=f"upd_info|{canteen_id}")]
+    ])
+
+
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce le ricerche inline dei piatti."""
     query = update.inline_query.query
@@ -487,56 +543,13 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         
         for canteen in CANTEENS_FULL:
             c_name = canteen["name"]
+            c_id = canteen["id"]
             
             if search_term in c_name.lower() or not search_term:
-                # Titolo e Descrizione risultato inline
                 seats = canteen.get("seats", "N/D")
                 
-                # Costruzione del messaggio HTML
-                message_lines = [f"<b>{c_name.upper()}</b>", ""]
-                
-                if "services" in canteen:
-                    services = ", ".join(canteen["services"])
-                    message_lines.append(f"<b>Servizi:</b> {services}")
-                    
-                message_lines.append(f"<b>Capienza:</b> {seats} posti")
-                message_lines.append("") # Spacer
-                
-                # Orari e Stato
-                if "opening_hours" in canteen:
-                    oh = canteen["opening_hours"]
-                    # Iteriamo su tutti i tipi di orari (mensa, prendi_e_vai, ecc)
-                    for service_type, schedule_map in oh.items():
-                        # Status
-                        status_text, schedule_block = get_canteen_status_info(schedule_map, service_name=service_type)
-                        
-                        # Pretty service name
-                        svc_title = service_type.replace("_", " ").capitalize()
-                        if svc_title.lower() == "mensa":
-                            svc_title = "Mensa" # Just explicit
-                        
-                        message_lines.append(f"<b>{svc_title}</b> {status_text}")
-                        message_lines.append(f"<pre>{schedule_block}</pre>")
-                        message_lines.append("")
-
-                # Link sito e Google Maps
-                links = []
-                if "website" in canteen:
-                    links.append(f"<a href='{canteen['website']}'>SITO↗︎\uFE0E</a>")
-                    
-                lat = canteen.get("coordinates", {}).get("lat")
-                lon = canteen.get("coordinates", {}).get("lon")
-                
-                if lat and lon:
-                     maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
-                     links.append(f"<a href='{maps_url}'>GOOGLE MAPS↗︎\uFE0E</a>")
-                
-                if links:
-                    message_lines.append("  ".join(links))
-
-                message_text = "\n".join(message_lines)
-
-                reply_markup = None
+                message_text = format_canteen_info(canteen)
+                reply_markup = get_info_keyboard(c_id)
 
                 results.append(
                     InlineQueryResultArticle(
@@ -751,6 +764,26 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
         except Exception:
             pass
+        return
+
+    if action == "upd_info":
+        canteen_id = data[1]
+        # Trova la mensa nei dati completi
+        canteen = next((c for c in CANTEENS_FULL if c["id"] == canteen_id), None)
+        
+        if canteen:
+            try:
+                text = format_canteen_info(canteen)
+                reply_markup = get_info_keyboard(canteen_id)
+                await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+            except BadRequest as e:
+                # Se il messaggio non è cambiato, ignoriamo l'errore
+                if "Message is not modified" in str(e):
+                    pass
+                else:
+                    logger.warning(f"Errore durante l'aggiornamento info: {e}")
+            except Exception as e:
+                logger.error(f"Errore generico aggiornamento info: {e}")
         return
 
     # Navigazione o Toggle: nav|date|meal|canteen_id
