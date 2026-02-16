@@ -498,38 +498,6 @@ def get_rates_for_isee(isee_value):
         min_i = band.get("min_isee")
         max_i = band.get("max_isee")
         
-        # Scholarship logic separately handled or treated as band? 
-        # The user provided a numeric value, so we check numeric bands.
-        
-        # Check if isee_value is within [min_i, max_i]
-        # Logic: min_isee < isee <= max_isee generally, but the first band is 0 to 27000? 
-        # Let's look at rates.json again.
-        # First band: min 0, max 27000. Label "<= 27000". So it includes 27000.
-        # Second band: min 27000, max 30000. Label "> 27000 <= 30000". So > 27000.
-        
-        if min_i is not None:
-             if isee_value <= min_i:
-                 continue
-                 
-        if max_i is not None:
-            if isee_value > max_i:
-                continue
-                
-        # Special case for the first band which likely starts from 0 inclusive?
-        # If I entered 0, and first band is min 0 max 27000... 
-        # The code above says: isee_value <= min_i (0) -> continue. So 0 won't match first band?
-        # Let's correct logic.
-        
-        # Correct Logic based on ranges:
-        # Band 1: 0 - 27000. (We assume >= 0)
-        # Band 2: 27000 - 30000.
-        
-        # If I use: min_isee < value <= max_isee
-        # For 0: min 0. 0 is not > 0.
-        # But wait, usually ranges are inclusive at start or end.
-        # "≤ € 27.000" implies 0 to 27000. 
-        # "> € 27.000" implies 27000.01 to ...
-        
         match = True
         if min_i is not None:
              # For the very first band (starts at 0), we want to include 0 probably.
@@ -548,6 +516,45 @@ def get_rates_for_isee(isee_value):
     # If no band matched (e.g. > max of all bands? Last band has max_isee: null)
     # The last band has max_isee: null, so it catches everything above 100000.
     return None
+
+def get_rate_message_text(band, note=None):
+    """
+    Costruisce il testo del messaggio con le tariffe per una specifica fascia.
+    """
+    header_msg = f"*TARIFFE PER FASCIA {band.get('original_label', '')}*"
+    
+    code_lines = []
+    items_ord = [
+        ("pasto_completo", "PASTO COMPLETO"),
+        ("pasto_ridotto_a", "PASTO RIDOTTO A"),
+        ("pasto_ridotto_b", "PASTO RIDOTTO B"),
+        ("pasto_ridotto_c", "PASTO RIDOTTO C")
+    ]
+    
+    first = True
+    for key, label in items_ord:
+        if not first:
+            code_lines.append("-----------")
+        first = False
+        
+        price = band.get(key)
+        if price is not None:
+            price_fmt = "GRATUITO" if price == 0 else f"€ {price:.2f}"
+        else:
+            price_fmt = "N/A"
+        
+        desc = COMBINATIONS.get(key, "")
+        
+        code_lines.append(f"{label} {price_fmt}")
+        if desc:
+            code_lines.append(desc)
+
+    final_msg = f"{header_msg}\n\n```\n" + "\n".join(code_lines) + "\n```"
+    
+    if note:
+        final_msg += f"\n\n{note}"
+        
+    return final_msg
 
 
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -697,10 +704,28 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             
             if band:
                 # 1. Costruisci il messaggio completo (che verrà inviato al click)
-                # Header in BOLD
-                header_msg = f"*TARIFFE PER FASCIA {band.get('original_label', '')}*"
-
-                code_lines = []
+                note = None
+                reply_markup = None
+                
+                is_scholarship = band.get("scholarship") is True
+                change_date = datetime(2026, 4, 1).date()
+                today_date = datetime.now(pytz.timezone('Europe/Rome')).date()
+                
+                if is_scholarship:
+                    if today_date >= change_date:
+                        # DATA RAGGIUNTA: Mostra direttamente i prezzi della prima fascia
+                        # Cerchiamo la prima fascia per sostituire 'band'
+                        for r in RATES:
+                             if r.get("min_isee") == 0 and r.get("scholarship") is False:
+                                 band = r
+                                 break
+                        note = "*Nota:* Dal 01/04/2026 i prezzi per i borsisti sono equiparati alla prima fascia."
+                    else:
+                        # DATA NON RAGGIUNTA: Mostra prezzi attuali (0€) ma con bottone per vedere i futuri
+                        note = "*Nota:* Dal 01/04/2026 i prezzi cambieranno."
+                        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Visualizza prezzi I fascia", callback_data="show_first_fascia")]])
+                
+                final_msg = get_rate_message_text(band, note)
                 
                 items_ord = [
                     ("pasto_completo", "PASTO COMPLETO"),
@@ -708,36 +733,8 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     ("pasto_ridotto_b", "PASTO RIDOTTO B"),
                     ("pasto_ridotto_c", "PASTO RIDOTTO C")
                 ]
-                
                 thumb_money = "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/money.png?v=2"
                 
-                # Iteriamo per costruire il messaggio finale
-                first = True
-                for key, label in items_ord:
-                    if not first:
-                        code_lines.append("-----------")
-                    first = False
-                    
-                    price = band.get(key)
-                    price_fmt = ""
-                    if price is not None:
-                        if price == 0:
-                            price_fmt = "GRATUITO"
-                        else:
-                            price_fmt = f"€ {price:.2f}"
-                    else:
-                        price_fmt = "N/A"
-                    
-                    desc = COMBINATIONS.get(key, "")
-                    
-                    # Titolo del pasto in MAIUSCOLO (non bold perché è nel code block)
-                    code_lines.append(f"{label} {price_fmt}")
-                    if desc:
-                        code_lines.append(desc)
-
-                # Costruisci messaggio finale con header e blocco codice
-                final_msg = f"{header_msg}\n\n```\n" + "\n".join(code_lines) + "\n```"
-
                 # 2. Genera i risultati singoli per la visualizzazione inline (come prima)
                 # Ognuno però invierà lo stesso final_msg
                 for key, label in items_ord:
@@ -761,7 +758,8 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                             title=display_title,
                             description=price_text,
                             thumbnail_url=thumb_money,
-                            input_message_content=InputTextMessageContent(final_msg, parse_mode=ParseMode.MARKDOWN)
+                            input_message_content=InputTextMessageContent(final_msg, parse_mode=ParseMode.MARKDOWN),
+                            reply_markup=reply_markup
                         )
                     )
                         
@@ -904,6 +902,19 @@ async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     reply_markup = get_canteen_selection_keyboard()
     await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
 
+async def links_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Gestisce il comando /links. Mostra link utili."""
+    text = (
+        "*LINK UTILI*\n\n"
+        "[Sito](https://www.dsu.toscana.it)\n"
+        "[Sportello studente](https://sportellostudente.dsu.toscana.it/)\n"
+        "[Instagram](https://www.instagram.com/dsutoscana/)\n"
+        "[Facebook](https://www.facebook.com/dsutoscana)\n"
+        "[Canale Whatsapp](https://www.whatsapp.com/channel/0029Vb5mhtEKrWQsuxlBw73k)\n"
+        "[Canale Telegram](https://t.me/DSUToscana)"
+    )
+    await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /help."""
     text = (
@@ -911,6 +922,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "*Comandi Principali*\n"
         "/start - Avvia il bot e mostra il menu principale\n"
         "/menu - Seleziona una mensa specifica\n"
+        "/links - Mostra link utili DSU\n"
         "/help - Mostra questo messaggio\n\n"
         "*1. Ricerca Piatto*\n"
         "Puoi cercare un piatto specifico (es. \"Pollo\") per scoprire quando e dove verrà servito.\n"
@@ -947,6 +959,36 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     if action == "show_help":
         await help_command(update, context)
+        return
+
+    if action == "show_first_fascia":
+        # Trova la prima fascia
+        target_band = None
+        for r in RATES:
+             # Prima fascia: non scholarship, min_isee 0
+             if r.get("min_isee") == 0 and r.get("scholarship") is False:
+                 target_band = r
+                 break
+        
+        if target_band:
+            text = get_rate_message_text(target_band)
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("INDIETRO", callback_data="back_to_scholarship")]])
+            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+        return
+
+    if action == "back_to_scholarship":
+         # Trova la fascia scholarship
+        target_band = None
+        for r in RATES:
+             if r.get("scholarship") is True:
+                 target_band = r
+                 break
+        
+        if target_band:
+            note = "⚠️ *Nota:* Dal 01/04/2026 i prezzi per i borsisti sono equiparati alla prima fascia."
+            text = get_rate_message_text(target_band, note)
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("PREZZI I FASCIA", callback_data="show_first_fascia")]])
+            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
         return
 
     if action == "sel_canteen":
@@ -1060,6 +1102,7 @@ def main() -> None:
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("menu", menu_command))
+    application.add_handler(CommandHandler("links", links_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(InlineQueryHandler(inline_query))
