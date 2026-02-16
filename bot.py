@@ -881,15 +881,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Digita `@cibounipibot t:` per tabella, o `t:isee` (es. `t:20000`) per calcolo personalizzato.\n\n"
         "*Comandi*\n"
         "/menu - Seleziona mensa\n"
-        "/help - Guida completa" +
-        FEEDBACK_TEXT
-    )
+            "/links - Link utili DSU\n"
+            "/help - Guida completa" +
+            FEEDBACK_TEXT
+        )
     
     keyboard = [
         [InlineKeyboardButton("Menu di Oggi", switch_inline_query_current_chat="")],
         [InlineKeyboardButton("Cerca Piatto", switch_inline_query_current_chat="p:")],
         [InlineKeyboardButton("Informazioni Mense", switch_inline_query_current_chat="i:")],
-         [InlineKeyboardButton("Calcola Tariffa", switch_inline_query_current_chat="t:")],
+        [InlineKeyboardButton("Calcola Tariffa", switch_inline_query_current_chat="t:")],
         [InlineKeyboardButton("Scegli Mensa", callback_data="sel_canteen|reset")],
         [InlineKeyboardButton("Guida", callback_data="show_help")]
     ]
@@ -906,11 +907,11 @@ async def links_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     """Gestisce il comando /links. Mostra link utili."""
     text = (
         "*LINK UTILI*\n\n"
-        "[Sito](https://www.dsu.toscana.it)\n"
-        "[Sportello studente](https://sportellostudente.dsu.toscana.it/)\n"
-        "[Instagram](https://www.instagram.com/dsutoscana/)\n"
-        "[Facebook](https://www.facebook.com/dsutoscana)\n"
-        "[Canale Whatsapp](https://www.whatsapp.com/channel/0029Vb5mhtEKrWQsuxlBw73k)\n"
+        "[Sito](https://www.dsu.toscana.it)\n\n"
+        "[Sportello studente](https://sportellostudente.dsu.toscana.it/)\n\n"
+        "[Instagram](https://www.instagram.com/dsutoscana/)\n\n"
+        "[Facebook](https://www.facebook.com/dsutoscana)\n\n"
+        "[Canale Whatsapp](https://www.whatsapp.com/channel/0029Vb5mhtEKrWQsuxlBw73k)\n\n"
         "[Canale Telegram](https://t.me/DSUToscana)"
     )
     await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
@@ -961,6 +962,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await help_command(update, context)
         return
 
+    if action == "show_links":
+        await links_command(update, context)
+        return
+
     if action == "show_first_fascia":
         # Trova la prima fascia
         target_band = None
@@ -985,7 +990,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                  break
         
         if target_band:
-            note = "⚠️ *Nota:* Dal 01/04/2026 i prezzi per i borsisti sono equiparati alla prima fascia."
+            note = "*Nota:* Dal 01/04/2026 i prezzi per i borsisti sono equiparati alla prima fascia."
             text = get_rate_message_text(target_band, note)
             reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("PREZZI I FASCIA", callback_data="show_first_fascia")]])
             await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
@@ -1069,7 +1074,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
 
 async def post_init(application: Application) -> None:
-    """Inizializza i comandi del bot."""
+    """Inilinks", "Link utili DSU"),
+        ("zializza i comandi del bot."""
     await application.bot.set_my_commands([
         ("start", "Messaggio di benvenuto"),
         ("menu", "Menù delle mense"),
