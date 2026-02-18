@@ -190,7 +190,7 @@ def get_canteen_selection_keyboard():
         
     return InlineKeyboardMarkup(buttons)
 
-def get_keyboard(date_str, meal_type, canteen_id):
+def get_keyboard(date_str, meal_type, canteen_id, is_inline=False):
     """Crea la tastiera inline con i pulsanti di navigazione."""
     
     # Bottone per cambiare pasto (Pranzo <-> Cena)
@@ -208,11 +208,11 @@ def get_keyboard(date_str, meal_type, canteen_id):
     today_date = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
 
     # Logica bottone centrale (Oggi/Home)
-    # Se siamo già alla data di oggi (o la data richiesta è oggi), il bottone torna alla selezione mensa
-    if date_str == today_date:
-        center_callback = "sel_canteen|reset" # Torna alla lista mense
+    if not is_inline and date_str == today_date:
+        # Se NON è inline e siamo già a oggi, torna alla selezione mense
+        center_callback = "sel_canteen|reset"
     else:
-        # Altrimenti torna a oggi mantenendo la mensa
+        # Altrimenti (inline o data diversa da oggi), torna sempre a oggi per la stessa mensa
         center_callback = f"nav|{today_date}|{meal_type}|{canteen_id}"
 
     nav_buttons = [
@@ -573,7 +573,8 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         for c_id, c_name in sorted_canteens:
             # Testo e tastiera specifici per ogni mensa
             text = get_menu_text(today, meal_type, canteen_name=c_name)
-            reply_markup = get_keyboard(today, meal_type, canteen_id=c_id)
+            # Passiamo is_inline=True così il bottone centrale NON torna alla selezione mense
+            reply_markup = get_keyboard(today, meal_type, canteen_id=c_id, is_inline=True)
             
             clean_name = c_name.upper() # Nome mensa in CAPS
             
@@ -1003,8 +1004,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         if canteen_id == "reset":
             text = "*Seleziona una mensa per vedere il menù:*"
             reply_markup = get_canteen_selection_keyboard()
-            # Modifica il messaggio esistente
-            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+            
+            # Se il messaggio originale contiene "CIBOUNIPI BOT", è il messaggio di start
+            # In questo caso mandiamo un NUOVO messaggio.
+            # Altrimenti (siamo già nel flusso menu), modifichiamo il messaggio esistente.
+            if "CIBOUNIPI BOT" in query.message.text:
+                 await context.bot.send_message(chat_id=query.message.chat_id, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+            else:
+                 await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
             return
             
         # Selezionata una mensa, mostra il menù di oggi
@@ -1064,21 +1071,32 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     # Se canteen_id è "None" (stringa) o non trovato, canteen_name è None -> mostra tutto
     if canteen_id == "None":
         canteen_name = None
+    
+    # Check if query is from inline message
+    is_inline_msg = query.inline_message_id is not None
 
     text = get_menu_text(date_str, meal_type, canteen_name)
-    reply_markup = get_keyboard(date_str, meal_type, canteen_id)
+    reply_markup = get_keyboard(date_str, meal_type, canteen_id, is_inline=is_inline_msg)
 
     try:
-        await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        if is_inline_msg:
+            await context.bot.edit_message_text(inline_message_id=query.inline_message_id, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        else:
+            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+    except BadRequest as e:
+        if "Message is not modified" in str(e):
+            pass
+        else:
+            logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
     except Exception as e:
         logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
 
 async def post_init(application: Application) -> None:
-    """Inilinks", "Link utili DSU"),
-        ("zializza i comandi del bot."""
+    """Inizializza i comandi del bot."""
     await application.bot.set_my_commands([
         ("start", "Messaggio di benvenuto"),
         ("menu", "Menù delle mense"),
+        ("links", "Link utili DSU"),
         ("help", "Guida all'uso")
     ])
 
