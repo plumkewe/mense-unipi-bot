@@ -133,7 +133,18 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
     # A volte potrebbe esserci la data ma non il tipo di pasto
     if not meal_menu:
          return f"{header}Nessun menù disponibile per il {meal_type.lower()}."
-    
+
+    # Calcoliamo le mense attive per questo pasto se siamo in modalità TUTTE
+    is_all_mode = (canteen_name == "TUTTE")
+    active_canteens = set()
+    if is_all_mode:
+        for cat, dishes in meal_menu.items():
+            if dishes:
+                for dish in dishes:
+                    if isinstance(dish, dict):
+                        available = dish.get("available_at", [])
+                        active_canteens.update(available)
+
     text = header
     has_dishes = False
 
@@ -146,11 +157,11 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                 if isinstance(dish, dict):
                     # Se il piatto ha la lista 'available_at', controlliamo se la mensa è inclusa
                     available = dish.get("available_at", [])
-                    if canteen_name and available:
+                    if canteen_name and canteen_name != "TUTTE" and available:
                         if canteen_name in available:
                             filtered_dishes.append(dish)
                     else:
-                        # Se non c'è filtro mensa o non c'è lista, mostriamo tutto (comportamento fallback)
+                        # Se non c'è filtro mensa o siamo in modalità TUTTE, mostriamo tutto
                         filtered_dishes.append(dish)
                 else:
                     # Stringa semplice (vecchio formato), mostra sempre
@@ -164,10 +175,24 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                     if isinstance(dish, dict):
                         name = dish.get("name", "").strip().capitalize()
                         link = dish.get("link")
+                        
+                        # Aggiunta logica "Solo in..."
+                        suffix = ""
+                        if is_all_mode:
+                            available = dish.get("available_at", [])
+                            if available:
+                                dish_canteens = set(available)
+                                # Se il piatto non è disponibile in tutte le mense attive, mostriamo dove lo è
+                                # Usiamo active_canteens calcolato all'inizio della funzione
+                                if dish_canteens != active_canteens and len(active_canteens) > 1:
+                                    # Formatta i nomi delle mense (rimuovi "Mensa ")
+                                    short_canteens = [c.replace("Mensa ", "") for c in available]
+                                    suffix = f" (Solo {', '.join(short_canteens)})"
+
                         if link:
-                            text += f"- {name} [↗︎\uFE0E]({link})\n"
+                            text += f"- {name}{suffix} [↗︎\uFE0E]({link})\n"
                         else:
-                            text += f"- {name}\n"
+                            text += f"- {name}{suffix}\n"
                     else:
                         text += f"- {dish.capitalize()}\n"
                 text += "\n"
@@ -183,6 +208,9 @@ def get_canteen_selection_keyboard():
     # Ordina per nome per consistenza
     sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
     
+    # Aggiungi bottone TUTTE
+    buttons.append([InlineKeyboardButton("TUTTE", callback_data="sel_canteen|all")])
+
     for c_id, c_name in sorted_canteens:
         # Pulisci o accorcia il nome se serve, per ora usiamo il nome completo
         clean_name = c_name.replace("Mensa ", "")
@@ -566,6 +594,23 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if not query:
         today = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
         meal_type = "Pranzo"
+        
+        # --- AGGIUNTA VOCE TUTTE ---
+        text_all = get_menu_text(today, meal_type, canteen_name="TUTTE")
+        
+        # is_inline=True così il bottone centrale ricarica la stessa vista e non prova a tornare indietro
+        reply_markup_all = get_keyboard(today, meal_type, canteen_id="all", is_inline=True)
+        
+        results.append(
+            InlineQueryResultArticle(
+                id=str(uuid4()),
+                title="TUTTE",
+                description="Visualizza il menù di tutte le mense oggi...",
+                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/tutte.png?v=3",
+                input_message_content=InputTextMessageContent(text_all, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
+                reply_markup=reply_markup_all
+            )
+        )
         
         # Ordiniamo le mense alfabeticamente
         sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
@@ -1015,7 +1060,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             return
             
         # Selezionata una mensa, mostra il menù di oggi
-        canteen_name = CANTEENS.get(canteen_id)
+        if canteen_id == "all":
+            canteen_name = "TUTTE"
+        else:
+            canteen_name = CANTEENS.get(canteen_id)
+
         current_date = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
         meal_type = "Pranzo" # Default
         
@@ -1066,9 +1115,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     canteen_id = data[3]
     
     # Gestione "None" o id non valido
-    canteen_name = CANTEENS.get(canteen_id)
+    if canteen_id == "all":
+        canteen_name = "TUTTE"
+    else:
+        canteen_name = CANTEENS.get(canteen_id)
     
-    # Se canteen_id è "None" (stringa) o non trovato, canteen_name è None -> mostra tutto
+    # Se canteen_id è "None" (stringa) o non trovato, canteen_name è None -> mostra tutto (ma senza logica TUTTE)
     if canteen_id == "None":
         canteen_name = None
     
