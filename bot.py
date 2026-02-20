@@ -606,7 +606,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 id=str(uuid4()),
                 title="TUTTE",
                 description="Visualizza il menù di tutte le mense oggi...",
-                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/tutte.png?v=3",
+                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/tutte.png?v=4",
                 input_message_content=InputTextMessageContent(text_all, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
                 reply_markup=reply_markup_all
             )
