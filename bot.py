@@ -249,9 +249,12 @@ def get_keyboard(date_str, meal_type, canteen_id, is_inline=False):
         InlineKeyboardButton("▶︎\uFE0E", callback_data=f"nav|{next_date}|{meal_type}|{canteen_id}"),
     ]
     
+    orario_button = InlineKeyboardButton("ORARIO", callback_data=f"orario|{date_str}|{meal_type}|{canteen_id}")
+    
     keyboard = [
         nav_buttons,
-        [toggle_button]
+        [toggle_button],
+        [orario_button]
     ]
     
     return InlineKeyboardMarkup(keyboard)
@@ -463,6 +466,55 @@ def get_canteen_status_info(schedule_map, service_name=""):
     
     return status, formatted_schedule
 
+def format_canteen_info_for_day(canteen, date_str):
+    """Genera il testo HTML con gli orari di una mensa per un giorno specifico."""
+    c_name = canteen.get("name", "").replace("Mensa ", "")
+    
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        day_idx = target_date.weekday()
+        day_name = DAYS_REV[day_idx]
+    except ValueError:
+        return f"<b>MENSA {c_name.upper()}</b>\nErrore data."
+        
+    tz = pytz.timezone('Europe/Rome')
+    today_date = datetime.now(tz).date()
+        
+    message_lines = [f"<b>MENSA {c_name.upper()}</b>"]
+    
+    if "opening_hours" in canteen:
+        oh = canteen["opening_hours"]
+        for service_type, schedule_map in oh.items():
+            
+            svc_title = service_type.replace("_", " ").capitalize()
+            if svc_title.lower() == "mensa":
+                svc_title = "Mensa"
+            
+            if target_date == today_date:
+                status_text, _ = get_canteen_status_info(schedule_map, service_name=service_type)
+                message_lines.append(f"<b>{svc_title}</b> {status_text}")
+            else:
+                message_lines.append(f"<b>{svc_title}</b>")
+            
+            slots_str = schedule_map.get(str(day_idx), [])
+            schedule_block = ""
+            if not slots_str:
+                 schedule_block = f"{day_name:<3} Chiuso"
+            else:
+                 lines = []
+                 first_slot = True
+                 for slot in slots_str:
+                     if first_slot:
+                         lines.append(f"{day_name:<3} {slot}")
+                         first_slot = False
+                     else:
+                         lines.append(f"    {slot}")
+                 schedule_block = "\n".join(lines)
+                 
+            message_lines.append(f"<pre>{schedule_block}</pre>")
+                         
+    return "\n".join(message_lines)
+
 def format_canteen_info(canteen):
     """Genera il testo HTML con le informazioni della mensa (stato, orari, ecc)."""
     c_name = canteen["name"]
@@ -606,7 +658,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 id=str(uuid4()),
                 title="TUTTE",
                 description="Visualizza il menù di tutte le mense oggi...",
-                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/tutte.png?v=4",
+                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/tutte.png?v=5",
                 input_message_content=InputTextMessageContent(text_all, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
                 reply_markup=reply_markup_all
             )
@@ -1103,6 +1155,53 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                     logger.warning(f"Errore durante l'aggiornamento info: {e}")
             except Exception as e:
                 logger.error(f"Errore generico aggiornamento info: {e}")
+        return
+
+    if action == "orario":
+        date_str = data[1]
+        meal_type = data[2]
+        canteen_id = data[3]
+        
+        blocks = []
+        if canteen_id == "all":
+            # Mostriamo gli orari per tutte le mense (solo query del giorno stesso)
+            sorted_canteens = sorted(CANTEENS_FULL, key=lambda x: x["name"])
+            for c in sorted_canteens:
+                blocks.append(format_canteen_info_for_day(c, date_str))
+            text = "\n\n".join(blocks)
+        else:
+            canteen = next((c for c in CANTEENS_FULL if c["id"] == canteen_id), None)
+            if canteen:
+                text = format_canteen_info_for_day(canteen, date_str)
+            else:
+                text = "Mensa non trovata."
+        
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("AGGIORNA", callback_data=query.data)],
+            [InlineKeyboardButton("INDIETRO", callback_data=f"nav|{date_str}|{meal_type}|{canteen_id}")]
+        ])
+        
+        try:
+            if query.inline_message_id:
+                await context.bot.edit_message_text(
+                    inline_message_id=query.inline_message_id, 
+                    text=text, 
+                    reply_markup=reply_markup, 
+                    parse_mode=ParseMode.HTML, 
+                    disable_web_page_preview=True
+                )
+            else:
+                await query.edit_message_text(
+                    text=text, 
+                    reply_markup=reply_markup, 
+                    parse_mode=ParseMode.HTML, 
+                    disable_web_page_preview=True
+                )
+        except BadRequest as e:
+            if "Message is not modified" not in str(e):
+                logger.warning(f"Errore aggiornamento orario: {e}")
+        except Exception as e:
+            logger.warning(f"Errore aggiornamento orario: {e}")
         return
 
     # Navigazione o Toggle: nav|date|meal|canteen_id
