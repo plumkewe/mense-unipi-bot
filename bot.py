@@ -31,10 +31,10 @@ except ImportError:
 from datetime import datetime, timedelta, time
 import re
 from uuid import uuid4
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton, InlineQueryResultPhoto
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton, InlineQueryResultPhoto, ReplyKeyboardMarkup, KeyboardButton
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler, MessageHandler, filters
 
 # Configurazione del logging
 logging.basicConfig(
@@ -515,6 +515,18 @@ def format_canteen_info_for_day(canteen, date_str):
                          
     return "\n".join(message_lines)
 
+def format_all_canteens_info_for_today():
+    """Genera il testo HTML con gli orari di tutte le mense per oggi."""
+    tz = pytz.timezone('Europe/Rome')
+    today_date = datetime.now(tz).date()
+    date_str = today_date.strftime("%Y-%m-%d")
+    
+    blocks = []
+    for canteen in CANTEENS_FULL:
+        blocks.append(format_canteen_info_for_day(canteen, date_str))
+        
+    return "\n\n".join(blocks)
+
 def format_canteen_info(canteen):
     """Genera il testo HTML con le informazioni della mensa (stato, orari, ecc)."""
     c_name = canteen["name"]
@@ -993,6 +1005,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("Guida", callback_data="show_help")]
     ]
     
+    reply_keyboard = ReplyKeyboardMarkup(
+        [[KeyboardButton("APERTI ORA")]],
+        resize_keyboard=True,
+        is_persistent=True
+    )
+    
+    # Invia un messaggio invisibile o di benvenuto per impostare la tastiera persistente
+    await update.message.reply_text("Benvenuto! Usa il menu in basso per azioni rapide.", reply_markup=reply_keyboard)
+    
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN)
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -1055,6 +1076,36 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     data = query.data.split("|")
     action = data[0]
+
+    if action == "an_menu":
+        canteen_id = data[1]
+        today = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
+        now_time = datetime.now(pytz.timezone('Europe/Rome')).time()
+        meal_type = "Cena" if now_time >= time(15, 0) else "Pranzo"
+        if canteen_id == "all":
+            canteen_name = "TUTTE"
+        else:
+            canteen_name = CANTEENS.get(canteen_id)
+        text = get_menu_text(today, meal_type, canteen_name)
+        reply_markup = InlineKeyboardMarkup([
+            [InlineKeyboardButton("INDIETRO", callback_data="an_back")]
+        ])
+        try:
+            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        except BadRequest as e:
+            if "Message is not modified" not in str(e):
+                logger.warning(f"Errore an_menu: {e}")
+        return
+
+    if action == "an_back":
+        text = format_all_canteens_info_for_today()
+        keyboard = build_aperti_ora_keyboard()
+        try:
+            await query.edit_message_text(text=text, reply_markup=keyboard, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+        except BadRequest as e:
+            if "Message is not modified" not in str(e):
+                logger.warning(f"Errore an_back: {e}")
+        return
 
     if action == "show_help":
         await help_command(update, context)
@@ -1242,6 +1293,21 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     except Exception as e:
         logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
 
+def build_aperti_ora_keyboard():
+    """Tastiera inline con i bottoni per ogni mensa sotto la risposta APERTI ORA."""
+    sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
+    rows = [[InlineKeyboardButton("TUTTE", callback_data="an_menu|all")]]
+    for c_id, c_name in sorted_canteens:
+        clean = c_name.replace("Mensa ", "")
+        rows.append([InlineKeyboardButton(clean, callback_data=f"an_menu|{c_id}")])
+    return InlineKeyboardMarkup(rows)
+
+async def handle_aperti_ora(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Gestisce il pulsante APERTI ORA della tastiera."""
+    text = format_all_canteens_info_for_today()
+    keyboard = build_aperti_ora_keyboard()
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True, reply_markup=keyboard)
+
 async def post_init(application: Application) -> None:
     """Inizializza i comandi del bot."""
     await application.bot.set_my_commands([
@@ -1279,6 +1345,7 @@ def main() -> None:
     application.add_handler(CommandHandler("menu", menu_command))
     application.add_handler(CommandHandler("links", links_command))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(MessageHandler(filters.Regex("^APERTI ORA$"), handle_aperti_ora))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(InlineQueryHandler(inline_query))
 
