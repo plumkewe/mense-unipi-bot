@@ -1011,10 +1011,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         is_persistent=True
     )
     
-    # Invia un messaggio invisibile o di benvenuto per impostare la tastiera persistente
-    await update.message.reply_text("Benvenuto! Usa il menu in basso per azioni rapide.", reply_markup=reply_keyboard)
-    
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN)
+
+    # Invia lo sticker di benvenuto e imposta la tastiera persistente
+    await update.message.reply_sticker("CAACAgQAAxkBAAIZ8mmchOMO2Rz876mpp7_WxFD5O0m1AAJOGgACzXyZUdEKftV24SvlOgQ", reply_markup=reply_keyboard)
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /menu. Mostra la selezione della mensa."""
