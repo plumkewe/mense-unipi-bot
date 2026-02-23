@@ -1006,7 +1006,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     ]
     
     reply_keyboard = ReplyKeyboardMarkup(
-        [[KeyboardButton("APERTI ORA")]],
+        [[KeyboardButton("APERTE ORA")]],
         resize_keyboard=True,
         is_persistent=True
     )
@@ -1294,7 +1294,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
 
 def build_aperti_ora_keyboard():
-    """Tastiera inline con i bottoni per ogni mensa sotto la risposta APERTI ORA."""
+    """Tastiera inline con i bottoni per ogni mensa sotto la risposta APERTE ORA."""
     sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
     rows = [[InlineKeyboardButton("TUTTE", callback_data="an_menu|all")]]
     for c_id, c_name in sorted_canteens:
@@ -1303,7 +1303,7 @@ def build_aperti_ora_keyboard():
     return InlineKeyboardMarkup(rows)
 
 async def handle_aperti_ora(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il pulsante APERTI ORA della tastiera."""
+    """Gestisce il pulsante APERTE ORA della tastiera."""
     text = format_all_canteens_info_for_today()
     keyboard = build_aperti_ora_keyboard()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True, reply_markup=keyboard)
@@ -1345,7 +1345,7 @@ def main() -> None:
     application.add_handler(CommandHandler("menu", menu_command))
     application.add_handler(CommandHandler("links", links_command))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(MessageHandler(filters.Regex("^APERTI ORA$"), handle_aperti_ora))
+    application.add_handler(MessageHandler(filters.Regex("^APERTE ORA$"), handle_aperti_ora))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(InlineQueryHandler(inline_query))
 
