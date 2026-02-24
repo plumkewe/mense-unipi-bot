@@ -5,6 +5,8 @@ import sys
 import time
 from extract_menu import init_session, fetch_week_data, parse_menu_html
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+
 def get_tipo_menu_id(url):
     try:
         parts = url.rstrip('/').split('/')
@@ -15,14 +17,16 @@ def get_tipo_menu_id(url):
     return '3'
 
 def main():
-    if not os.path.exists('menu.json') or not os.path.exists('canteens.json'):
+    _menu_path = os.path.join(DATA_DIR, 'menu.json')
+    _canteens_path = os.path.join(DATA_DIR, 'canteens.json')
+    if not os.path.exists(_menu_path) or not os.path.exists(_canteens_path):
         print("Required files missing.")
         sys.exit(1)
 
-    with open('menu.json', 'r') as f:
+    with open(_menu_path, 'r') as f:
         menu_data = json.load(f)
 
-    with open('canteens.json', 'r') as f:
+    with open(_canteens_path, 'r') as f:
         canteens = json.load(f)
 
     # Find last date in current menu
@@ -195,7 +199,7 @@ def main():
         # Sort by date
         sorted_menu = dict(sorted(menu_data.items()))
         
-        with open('menu.json', 'w', encoding='utf-8') as f:
+        with open(os.path.join(DATA_DIR, 'menu.json'), 'w', encoding='utf-8') as f:
             json.dump(sorted_menu, f, indent=2, ensure_ascii=False)
             
     else:

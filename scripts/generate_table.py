@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+REPO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+
 def format_price(value):
     """Formats price float to string (e.g. 2.8 -> € 2,80) or 'Gratuito'"""
     if isinstance(value, (int, float)):
@@ -13,8 +16,8 @@ def format_price(value):
     return str(value)
 
 def generate_table():
-    json_path = 'rates.json'
-    output_path = os.path.join('assets', 'img', 'table.png')
+    json_path = os.path.join(DATA_DIR, 'rates.json')
+    output_path = os.path.join(REPO_DIR, 'assets', 'img', 'table.png')
 
     if not os.path.exists(json_path):
         print(f"File {json_path} not found.")

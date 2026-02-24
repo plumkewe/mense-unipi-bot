@@ -3,6 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import os
+
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 
 def clean_text(text):
     """Cleans text from whitespace and special characters"""
@@ -146,7 +149,7 @@ def fetch_rates():
             rates_data.append(entry)
             
         # Write to JSON
-        with open('rates.json', 'w', encoding='utf-8') as f:
+        with open(os.path.join(DATA_DIR, 'rates.json'), 'w', encoding='utf-8') as f:
             json.dump(rates_data, f, indent=4, ensure_ascii=False)
             
         print(f"Successfully extracted {len(rates_data)} rates to rates.json")

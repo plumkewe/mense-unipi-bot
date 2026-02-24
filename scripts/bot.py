@@ -5,6 +5,8 @@ import pytz
 import asyncio
 import requests
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+
 # --- FIX per APScheduler < 3.10 su Python recenti ---
 # APScheduler 3.6.3 (usato da python-telegram-bot su certi setup) crasha
 # se riceve una timezone tipo ZoneInfo (nuovo standard) invece di pytz.
@@ -45,7 +47,7 @@ logger = logging.getLogger(__name__)
 # Carica il file menu.json
 def load_menu():
     try:
-        with open("menu.json", "r", encoding="utf-8") as f:
+        with open(os.path.join(DATA_DIR, "menu.json"), "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         logger.error("Errore: menu.json non trovato!")
@@ -56,7 +58,7 @@ MENU = load_menu()
 # Carica il file canteens.json
 def load_canteens():
     try:
-        with open("canteens.json", "r", encoding="utf-8") as f:
+        with open(os.path.join(DATA_DIR, "canteens.json"), "r", encoding="utf-8") as f:
             data = json.load(f)
             # Mappa id -> nome per filtro e nome -> id visualizzazione se serve
             return {c["id"]: c["name"] for c in data}
@@ -66,7 +68,7 @@ def load_canteens():
 
 def load_canteens_full():
     try:
-        with open("canteens.json", "r", encoding="utf-8") as f:
+        with open(os.path.join(DATA_DIR, "canteens.json"), "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         logger.error("Errore: canteens.json non trovato!")
@@ -78,7 +80,7 @@ CANTEENS_FULL = load_canteens_full()
 # Carica il file rates.json
 def load_rates():
     try:
-        with open("rates.json", "r", encoding="utf-8") as f:
+        with open(os.path.join(DATA_DIR, "rates.json"), "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         logger.error("Errore: rates.json non trovato!")
@@ -89,7 +91,7 @@ RATES = load_rates()
 # Carica il file combinations.json
 def load_combinations():
     try:
-        with open("combinations.json", "r", encoding="utf-8") as f:
+        with open(os.path.join(DATA_DIR, "combinations.json"), "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         logger.error("Errore: combinations.json non trovato!")

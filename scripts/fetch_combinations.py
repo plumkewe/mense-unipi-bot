@@ -2,9 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import os
 
 URL = "https://www.dsu.toscana.it/-/tariffa-agevolata-su-base-isee"
-OUTPUT_FILE = "combinations.json"
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+OUTPUT_FILE = os.path.join(DATA_DIR, "combinations.json")
 
 def clean_text(text):
     if not text:
