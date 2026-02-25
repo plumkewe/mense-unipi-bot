@@ -5,7 +5,7 @@ import pytz
 import asyncio
 import requests
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 # --- FIX per APScheduler < 3.10 su Python recenti ---
 # APScheduler 3.6.3 (usato da python-telegram-bot su certi setup) crasha
@@ -706,21 +706,21 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 "id": "inst_p",
                 "title": "Cerca Piatto",
                 "desc": "p:<piatto> (es. p:Arista)",
-                "text": "@cibounipibot p: ",
+                "text": "*COME CERCARE UN PIATTO*\n\nVuoi sapere dove fanno l'arista o le lasagne?\nDigita nella chat:\n`@cibounipibot p:nome_piatto`\n\n_Esempio:_ `@cibounipibot p:Arista`\n\nIl bot ti mostrerà in quali mense e in quali giorni dei prossimi menù sarà disponibile!",
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             },
             {
                 "id": "inst_i",
                 "title": "Informazioni Mense",
                 "desc": "i:<mensa> (es. i:Martiri)",
-                "text": "@cibounipibot i: ",
+                "text": "*INFORMAZIONI E ORARI MENSE*\n\nVuoi sapere se una mensa è aperta ora o che orari fa?\nDigita nella chat:\n`@cibounipibot i:nome_mensa`\n\n_Esempio:_ `@cibounipibot i:Martiri`\n\nOppure digita solo `@cibounipibot i:` per vedere la lista di tutte le mense e cliccare su quella che ti interessa!",
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             },
             {
                 "id": "inst_t",
                 "title": "Tariffe & ISEE",
                 "desc": "t: <isee> (es. t:21065)",
-                "text": "@cibounipibot t: ",
+                "text": "*CALCOLO TARIFFE ISEE*\n\nVuoi sapere esattamente quanto paghi per il pasto in base alla tua fascia ISEE?\nDigita nella chat:\n`@cibounipibot t:tuo_valore_isee`\n\n_Esempi:_\n`@cibounipibot t:15500`\n`@cibounipibot t:borsa` (se sei borsista DSU)\n\nOppure digita solo `@cibounipibot t:` per vedere la tabella completa di tutte le tariffe.",
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             }
         ]
@@ -740,6 +740,17 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     thumbnail_height=48
                 )
             )
+            
+        # --- AGGIUNTA VOCE GITHUB in FONDO ---
+        results.append(
+            InlineQueryResultArticle(
+                id=str(uuid4()),
+                title="Repository GitHub",
+                description="Mettici una stella!",
+                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/github.png?v=3",
+                input_message_content=InputTextMessageContent("https://github.com/plumkewe/mense-unipi-bot")
+            )
+        )
         
         await update.inline_query.answer(results, cache_time=0)
         return

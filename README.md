@@ -25,7 +25,7 @@
 
 <!--
 
-[<img src="https://wsrv.nl/?url=github.com/plumkewe.png?w=64&h=64&mask=circle&fit=cover" width="46" height="46" alt="Lyubomyr Malay" />](https://github.com/plumkewe) 
+[<img src="https://wsrv.nl/?url=github.com/plumkewe.png?w=64&h=64&mask=circle&fit=cover" width="46" height="46" alt="Lyubomyr Malay" />](https://github.com/plumkewe)
 
 -->
 
@@ -56,8 +56,8 @@
 │   ├── cookies.txt         <- sessione per lo scraping
 │   ├── menu.json           <- menù aggiornato quotidianamente
 │   └── rates.json          <- tariffe per fascia ISEE
+├── bot.py                  <- entrypoint del bot Telegram
 ├── scripts/
-│   ├── bot.py              <- entrypoint del bot Telegram
 │   ├── debug_parser.py     <- utility per debug del parser
 │   ├── extract_menu.py     <- scraper menù da canteen.dsutoscana.cloud
 │   ├── fetch_combinations.py <- recupera le combinazioni
@@ -104,8 +104,6 @@ graph LR
 
 La ricerca inline si avvia digitando `@cibounipibot` seguito da uno spazio e dalla query. Senza prefisso viene mostrata direttamente la lista delle mense per vedere il menù di oggi.
 
-
-
 ### Menu e Navigazione
 
 Una volta aperto il menù di una mensa, è possibile:
@@ -117,13 +115,11 @@ Una volta aperto il menù di una mensa, è possibile:
 
 Per le mense TUTTE, ogni piatto disponibile solo in alcune mense viene annotato con `(Solo NomeMensa)`.
 
-
 ### Info e Orari
 
 Digitando `@cibounipibot i:` è possibile consultare lo stato attuale di ogni mensa (aperta/chiusa), gli orari di pranzo e cena e i servizi disponibili (pizzeria, prendi e vai, menù vegetariano, gluten-free, ecc.).
 
 Il pulsante **APERTE ORA** nella tastiera persistente mostra subito le mense attualmente operative.
-
 
 ### Tariffe ISEE
 
