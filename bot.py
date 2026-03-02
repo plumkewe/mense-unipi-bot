@@ -1018,11 +1018,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         [InlineKeyboardButton("Guida", callback_data="show_help")]
     ]
     
+    is_private = update.effective_chat.type == "private"
     reply_keyboard = ReplyKeyboardMarkup(
         [[KeyboardButton("APERTE ORA")]],
         resize_keyboard=True,
         is_persistent=True
-    )
+    ) if is_private else None
     
     # Invia lo sticker di benvenuto e imposta la tastiera persistente
     await update.message.reply_sticker("CAACAgQAAxkBAAIZ8mmchOMO2Rz876mpp7_WxFD5O0m1AAJOGgACzXyZUdEKftV24SvlOgQ", reply_markup=reply_keyboard)
@@ -1358,7 +1359,7 @@ def main() -> None:
     application.add_handler(CommandHandler("menu", menu_command))
     application.add_handler(CommandHandler("links", links_command))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(MessageHandler(filters.Regex("^APERTE ORA$"), handle_aperti_ora))
+    application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.Regex("^APERTE ORA$"), handle_aperti_ora))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(InlineQueryHandler(inline_query))
 
