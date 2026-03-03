@@ -1,0 +1,50 @@
+name: Publish Menu to Instagram
+
+on:
+  schedule:
+    # Esegue automaticamente ogni giorno alle 09:21 UTC (circa 20-30 min dopo il bot di generazione)
+    - cron: '21 9 * * *'
+  # Permette di lanciare l'azione manualmente
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-instagram:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-actions.txt
+
+      - name: Create empty target dir
+        run: mkdir -p posts
+
+      # Non serve rigenerare le immagini qui, le scarichiamo dall'ambiente git (generate alle 9:00 e committate in 'posts')
+      - name: Publish to Instagram
+        env:
+          # Assicurati di aver censurato questo e messo i token nelle GitHub Secrets
+          IG_USERNAME: ${{ secrets.IG_USERNAME }}
+          IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+        run: |
+          python scripts/publish_instagram.py
+
+      - name: Commit publish lock
+        # Se viene pubblicato con successo verrà creato un file .lock
+        # Lo pushiamo per far sapere alla repository che questo giorno è già "spuntato"
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts/*.lock
+          git commit -m "Instagram auto-publish completed" || echo "No lock file to commit (already published or not generated)"
+          git push

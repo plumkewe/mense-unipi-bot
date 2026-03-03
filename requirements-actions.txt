@@ -1,0 +1,5 @@
+pandas
+matplotlib
+great_tables
+Pillow
+instagrapi==2.1.2

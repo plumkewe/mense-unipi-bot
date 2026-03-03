@@ -1,0 +1,53 @@
+name: Generate Posts for Martiri
+
+on:
+  schedule:
+    # Esegue automaticamente ogni giorno alle 09:00 UTC (10:00 o 11:00 in Italia) se vuoi automatizzarlo
+    - cron: '0 9 * * *'
+  # Permette di lanciare l'azione manualmente dal sito di GitHub tramite un bottone
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-actions.txt
+
+      - name: Create posts directory and Generate Menu Images
+        run: |
+          mkdir -p posts
+          # Passiamo esplicitamente la data di oggi senza --latest
+          # Se oggi la mensa è chiusa (es. domenica), lo script si ferma e NON genera i file di ieri
+          TODAY=$(date +%Y-%m-%d)
+          python scripts/generate_menu_images.py --date $TODAY --canteen martiri --output-dir posts || echo "Menu non disponibile per oggi (chiusa o non aggiornata)."
+
+      - name: Upload Images as Workflow Artifact
+        # Questo salva le foto come artefatti scaricabili direttamente da GitHub Action
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-mensa-martiri
+          path: posts/*.png
+          
+      - name: Commit and Push changes
+        # Questo step facoltativo salva fisicamente le foto scaricate nella cartella "posts" nel repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts/*.png
+          # Il comando fallirà se non ci sono nuove immagini (nessuna modifica), in quel caso ok
+          git commit -m "Auto-generate menu images for Martiri" || echo "No changes to commit"
+          git push
