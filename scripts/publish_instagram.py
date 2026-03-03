@@ -1,8 +1,78 @@
 import os
-import glob
+import json
 from instagrapi import Client
 from pathlib import Path
 import datetime as dt
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+MENU_PATH = REPO_ROOT / "data" / "menu.json"
+
+CANTEEN_NAME = "Mensa Martiri"
+COURSE_ORDER = ["Primi Piatti", "Secondi Piatti", "Contorni"]
+COURSE_LABELS = {
+    "Primi Piatti": "Primi",
+    "Secondi Piatti": "Secondi",
+    "Contorni": "Contorni",
+}
+HASHTAGS = "#doveunipi #cibounipibot #mensa #universita #martiri"
+
+
+def _get_dishes_for_canteen(meal_data: dict, canteen: str) -> dict[str, list[str]]:
+    """Returns {course_label: [dish_name, ...]} filtered for the given canteen."""
+    result = {}
+    for course in COURSE_ORDER:
+        dishes = meal_data.get(course, [])
+        names = [
+            d["name"].capitalize()
+            for d in dishes
+            if canteen in d.get("available_at", [])
+        ]
+        if names:
+            result[COURSE_LABELS[course]] = names
+    return result
+
+
+def _format_meal_block(label: str, courses: dict[str, list[str]]) -> str:
+    lines = [label]
+    for course, dishes in courses.items():
+        lines.append(f"{course}:")
+        for dish in dishes:
+            lines.append(f"  {dish}")
+    return "\n".join(lines)
+
+
+def build_caption(menu_data: dict, date_iso: str, has_pranzo: bool, has_cena: bool) -> str:
+    oggi_ita = dt.date.fromisoformat(date_iso).strftime("%d.%m.%Y")
+    day_data = menu_data.get(date_iso, {})
+
+    pranzo_courses = _get_dishes_for_canteen(day_data.get("Pranzo", {}), CANTEEN_NAME) if has_pranzo else {}
+    cena_courses = _get_dishes_for_canteen(day_data.get("Cena", {}), CANTEEN_NAME) if has_cena else {}
+
+    lines = [f"Mensa Martiri - {oggi_ita}", ""]
+
+    if has_cena and has_pranzo:
+        lines.append("Fai swipe per vedere il menu della cena.")
+    elif has_pranzo and not has_cena:
+        lines.append("Oggi solo pranzo disponibile.")
+    elif has_cena and not has_pranzo:
+        lines.append("Oggi solo cena disponibile.")
+
+    lines.append("")
+
+    if pranzo_courses:
+        lines.append(_format_meal_block("A pranzo:", pranzo_courses))
+        lines.append("")
+
+    if cena_courses:
+        lines.append(_format_meal_block("A cena:", cena_courses))
+        lines.append("")
+
+    lines.append("Buon appetito!")
+    lines.append("")
+    lines.append(HASHTAGS)
+
+    return "\n".join(lines)
+
 
 def main():
     # Credentials dal GitHub Secrets
@@ -29,22 +99,21 @@ def main():
         return
 
     # Cartella target
-    posts_dir = Path(__file__).resolve().parent.parent / "assets" / "posts"
+    posts_dir = REPO_ROOT / "assets" / "posts"
     if not posts_dir.exists():
         print(f"La cartella {posts_dir} non esiste. Non c'è nulla da pubblicare.")
         return
 
-    oggi_iso = dt.date.today().strftime("%Y%m%d")
+    oggi_iso = dt.date.today().isoformat()
+    oggi_tag = dt.date.today().strftime("%Y%m%d")
     oggi_ita = dt.date.today().strftime("%d.%m.%Y")
-    didascalia = f"🍽️ Menu Mensa Martiri del {oggi_ita}\n\nSwipe per vedere il pranzo e la cena! 👉\n\n#unipi #mensaunipi #pisa #cibounipi"
 
     # Prendi SOLO le immagini di OGGI per evitare ri-pubblicazioni di ieri
-    # usando il prefisso YYYYMMDD
-    pranzo_files = sorted(list(posts_dir.glob(f"{oggi_iso}_pranzo_martiri.jpg")))
-    cena_files = sorted(list(posts_dir.glob(f"{oggi_iso}_cena_martiri.jpg")))
+    pranzo_files = sorted(list(posts_dir.glob(f"{oggi_tag}_pranzo_martiri.jpg")))
+    cena_files = sorted(list(posts_dir.glob(f"{oggi_tag}_cena_martiri.jpg")))
 
     album_paths = []
-    
+
     if pranzo_files:
         album_paths.append(pranzo_files[-1])
     else:
@@ -60,10 +129,33 @@ def main():
         return
 
     # Evitiamo di ripubblicare se esiste già un segnale che oggi è stato pubblicato (es. file di lock)
-    lock_file = Path(__file__).resolve().parent.parent / "assets" / "posts" / f"{oggi_iso}_published.lock"
+    lock_file = posts_dir / f"{oggi_tag}_published.lock"
+
+    # Se l'evento è manuale (workflow_dispatch), ignora il lock
+    is_manual = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+
     if lock_file.exists():
-        print(f"I menu di oggi ({oggi_ita}) sono GIA' stati pubblicati! (Trovato file lock)")
-        return
+        if is_manual:
+            print(f"Lock file trovato per {oggi_ita}, ma ignorato perché eseguito manualmente.")
+        else:
+            print(f"I menu di oggi ({oggi_ita}) sono GIA' stati pubblicati! (Trovato file lock)")
+            return
+
+    # Costruisci didascalia dinamica dal menu
+    menu_data = {}
+    if MENU_PATH.exists():
+        with MENU_PATH.open("r", encoding="utf-8") as f:
+            menu_data = json.load(f)
+
+    didascalia = build_caption(
+        menu_data,
+        date_iso=oggi_iso,
+        has_pranzo=bool(pranzo_files),
+        has_cena=bool(cena_files),
+    )
+    print("Didascalia generata:\n")
+    print(didascalia)
+    print()
 
     if len(album_paths) == 1:
         # Pubblica singola foto

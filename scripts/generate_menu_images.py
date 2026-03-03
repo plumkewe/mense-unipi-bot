@@ -1,12 +1,11 @@
 import argparse
 import datetime as dt
 import json
+import random
+import colorsys
 from pathlib import Path
 
-import pandas as pd
-import matplotlib.colors as mcolors
-from PIL import Image
-from great_tables import GT, style, loc
+from PIL import Image, ImageDraw, ImageFont
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -22,11 +21,13 @@ COURSE_ORDER = [
     "Contorni",
 ]
 
-CANTEEN_COLORS = {
-    "martiri": "#FCE7F3",
-    "betti": "#DBEAFE",
-    "cammeo": "#DCFCE7",
-}
+POST_BG_COLOR = "#F3F4F6"
+CARD_BG_COLOR = "#FFFFFF"
+TEXT_COLOR = "#374151"
+TITLE_COLOR = "#111827"
+TOP_BAR_COLOR = "#E5E7EB"
+BORDER_COLOR = "#F3F4F6"
+DIVIDER_COLOR = "#D1D5DB"
 
 
 def slugify(value: str) -> str:
@@ -88,18 +89,6 @@ def collect_canteen_menu(day_menu: dict, canteen_name: str) -> dict:
     return canteen_menu
 
 
-def blend_colors(color_a: str, color_b: str, ratio: float) -> str:
-    ratio = max(0.0, min(1.0, ratio))
-    a_r, a_g, a_b = mcolors.to_rgb(color_a)
-    b_r, b_g, b_b = mcolors.to_rgb(color_b)
-    mixed = (
-        (1 - ratio) * a_r + ratio * b_r,
-        (1 - ratio) * a_g + ratio * b_g,
-        (1 - ratio) * a_b + ratio * b_b,
-    )
-    return mcolors.to_hex(mixed)
-
-
 def _strip_piatti(course: str) -> str:
     """Remove the word 'Piatti' (and surrounding spaces) from a course label."""
     return course.replace(" Piatti", "").replace("Piatti ", "").replace("Piatti", "").strip()
@@ -112,28 +101,213 @@ def _format_date_label(date_iso: str) -> str:
         return date_iso
 
 
-def _enforce_output_size(src_path: Path, bg_color: str, width: int = 1080, height: int = 1440, out_path: Path | None = None) -> None:
-    if out_path is None:
-        out_path = src_path
-    with Image.open(src_path) as img:
-        canvas = Image.new("RGBA", (width, height), bg_color)
-        
-        target_w = width
-        scale = target_w / img.width
-        new_h = int(img.height * scale)
-        img_resized = img.resize((target_w, new_h), Image.Resampling.LANCZOS)
-        
-        if new_h > height:
-            scale = height / img.height
-            new_w = int(img.width * scale)
-            img_resized = img.resize((new_w, height), Image.Resampling.LANCZOS)
-            x_offset = (width - new_w) // 2
-            canvas.paste(img_resized, (x_offset, 0))
+def _random_light_color(seed: str | None = None) -> str:
+    # Generate bright, vibrant (fluorescent/neon-like) pastel colors
+    # High Value (brightness), Medium-High Saturation (color intensity)
+    rng = random.Random(seed) if seed else random
+    
+    hue = rng.random()
+    saturation = rng.uniform(0.5, 0.9)
+    value = rng.uniform(0.95, 1.0)
+    
+    r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
+    return f"#{int(r*255):02X}{int(g*255):02X}{int(b*255):02X}"
+
+
+def _darken_color(hex_color: str, factor: float = 0.75) -> str:
+    color = hex_color.lstrip("#")
+    red = int(color[0:2], 16)
+    green = int(color[2:4], 16)
+    blue = int(color[4:6], 16)
+    red = max(0, min(255, int(red * factor)))
+    green = max(0, min(255, int(green * factor)))
+    blue = max(0, min(255, int(blue * factor)))
+    return f"#{red:02X}{green:02X}{blue:02X}"
+
+
+def _load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    candidates = []
+    if bold:
+        candidates.extend([
+            "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+            "/System/Library/Fonts/Supplemental/Helvetica Bold.ttf",
+            "Arial Bold.ttf",
+            "Helvetica Bold.ttf",
+        ])
+    else:
+        candidates.extend([
+            "/System/Library/Fonts/Supplemental/Arial.ttf",
+            "/System/Library/Fonts/Supplemental/Helvetica.ttf",
+            "Arial.ttf",
+            "Helvetica.ttf",
+        ])
+
+    for path in candidates:
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def _text_width(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> int:
+    left, _, right, _ = draw.textbbox((0, 0), text, font=font)
+    return right - left
+
+
+def _line_height(draw: ImageDraw.ImageDraw, font: ImageFont.ImageFont) -> int:
+    _, top, _, bottom = draw.textbbox((0, 0), "Ag", font=font)
+    return bottom - top
+
+
+def _wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, max_width: int) -> list[str]:
+    words = text.split()
+    if not words:
+        return [""]
+
+    lines: list[str] = []
+    current = words[0]
+
+    for word in words[1:]:
+        candidate = f"{current} {word}"
+        if _text_width(draw, candidate, font) <= max_width:
+            current = candidate
         else:
-            canvas.paste(img_resized, (0, 0))
-            
-        # Salva come JPEG con DPI alti (Instagram richiede JPEG per i caroselli)
-        canvas.convert("RGB").save(out_path, format="JPEG", quality=95, dpi=(300, 300))
+            lines.append(current)
+            current = word
+
+    lines.append(current)
+    return lines
+
+
+def _pattern_color(base_color: str, alpha: int = 90) -> tuple:
+    r, g, b = Image.new("RGB", (1, 1), base_color).getpixel((0, 0))
+    lum = (r + g + b) / 3
+    factor = 1.20 if lum < 160 else 0.72
+    pr = min(255, max(0, int(r * factor)))
+    pg = min(255, max(0, int(g * factor)))
+    pb = min(255, max(0, int(b * factor)))
+    return (pr, pg, pb, alpha)
+
+
+def _generate_background_pattern(base_color: str, width: int, height: int, seed: str) -> Image.Image:
+    rng = random.Random(seed)
+    bg = Image.new("RGBA", (width, height), base_color)
+    pc = _pattern_color(base_color)
+
+    pattern_type = rng.choice([
+        "dot_grid",
+        "diagonal_stripes",
+        "crosshatch",
+        "diamond_grid",
+        "hexagons",
+        "zigzag",
+        "concentric_circles",
+        "plus_grid",
+    ])
+
+    layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+
+    if pattern_type == "dot_grid":
+        # Offset polka-dot grid — perfectly aligned rows and columns
+        spacing = rng.choice([120, 150, 180, 220])
+        radius  = spacing // 5
+        for row, y in enumerate(range(0, height + spacing, spacing)):
+            x_offset = (spacing // 2) if (row % 2) else 0
+            for x in range(-spacing, width + spacing, spacing):
+                cx = x + x_offset
+                draw.ellipse((cx - radius, y - radius, cx + radius, y + radius), fill=pc)
+
+    elif pattern_type == "diagonal_stripes":
+        # Crisp parallel diagonal stripes at 45°
+        spacing   = rng.choice([80, 120, 160, 200])
+        thickness = spacing // 4
+        size      = (width + height) * 2
+        tmp = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        tmp_draw = ImageDraw.Draw(tmp)
+        for i in range(-size, size, spacing):
+            tmp_draw.line([(i, 0), (i + size, size)], fill=pc, width=thickness)
+        rotated = tmp.rotate(0)   # already 45° by construction
+        layer.paste(rotated, (-(size - width) // 2, -(size - height) // 2), rotated)
+
+    elif pattern_type == "crosshatch":
+        # Regular grid of thin crossing lines
+        spacing = rng.choice([100, 140, 180, 240])
+        thickness = rng.choice([3, 4, 5])
+        for x in range(0, width + spacing, spacing):
+            draw.line([(x, 0), (x, height)], fill=pc, width=thickness)
+        for y in range(0, height + spacing, spacing):
+            draw.line([(0, y), (width, y)], fill=pc, width=thickness)
+
+    elif pattern_type == "diamond_grid":
+        # 45°-rotated square grid (diamond lattice)
+        spacing = rng.choice([120, 160, 200, 240])
+        thickness = rng.choice([3, 4, 5])
+        size = (width + height) * 2
+        tmp = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        tmp_draw = ImageDraw.Draw(tmp)
+        for i in range(-size, size, spacing):
+            tmp_draw.line([(i, 0), (i, size)], fill=pc, width=thickness)
+            tmp_draw.line([(0, i), (size, i)], fill=pc, width=thickness)
+        rotated = tmp.rotate(45, center=(size // 2, size // 2))
+        layer.paste(rotated, (-(size - width) // 2, -(size - height) // 2), rotated)
+
+    elif pattern_type == "hexagons":
+        # Regular hexagonal tiling
+        size = rng.choice([80, 110, 140, 170])
+        thickness = rng.choice([3, 4, 5])
+        hex_w = size * 2
+        hex_h = int(size * 1.732)  # sqrt(3) * size
+        import math
+        for row in range(-1, height // hex_h + 2):
+            for col in range(-1, width // (hex_w - size // 2) + 2):
+                cx = col * (hex_w - size // 2) + (hex_w // 2 if row % 2 else 0)
+                cy = row * hex_h + hex_h // 2
+                pts = [
+                    (cx + int(size * math.cos(math.radians(60 * i - 30))),
+                     cy + int(size * math.sin(math.radians(60 * i - 30))))
+                    for i in range(6)
+                ]
+                draw.polygon(pts, outline=pc, width=thickness)
+
+    elif pattern_type == "zigzag":
+        # Horizontal chevron / zigzag bands
+        spacing = rng.choice([100, 140, 180, 220])
+        amplitude = spacing // 2
+        thickness = rng.choice([4, 5, 6])
+        step = 40
+        for band in range(-1, height // spacing + 2):
+            y_base = band * spacing
+            pts = []
+            for x in range(0, width + step * 2, step):
+                phase = (x // step) % 2
+                y = y_base + (amplitude if phase else -amplitude)
+                pts.append((x, y))
+            for i in range(len(pts) - 1):
+                draw.line([pts[i], pts[i + 1]], fill=pc, width=thickness)
+
+    elif pattern_type == "concentric_circles":
+        # Rings expanding from centre
+        cx, cy = width // 2, height // 2
+        max_r = int((width ** 2 + height ** 2) ** 0.5 // 2) + 200
+        spacing = rng.choice([100, 140, 180, 220])
+        thickness = rng.choice([3, 4, 5])
+        for r in range(spacing, max_r, spacing):
+            draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=pc, width=thickness)
+
+    elif pattern_type == "plus_grid":
+        # Evenly spaced + signs on a regular grid
+        spacing  = rng.choice([120, 160, 200, 240])
+        arm_len  = spacing // 3
+        thickness = rng.choice([6, 8, 10])
+        for y in range(0, height + spacing, spacing):
+            for x in range(0, width + spacing, spacing):
+                draw.line([(x - arm_len, y), (x + arm_len, y)], fill=pc, width=thickness)
+                draw.line([(x, y - arm_len), (x, y + arm_len)], fill=pc, width=thickness)
+
+    bg.paste(layer, (0, 0), layer)
+    return bg
 
 
 def build_and_save_gt(
@@ -144,91 +318,201 @@ def build_and_save_gt(
     accent_color: str,
     output_path: Path,
 ) -> None:
-    # Removed meal name from date_label as requested
     date_label = _format_date_label(target_date)
 
-    # Build flat list of rows
-    rows: list[dict] = []
-    for course, dishes in meal_menu.items():
-        group_label = _strip_piatti(course).upper()
-        for dish in dishes:
-            rows.append({"gruppo": group_label, "piatto": dish})
-    if not rows:
-        rows = [{"gruppo": "MENU", "piatto": "Nessun menu disponibile"}]
+    sections: list[tuple[str, list[str]]] = []
+    for course in COURSE_ORDER:
+        course_dishes = meal_menu.get(course, [])
+        if not course_dishes:
+            continue
+        section_name = _strip_piatti(course).upper()
+        sections.append((section_name, course_dishes))
 
-    df = pd.DataFrame(rows)
+    if not sections:
+        sections = [("MENU", ["Nessun menu disponibile"])]
 
-    # Restoring strong colors but keeping true menu style
-    accent_dark = blend_colors(accent_color, "#000000", 0.70)
-    section_bg = blend_colors(accent_color, "#FFFFFF", 0.60) 
-    page_bg = "#FFFFFF"
-    text_color = "#1F2937"
+    canvas_w, canvas_h = 2160, 2880
+    
+    # Generate Pattern Background
+    # Same pattern for the whole day (based on date)
+    # The geometric pattern will be identical across all canteens and meals for this date
+    seed_key = f"{target_date}"
+    base_bg = accent_color or POST_BG_COLOR
+    
+    # Create the background with pattern
+    bg_image = _generate_background_pattern(base_bg, canvas_w, canvas_h, seed_key)
+    image = bg_image.convert("RGB")
+
+    sheet_w = 1660
+    
+    # 1. First pass: Measure content height to determine sheet_h
+    # We need a dummy draw object for text measurements
+    dummy_img = Image.new("RGB", (1, 1))
+    dummy_draw = ImageDraw.Draw(dummy_img)
+
+    title_font = _load_font(84, bold=True)
+    body_font = _load_font(66, bold=False)
+    section_font = _load_font(52, bold=True)
+    footer_font = _load_font(48, bold=True)
 
     display_name = canteen_name.upper().replace("MENSA ", "").replace(" MENSA", "").strip()
+    title_text = display_name
+    
+    inner_pad_x = 80
+    inner_left = inner_pad_x
+    inner_right = sheet_w - inner_pad_x
+    max_text_width = inner_right - inner_left
 
-    gt = (
-        GT(df, groupname_col="gruppo")
-        .tab_header(title=display_name, subtitle=date_label)
-        .cols_label(piatto="")
-        .cols_align(align="center", columns="piatto")
-        .tab_options(
-            table_font_names=["Inter", "system-ui", "Helvetica Neue", "sans-serif"],
-            table_width="100%",
-            table_background_color=page_bg,
-            heading_background_color=accent_color,
-            heading_title_font_size="60px",
-            heading_title_font_weight="900",
-            heading_subtitle_font_size="24px",
-            heading_padding="50px",
-            heading_padding_horizontal="30px",
-            row_group_background_color=section_bg,
-            row_group_font_weight="900",
-            row_group_font_size="24px",
-            row_group_padding="18px",
-            row_group_border_top_style="solid",
-            row_group_border_top_color="#FFFFFF",
-            row_group_border_top_width="3px",
-            row_group_border_bottom_style="solid",
-            row_group_border_bottom_color="#FFFFFF",
-            row_group_border_bottom_width="3px",
-            data_row_padding="16px",
-            column_labels_hidden=True,
-            table_border_top_style="hidden",
-            table_border_bottom_style="hidden",
-            stub_border_style="none",
-        )
-        .tab_style(
-            style=style.text(size="22px", color=text_color, weight="500"),
-            locations=loc.body()
-        )
-        .tab_style(
-            style=style.borders(sides="all", style="none"),
-            locations=loc.body(),
-        )
-        .tab_style(
-            style=style.text(color=accent_dark, size="60px", weight="900", align="center"),
-            locations=loc.title(),
-        )
-        .tab_style(
-            style=style.text(color=accent_dark, size="24px", weight="600", align="center", whitespace="pre-wrap"),
-            locations=loc.subtitle(),
-        )
-        .tab_style(
-            style=[
-                style.text(color=accent_dark, size="24px", weight="900", align="center"),
-            ],
-            locations=loc.row_groups(),
-        )
+    # Measure Title
+    current_y = 120
+    title_lines = _wrap_text(dummy_draw, title_text, title_font, max_text_width)
+    current_y += len(title_lines) * (_line_height(dummy_draw, title_font) + 8)
+    current_y += 20 # Gap after title
+
+    # Measure Body Blocks
+    body_blocks: list[tuple[str, str]] = []
+    for section_name, section_dishes in sections:
+        body_blocks.append(("section", section_name))
+        for dish in section_dishes:
+            body_blocks.append(("dish", dish))
+        body_blocks.append(("gap", ""))
+
+    if body_blocks and body_blocks[-1][0] == "gap":
+        body_blocks.pop()
+
+    section_line_height = _line_height(dummy_draw, section_font)
+    body_line_height = _line_height(dummy_draw, body_font)
+    
+    for block_type, value in body_blocks:
+        if block_type == "section":
+            current_y += section_line_height + 18
+        elif block_type == "dish":
+            wrapped_lines = _wrap_text(dummy_draw, value, body_font, max_text_width)
+            current_y += len(wrapped_lines) * (body_line_height + 10) + 10
+        else:
+             current_y += 22
+
+    # Measure Footer
+    footer_text = f"{date_label}"
+    footer_height = _line_height(dummy_draw, footer_font)
+    
+    # Add footer padding: gap before footer (60) + footer height + bottom padding (60)
+    total_required_height = current_y + 140 + footer_height
+    
+    # Clamp height
+    min_sheet_h = 800
+    max_sheet_h = 2600
+    sheet_h = max(min_sheet_h, min(total_required_height, max_sheet_h))
+
+    # 2. Second pass: Draw everything on the sized sheet
+    sheet = Image.new("RGBA", (sheet_w, sheet_h), (0, 0, 0, 0))
+    sheet_draw = ImageDraw.Draw(sheet)
+
+    radius = 36
+    sheet_draw.rounded_rectangle(
+        [(0, 0), (sheet_w - 1, sheet_h - 1)],
+        radius=radius,
+        fill=CARD_BG_COLOR,
+    )
+    
+    top_bar_height = 80
+    sheet_draw.rounded_rectangle(
+        [(0, 0), (sheet_w - 1, top_bar_height)],
+        radius=radius,
+        fill=TOP_BAR_COLOR,
+    )
+    sheet_draw.rectangle([(0, radius), (sheet_w - 1, top_bar_height)], fill=TOP_BAR_COLOR)
+    
+    # Draw outline last to ensure perfect rounded corners
+    sheet_draw.rounded_rectangle(
+        [(0, 0), (sheet_w - 1, sheet_h - 1)],
+        radius=radius,
+        outline=BORDER_COLOR,
+        width=4,
     )
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    # Render ad alta risoluzione su file temporaneo PNG, poi convertiamo in JPEG
-    tmp_path = output_path.with_suffix(".tmp.png")
-    gt.save(str(tmp_path), scale=4.0, window_size=(1080, 1440))
+    y = 120
+    for line in title_lines:
+        sheet_draw.text((inner_left, y), line, fill=TITLE_COLOR, font=title_font)
+        y += _line_height(sheet_draw, title_font) + 8
+
+    y += 20
     
-    # Esportiamo al doppio della risoluzione Instagram (2160x2880) in JPEG
-    _enforce_output_size(tmp_path, bg_color=page_bg, width=2160, height=2880, out_path=output_path)
-    tmp_path.unlink(missing_ok=True)
+    max_body_bottom = sheet_h - 140 - footer_height
+    line_height = _line_height(sheet_draw, body_font)
+
+    for block_type, value in body_blocks:
+        if block_type == "section":
+            next_y = y + section_line_height
+            if next_y > max_body_bottom:
+                break
+            
+            # Restore section divider line
+            sheet_draw.line(
+                [(inner_left, y + section_line_height // 2), (inner_right, y + section_line_height // 2)],
+                fill=DIVIDER_COLOR,
+                width=3,
+            )
+
+            section_text_w = _text_width(sheet_draw, value, section_font)
+            label_pad_x = 18
+            # Align section title exactly with dishes (inner_left)
+            label_x = inner_left
+            label_y = y
+            
+            # Mask the line behind the text
+            sheet_draw.rectangle(
+                [
+                    (label_x - 4, label_y - 4),
+                    (label_x + section_text_w + label_pad_x, label_y + section_line_height + 2),
+                ],
+                fill=CARD_BG_COLOR,
+            )
+            sheet_draw.text((label_x, label_y), value, fill=TITLE_COLOR, font=section_font)
+            y += section_line_height + 18
+        elif block_type == "dish":
+            wrapped_lines = _wrap_text(sheet_draw, value, body_font, max_text_width)
+            required_h = len(wrapped_lines) * (line_height + 10)
+            if y + required_h > max_body_bottom:
+                ellipsis = "..."
+                last_line = wrapped_lines[0] if wrapped_lines else ""
+                while last_line and _text_width(sheet_draw, f"{last_line} {ellipsis}", body_font) > max_text_width:
+                    last_line = last_line[:-1]
+                sheet_draw.text((inner_left, y), f"{last_line} {ellipsis}".strip(), fill=TEXT_COLOR, font=body_font)
+                break
+
+            for line in wrapped_lines:
+                sheet_draw.text((inner_left, y), line, fill=TEXT_COLOR, font=body_font)
+                y += line_height + 10
+            y += 10
+        else:
+            y += 22
+
+    # Draw footer
+    footer_w = _text_width(sheet_draw, footer_text, footer_font)
+    footer_x = (sheet_w - footer_w) // 2
+    footer_y = sheet_h - 60 - footer_height
+    sheet_draw.text((footer_x, footer_y), footer_text, fill="#6B7280", font=footer_font)
+
+    shadow = Image.new("RGBA", (sheet_w, sheet_h), (0, 0, 0, 0))
+    shadow_draw = ImageDraw.Draw(shadow)
+    shadow_draw.rounded_rectangle(
+        [(0, 0), (sheet_w - 1, sheet_h - 1)],
+        radius=radius,
+        fill=(0, 0, 0, 38),
+    )
+
+    angle = random.uniform(-4, 4)
+    shadow_rot = shadow.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
+    sheet_rot = sheet.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
+
+    x = (canvas_w - sheet_rot.width) // 2
+    y = (canvas_h - sheet_rot.height) // 2
+    image.paste(shadow_rot, (x + 18, y + 24), shadow_rot)
+    image.paste(sheet_rot, (x, y), sheet_rot)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    image.save(output_path, format="JPEG", quality=95, dpi=(300, 300))
 
 
 def parse_args():
@@ -266,7 +550,11 @@ def main():
     for canteen in canteens:
         canteen_name = canteen.get("name", "Mensa")
         canteen_id   = canteen.get("id", slugify(canteen_name))
-        base_color   = CANTEEN_COLORS.get(canteen_id, "#E5E7EB")
+        
+        # Color is consistent for the canteen on a specific day
+        bg_seed = f"{date_tag}_{canteen_id}"
+        base_color = _random_light_color(seed=bg_seed)
+        
         canteen_menu = collect_canteen_menu(day_menu, canteen_name)
 
         for meal in MEAL_ORDER:
@@ -275,10 +563,9 @@ def main():
             if not any(meal_menu.values()):
                 continue
 
-            # Darken the background colour for dinner menus
             accent_color = base_color
             if meal == "Cena":
-                accent_color = blend_colors(base_color, "#000000", 0.20)
+                accent_color = _darken_color(base_color, factor=0.78)
 
             filename    = f"{date_tag}_{meal.lower()}_{canteen_id}.jpg"
             output_path = args.output_dir / filename
