@@ -27,10 +27,7 @@ jobs:
         run: |
           pip install -r requirements-actions.txt
 
-      - name: Create empty target dir
-        run: mkdir -p posts
-
-      # Non serve rigenerare le immagini qui, le scarichiamo dall'ambiente git (generate alle 9:00 e committate in 'posts')
+      # Le immagini sono pre-generate e committate in assets/posts/
       - name: Publish to Instagram
         env:
           # Assicurati di aver censurato questo e messo i token nelle GitHub Secrets
@@ -44,6 +41,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Instagram auto-publish completed"
-          file_pattern: 'posts/*.lock'
+          file_pattern: 'assets/posts/*.lock'
           skip_dirty_check: false
           skip_fetch: true

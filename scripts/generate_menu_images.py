@@ -112,8 +112,10 @@ def _format_date_label(date_iso: str) -> str:
         return date_iso
 
 
-def _enforce_output_size(output_path: Path, bg_color: str, width: int = 1080, height: int = 1440) -> None:
-    with Image.open(output_path) as img:
+def _enforce_output_size(src_path: Path, bg_color: str, width: int = 1080, height: int = 1440, out_path: Path | None = None) -> None:
+    if out_path is None:
+        out_path = src_path
+    with Image.open(src_path) as img:
         canvas = Image.new("RGBA", (width, height), bg_color)
         
         target_w = width
@@ -130,8 +132,8 @@ def _enforce_output_size(output_path: Path, bg_color: str, width: int = 1080, he
         else:
             canvas.paste(img_resized, (0, 0))
             
-        # Salva con metadati DPI alti e alla risoluzione richiesta
-        canvas.convert("RGB").save(output_path, dpi=(300, 300))
+        # Salva come JPEG con DPI alti (Instagram richiede JPEG per i caroselli)
+        canvas.convert("RGB").save(out_path, format="JPEG", quality=95, dpi=(300, 300))
 
 
 def build_and_save_gt(
@@ -220,11 +222,13 @@ def build_and_save_gt(
     )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    # Aumentiamo lo scale factor per fare il render super nitido originale
-    gt.save(str(output_path), scale=4.0, window_size=(1080, 1440))
+    # Render ad alta risoluzione su file temporaneo PNG, poi convertiamo in JPEG
+    tmp_path = output_path.with_suffix(".tmp.png")
+    gt.save(str(tmp_path), scale=4.0, window_size=(1080, 1440))
     
-    # Esportiamo al doppio della risoluzione Instagram (2160x2880) mantenendo i 3:4 per super-risoluzione/DPI alti
-    _enforce_output_size(output_path, bg_color=page_bg, width=2160, height=2880)
+    # Esportiamo al doppio della risoluzione Instagram (2160x2880) in JPEG
+    _enforce_output_size(tmp_path, bg_color=page_bg, width=2160, height=2880, out_path=output_path)
+    tmp_path.unlink(missing_ok=True)
 
 
 def parse_args():
@@ -276,7 +280,7 @@ def main():
             if meal == "Cena":
                 accent_color = blend_colors(base_color, "#000000", 0.20)
 
-            filename    = f"{date_tag}_{meal.lower()}_{canteen_id}.png"
+            filename    = f"{date_tag}_{meal.lower()}_{canteen_id}.jpg"
             output_path = args.output_dir / filename
 
             build_and_save_gt(canteen_name, meal, meal_menu, target_date, accent_color, output_path)

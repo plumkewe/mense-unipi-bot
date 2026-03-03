@@ -40,8 +40,8 @@ def main():
 
     # Prendi SOLO le immagini di OGGI per evitare ri-pubblicazioni di ieri
     # usando il prefisso YYYYMMDD
-    pranzo_files = sorted(list(posts_dir.glob(f"{oggi_iso}_pranzo_martiri.png")))
-    cena_files = sorted(list(posts_dir.glob(f"{oggi_iso}_cena_martiri.png")))
+    pranzo_files = sorted(list(posts_dir.glob(f"{oggi_iso}_pranzo_martiri.jpg")))
+    cena_files = sorted(list(posts_dir.glob(f"{oggi_iso}_cena_martiri.jpg")))
 
     album_paths = []
     
@@ -60,7 +60,7 @@ def main():
         return
 
     # Evitiamo di ripubblicare se esiste già un segnale che oggi è stato pubblicato (es. file di lock)
-    lock_file = posts_dir / f"{oggi_iso}_published.lock"
+    lock_file = Path(__file__).resolve().parent.parent / "assets" / "posts" / f"{oggi_iso}_published.lock"
     if lock_file.exists():
         print(f"I menu di oggi ({oggi_ita}) sono GIA' stati pubblicati! (Trovato file lock)")
         return
