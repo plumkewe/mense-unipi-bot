@@ -36,6 +36,7 @@ jobs:
           # Assicurati di aver censurato questo e messo i token nelle GitHub Secrets
           IG_USERNAME: ${{ secrets.IG_USERNAME }}
           IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+          IG_SESSION: ${{ secrets.IG_SESSION }}
         run: |
           python scripts/publish_instagram.py
 

@@ -8,6 +8,7 @@ def main():
     # Credentials dal GitHub Secrets
     USERNAME = os.environ.get("IG_USERNAME")
     PASSWORD = os.environ.get("IG_PASSWORD")
+    SESSION_STR = os.environ.get("IG_SESSION")
 
     if not USERNAME or not PASSWORD:
         print("Errore: credenziali IG_USERNAME o IG_PASSWORD non impostate.")
@@ -16,6 +17,11 @@ def main():
     # Inizializza e Accedi
     cl = Client()
     try:
+        if SESSION_STR:
+            import json
+            cl.set_settings(json.loads(SESSION_STR))
+            print("Trovata chiave di sessione, ignorerò il blocco IP...")
+            
         cl.login(USERNAME, PASSWORD)
         print("Login ad Instagram effettuato con successo!")
     except Exception as e:
