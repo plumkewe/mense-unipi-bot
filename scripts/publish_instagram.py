@@ -29,7 +29,7 @@ def main():
         return
 
     # Cartella target
-    posts_dir = Path("posts")
+    posts_dir = Path(__file__).resolve().parent.parent / "assets" / "posts"
     if not posts_dir.exists():
         print(f"La cartella {posts_dir} non esiste. Non c'è nulla da pubblicare.")
         return
