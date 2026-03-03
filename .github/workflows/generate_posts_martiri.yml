@@ -43,11 +43,9 @@ jobs:
           path: posts/*.png
           
       - name: Commit and Push changes
-        # Questo step facoltativo salva fisicamente le foto scaricate nella cartella "posts" nel repository
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add posts/*.png
-          # Il comando fallirà se non ci sono nuove immagini (nessuna modifica), in quel caso ok
-          git commit -m "Auto-generate menu images for Martiri" || echo "No changes to commit"
-          git push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto-generate menu images for Martiri"
+          file_pattern: 'posts/*.png'
+          skip_dirty_check: false
+          skip_fetch: true
