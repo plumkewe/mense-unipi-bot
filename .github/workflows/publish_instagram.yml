@@ -2,8 +2,8 @@ name: Publish Menu to Instagram
 
 on:
   schedule:
-    # Esegue automaticamente ogni giorno alle 09:21 UTC (circa 20-30 min dopo il bot di generazione)
-    - cron: '21 9 * * *'
+    # Esegue automaticamente ogni giorno alle 09:21 CET (08:21 UTC)
+    - cron: '21 8 * * *'
   # Permette di lanciare l'azione manualmente
   workflow_dispatch:
 
