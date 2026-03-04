@@ -125,29 +125,13 @@ def _darken_color(hex_color: str, factor: float = 0.75) -> str:
     return f"#{red:02X}{green:02X}{blue:02X}"
 
 
-def _load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    candidates = []
+def _load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
+    _fonts_dir = REPO_ROOT / "assets" / "fonts"
     if bold:
-        candidates.extend([
-            "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-            "/System/Library/Fonts/Supplemental/Helvetica Bold.ttf",
-            "Arial Bold.ttf",
-            "Helvetica Bold.ttf",
-        ])
+        font_path = _fonts_dir / "Poppins-Bold.ttf"
     else:
-        candidates.extend([
-            "/System/Library/Fonts/Supplemental/Arial.ttf",
-            "/System/Library/Fonts/Supplemental/Helvetica.ttf",
-            "Arial.ttf",
-            "Helvetica.ttf",
-        ])
-
-    for path in candidates:
-        try:
-            return ImageFont.truetype(path, size)
-        except OSError:
-            continue
-    return ImageFont.load_default()
+        font_path = _fonts_dir / "Poppins-Regular.ttf"
+    return ImageFont.truetype(str(font_path), size)
 
 
 def _text_width(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> int:
