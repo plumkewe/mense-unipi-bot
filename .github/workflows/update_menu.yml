@@ -2,7 +2,8 @@ name: Update Menu
 
 on:
   schedule:
-    - cron: '0 6 * * *' # Run daily at 06:00 UTC
+    # Ogni giorno alle 00:01 CET (23:01 UTC, equivale a 00:01 ora italiana invernale)
+    - cron: '1 23 * * *'
   workflow_dispatch:
 
 permissions:
@@ -26,17 +27,17 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run smart update script
-        run: python scripts/smart_update.py
+      - name: Scrape full menu from scratch
+        run: python scripts/extract_menu.py
 
       - name: Check for changes
         id: check_changes
         run: |
           if git diff --quiet data/menu.json; then
-            echo "No changes detected."
+            echo "Nessuna modifica rilevata in menu.json"
             echo "changes=false" >> $GITHUB_OUTPUT
           else
-            echo "Changes detected."
+            echo "Modifiche rilevate in menu.json"
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
@@ -46,5 +47,5 @@ jobs:
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add data/menu.json
-          git commit -m "Update data/menu.json with new weeks"
+          git commit -m "chore: aggiornamento automatico menu [$(date -u '+%Y-%m-%d %H:%M UTC')]"
           git push
