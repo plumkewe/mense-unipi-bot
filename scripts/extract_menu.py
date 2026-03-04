@@ -271,20 +271,25 @@ def main():
     print("Aggregating results...")
     final_output = {}
     
+    MEAL_ORDER = ['Pranzo', 'Cena']
+
     dates_sorted = sorted(aggregated.keys())
     for date_str in dates_sorted:
         final_output[date_str] = {"date": date_str}
-        
-        # Sort meals? Usually Prano, Cena. Use extracted keys.
-        for meal_type, courses in aggregated[date_str].items():
+
+        # Always include Pranzo and Cena (empty {} if no data for that meal)
+        for meal_type in MEAL_ORDER:
+            if meal_type not in aggregated[date_str]:
+                final_output[date_str][meal_type] = {}
+                continue
             final_output[date_str][meal_type] = {}
-            
-            for course, dish_map in courses.items():
+
+            for course, dish_map in aggregated[date_str][meal_type].items():
                 # Convert dict of dishes back to list
                 dish_list = list(dish_map.values())
                 # Sort dishes alphabetically
                 dish_list.sort(key=lambda x: x['name'])
-                
+
                 final_output[date_str][meal_type][course] = dish_list
 
     output_file = os.path.join(DATA_DIR, 'menu.json')

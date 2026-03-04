@@ -1,0 +1,65 @@
+name: Generate Daily Menu Images
+
+on:
+  schedule:
+    # Ogni giorno alle 01:21 CET (00:21 UTC, un'ora dopo l'aggiornamento menu)
+    - cron: '21 0 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Data da generare (YYYY-MM-DD). Lascia vuoto per oggi.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  generate-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch last commit so git diff works correttamente
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install Pillow
+
+      - name: Genera immagini per oggi (Mensa Martiri)
+        run: |
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            python scripts/generate_menu_images.py \
+              --date "${{ github.event.inputs.date }}" \
+              --canteen "Mensa Martiri"
+          else
+            python scripts/generate_menu_images.py \
+              --canteen "Mensa Martiri"
+          fi
+
+      - name: Controlla se ci sono immagini nuove
+        id: check_changes
+        run: |
+          git add assets/posts/
+          if git diff --cached --quiet; then
+            echo "Nessuna immagine nuova."
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Nuove immagini rilevate."
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit e push immagini
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "actions@github.com"
+          git commit -m "chore: genera immagini menu $(date -u '+%Y-%m-%d') [auto]"
+          git push
