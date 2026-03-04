@@ -1,11 +1,19 @@
 import os
 import json
-from instagrapi import Client
+import time
+import requests
 from pathlib import Path
 import datetime as dt
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MENU_PATH = REPO_ROOT / "data" / "menu.json"
+
+GRAPH_API_VERSION = "v22.0"
+GRAPH_API_BASE = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
+
+# Repo GitHub pubblica — le immagini vengono servite tramite raw.githubusercontent.com
+GITHUB_REPO = "plumkewe/mense-unipi-bot"
+GITHUB_BRANCH = "main"
 
 CANTEEN_NAME = "Mensa Martiri"
 COURSE_ORDER = ["Primi Piatti", "Secondi Piatti", "Contorni"]
@@ -16,6 +24,10 @@ COURSE_LABELS = {
 }
 HASHTAGS = "#doveunipi #cibounipibot #mensa #universita #martiri"
 
+
+# ---------------------------------------------------------------------------
+# Caption builder (invariato)
+# ---------------------------------------------------------------------------
 
 def _get_dishes_for_canteen(meal_data: dict, canteen: str) -> dict[str, list[str]]:
     """Returns {course_label: [dish_name, ...]} filtered for the given canteen."""
@@ -74,28 +86,110 @@ def build_caption(menu_data: dict, date_iso: str, has_pranzo: bool, has_cena: bo
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# URL pubblico raw di GitHub
+# La Graph API di Instagram richiede URL pubblici accessibili da internet.
+# Le immagini sono già committate nella repo pubblica, quindi usiamo
+# raw.githubusercontent.com direttamente — nessun servizio esterno.
+# ---------------------------------------------------------------------------
+
+def github_raw_url(relative_path: str) -> str:
+    """Restituisce l'URL raw di GitHub per un file nella repo."""
+    return f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}/{relative_path}"
+
+
+# ---------------------------------------------------------------------------
+# Instagram Graph API helpers
+# ---------------------------------------------------------------------------
+
+def _ig_post(endpoint: str, access_token: str, **params) -> dict:
+    """Esegue una POST alla Graph API e restituisce il JSON della risposta."""
+    params["access_token"] = access_token
+    resp = requests.post(f"{GRAPH_API_BASE}/{endpoint}", data=params, timeout=60)
+    result = resp.json()
+    if "error" in result:
+        raise RuntimeError(f"Graph API error: {result['error']}")
+    return result
+
+
+def create_image_container(ig_user_id: str, access_token: str, image_url: str,
+                            caption: str = None, is_carousel_item: bool = False) -> str:
+    """Crea un media container per un'immagine. Restituisce l'ID del container."""
+    params = {
+        "image_url": image_url,
+    }
+    if caption:
+        params["caption"] = caption
+    if is_carousel_item:
+        params["is_carousel_item"] = "true"
+
+    result = _ig_post(f"{ig_user_id}/media", access_token, **params)
+    container_id = result["id"]
+    print(f"  Container immagine creato: {container_id}")
+    return container_id
+
+
+def create_carousel_container(ig_user_id: str, access_token: str,
+                               children_ids: list[str], caption: str) -> str:
+    """Crea un media container di tipo Carousel. Restituisce l'ID del container."""
+    result = _ig_post(
+        f"{ig_user_id}/media",
+        access_token,
+        media_type="CAROUSEL",
+        children=",".join(children_ids),
+        caption=caption,
+    )
+    container_id = result["id"]
+    print(f"  Container carousel creato: {container_id}")
+    return container_id
+
+
+def wait_for_container(ig_user_id: str, access_token: str, container_id: str,
+                        max_wait: int = 60) -> None:
+    """Attende che il container sia nello stato FINISHED prima di pubblicarlo."""
+    for _ in range(max_wait // 5):
+        resp = requests.get(
+            f"{GRAPH_API_BASE}/{container_id}",
+            params={"fields": "status_code", "access_token": access_token},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        status = resp.json().get("status_code", "")
+        print(f"  Stato container {container_id}: {status}")
+        if status == "FINISHED":
+            return
+        if status == "ERROR":
+            raise RuntimeError(f"Container {container_id} in stato ERROR.")
+        time.sleep(5)
+    raise TimeoutError(f"Container {container_id} non pronto dopo {max_wait}s.")
+
+
+def publish_container(ig_user_id: str, access_token: str, container_id: str) -> str:
+    """Pubblica il container e restituisce l'ID del media pubblicato."""
+    result = _ig_post(
+        f"{ig_user_id}/media_publish",
+        access_token,
+        creation_id=container_id,
+    )
+    media_id = result["id"]
+    print(f"  Media pubblicato con ID: {media_id}")
+    return media_id
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
 def main():
-    # Credentials dal GitHub Secrets
-    USERNAME = os.environ.get("IG_USERNAME")
-    PASSWORD = os.environ.get("IG_PASSWORD")
-    SESSION_STR = os.environ.get("IG_SESSION")
+    # Token ufficiale Instagram Graph API (da GitHub Secrets)
+    ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN")
+    IG_USER_ID = os.environ.get("IG_USER_ID")
 
-    if not USERNAME or not PASSWORD:
-        print("Errore: credenziali IG_USERNAME o IG_PASSWORD non impostate.")
+    if not ACCESS_TOKEN:
+        print("Errore: IG_ACCESS_TOKEN non impostato.")
         return
-
-    # Inizializza e Accedi
-    cl = Client()
-    try:
-        if SESSION_STR:
-            import json
-            cl.set_settings(json.loads(SESSION_STR))
-            print("Trovata chiave di sessione, ignorerò il blocco IP...")
-            
-        cl.login(USERNAME, PASSWORD)
-        print("Login ad Instagram effettuato con successo!")
-    except Exception as e:
-        print(f"Errore durante il login: {e}")
+    if not IG_USER_ID:
+        print("Errore: IG_USER_ID non impostato.")
         return
 
     # Cartella target
@@ -157,21 +251,57 @@ def main():
     print(didascalia)
     print()
 
-    if len(album_paths) == 1:
-        # Pubblica singola foto
-        print(f"Pubblico singola foto: {album_paths[0]}")
-        cl.photo_upload(album_paths[0], didascalia)
-    else:
-        # Pubblica album (Pranzo -> Cena)
-        print(f"Pubblico Carousel (Album) con foto: {[p.name for p in album_paths]}")
-        cl.album_upload(album_paths, didascalia)
-        
+    # 1) Costruisci URL raw di GitHub per ogni immagine
+    # Le immagini sono già committate nella repo pubblica su GitHub.
+    print("Costruzione URL raw GitHub per le immagini...")
+    public_urls = []
+    for path in album_paths:
+        relative = f"assets/posts/{path.name}"
+        url = github_raw_url(relative)
+        print(f"  {path.name} → {url}")
+        public_urls.append(url)
+
+    print()
+
+    # 2) Crea i container e pubblica tramite Graph API
+    try:
+        if len(public_urls) == 1:
+            # Singola foto
+            print(f"Creazione container per singola foto...")
+            container_id = create_image_container(
+                IG_USER_ID, ACCESS_TOKEN, public_urls[0], caption=didascalia
+            )
+            wait_for_container(IG_USER_ID, ACCESS_TOKEN, container_id)
+            publish_container(IG_USER_ID, ACCESS_TOKEN, container_id)
+
+        else:
+            # Carousel (Pranzo → Cena)
+            print("Creazione container per ogni immagine del carousel...")
+            children_ids = []
+            for url in public_urls:
+                cid = create_image_container(
+                    IG_USER_ID, ACCESS_TOKEN, url, is_carousel_item=True
+                )
+                children_ids.append(cid)
+
+            print("Creazione container carousel...")
+            carousel_id = create_carousel_container(
+                IG_USER_ID, ACCESS_TOKEN, children_ids, didascalia
+            )
+            wait_for_container(IG_USER_ID, ACCESS_TOKEN, carousel_id)
+            publish_container(IG_USER_ID, ACCESS_TOKEN, carousel_id)
+
+    except Exception as e:
+        print(f"Errore durante la pubblicazione: {e}")
+        return
+
     print("Pubblicazione completata!")
 
-    # Crea un file di lock per impedire post duplicati 
+    # Crea un file di lock per impedire post duplicati
     # se la GitHub action dovesse essere lanciata una seconda volta nello stesso giorno
     with open(lock_file, "w") as f:
         f.write("Pubblicato con successo.")
-        
+
+
 if __name__ == "__main__":
     main()

@@ -2,8 +2,8 @@ name: Update Menu
 
 on:
   schedule:
-    # Ogni giorno alle 00:21 CET (23:21 UTC, equivale a 00:21 ora italiana invernale)
-    - cron: '21 23 * * *'
+    # Ogni giorno alle 00:00 CET (23:00 UTC, equivale a mezzanotte ora italiana invernale)
+    - cron: '0 23 * * *'
   workflow_dispatch:
 
 permissions:

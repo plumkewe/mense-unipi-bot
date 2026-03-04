@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install dependencies
@@ -30,10 +30,11 @@ jobs:
       # Le immagini sono pre-generate e committate in assets/posts/
       - name: Publish to Instagram
         env:
-          # Assicurati di aver censurato questo e messo i token nelle GitHub Secrets
-          IG_USERNAME: ${{ secrets.IG_USERNAME }}
-          IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
-          IG_SESSION: ${{ secrets.IG_SESSION }}
+          # Token ufficiale Instagram Graph API (da GitHub Secrets)
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          # Indica se il workflow è stato lanciato manualmente (per ignorare il lock)
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: |
           python scripts/publish_instagram.py
 
