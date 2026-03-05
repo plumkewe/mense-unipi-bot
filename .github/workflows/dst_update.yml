@@ -1,0 +1,101 @@
+name: Aggiorna Worker per cambio ora (DST)
+
+on:
+  schedule:
+    # Ultima domenica di marzo → passaggio a CEST (UTC+2), alle 02:30 UTC
+    - cron: '30 2 25-31 3 0'
+    # Ultima domenica di ottobre → passaggio a CET (UTC+1), alle 02:30 UTC
+    - cron: '30 2 25-31 10 0'
+  workflow_dispatch:
+    inputs:
+      season:
+        description: 'Stagione da applicare'
+        required: true
+        default: 'winter'
+        type: choice
+        options:
+          - winter
+          - summer
+
+permissions:
+  contents: write
+
+jobs:
+  update-dst:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determina stagione
+        id: season
+        run: |
+          if [ -n "${{ github.event.inputs.season }}" ]; then
+            echo "season=${{ github.event.inputs.season }}" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%m)" = "03" ]; then
+            echo "season=summer" >> $GITHUB_OUTPUT
+          else
+            echo "season=winter" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Aggiorna cron in wrangler.toml
+        env:
+          SEASON: ${{ steps.season.outputs.season }}
+        run: |
+          python3 << 'EOF'
+          import re, os
+
+          season = os.environ['SEASON']
+
+          if season == 'summer':
+              triggers = """\
+[triggers]
+crons = [
+  "0 22 * * *",    # update_menu       — CEST (estate, 00:00 IT)
+  "21 23 * * *",   # generate_images   — CEST (estate, 01:21 IT)
+  "21 7 * * *",    # publish_instagram — CEST (estate, 09:21 IT)
+]"""
+          else:
+              triggers = """\
+[triggers]
+crons = [
+  "0 23 * * *",    # update_menu       — CET  (inverno, 00:00 IT)
+  "21 0 * * *",    # generate_images   — CET  (inverno, 01:21 IT)
+  "21 8 * * *",    # publish_instagram — CET  (inverno, 09:21 IT)
+]"""
+
+          with open('cloudflare-worker/wrangler.toml', 'r') as f:
+              content = f.read()
+
+          # Sostituisce tutto da [triggers] in poi
+          content = re.sub(r'\[triggers\][\s\S]*$', triggers, content)
+
+          with open('cloudflare-worker/wrangler.toml', 'w') as f:
+              f.write(content)
+
+          print(f"wrangler.toml aggiornato per stagione: {season}")
+          EOF
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installa dipendenze
+        run: npm install
+        working-directory: cloudflare-worker
+
+      - name: Deploy Worker con nuovi cron
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler deploy
+        working-directory: cloudflare-worker
+
+      - name: Commit wrangler.toml aggiornato
+        run: |
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "actions@github.com"
+          git add cloudflare-worker/wrangler.toml
+          git diff --staged --quiet || git commit -m "chore: aggiorna cron worker DST → ${{ steps.season.outputs.season }} $(date -u '+%Y-%m-%d') [skip ci]"
+          git push
