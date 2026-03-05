@@ -1,10 +1,7 @@
 name: Publish Menu to Instagram
 
 on:
-  schedule:
-    # Esegue automaticamente ogni giorno alle 09:21 CET (08:21 UTC)
-    - cron: '21 8 * * *'
-  # Permette di lanciare l'azione manualmente
+  # Triggerato da Cloudflare Worker (vedere cloudflare-worker/)
   workflow_dispatch:
 
 permissions:

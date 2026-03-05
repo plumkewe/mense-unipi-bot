@@ -1,9 +1,6 @@
 name: Generate Daily Menu Images
 
 on:
-  schedule:
-    # Ogni giorno alle 01:21 CET (00:21 UTC, un'ora dopo l'aggiornamento menu)
-    - cron: '21 0 * * *'
   workflow_dispatch:
     inputs:
       date:

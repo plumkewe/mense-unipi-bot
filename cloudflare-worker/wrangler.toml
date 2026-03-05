@@ -1,0 +1,21 @@
+name            = "mense-unipi-bot-scheduler"
+main            = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Cron triggers in UTC.
+# Ogni orario italiano ha due entry (CET = UTC+1, CEST = UTC+2)
+# Il Worker controlla l'ora italiana reale prima di triggerare.
+#
+#   update_menu.yml     → 00:00 IT  →  23:00 CET / 22:00 CEST
+#   generate_images.yml → 01:21 IT  →  00:21 CET / 23:21 CEST (giorno prec.)
+#   publish_instagram   → 09:21 IT  →  08:21 CET / 07:21 CEST
+
+[triggers]
+crons = [
+  "0 23 * * *",    # update_menu       — CET  (inverno)
+  "0 22 * * *",    # update_menu       — CEST (estate)
+  "21 0 * * *",    # generate_images   — CET  (inverno)
+  "21 23 * * *",   # generate_images   — CEST (estate, gira alle 23:21 UTC)
+  "21 8 * * *",    # publish_instagram — CET  (inverno)
+  "21 7 * * *",    # publish_instagram — CEST (estate)
+]
