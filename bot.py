@@ -741,6 +741,17 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 )
             )
             
+        # --- AGGIUNTA VOCE INSTAGRAM in FONDO ---
+        results.append(
+            InlineQueryResultArticle(
+                id=str(uuid4()),
+                title="Seguici su Instagram",
+                description="Ora puoi scoprire il menù anche tramite il nostro profilo Instagram.",
+                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/instagram.png?v=1",
+                input_message_content=InputTextMessageContent("Guarda il menù del giorno illustrato sulle storie e nei post del nostro profilo e non scordarti di seguirci per essere aggiornato: \nhttps://www.instagram.com/cibounipibot")
+            )
+        )
+
         # --- AGGIUNTA VOCE GITHUB in FONDO ---
         results.append(
             InlineQueryResultArticle(

@@ -19,6 +19,7 @@
   - [Menu e Navigazione](#menu-e-navigazione)
   - [Info e Orari](#info-e-orari)
   - [Tariffe ISEE](#tariffe-isee)
+  - [Automazione Social (Instagram)](#automazione-social-instagram)
 - [Comandi](#comandi)
 - [Data Sources](#data-sources)
 - [Problemi noti](#problemi-noti)
@@ -49,26 +50,28 @@
 ├── assets/
 │   ├── icons/
 │   ├── img/
-│   └── logo/
+│   ├── logo/
+│   └── posts/                <- immagini generate per i post di Instagram
+├── cloudflare-worker/        <- microservizio per lo scheduler preciso (gestisce fuso orario IT)
 ├── data/
-│   ├── canteens.json       <- dati delle mense (orari, servizi, coordinate)
-│   ├── combinations.json   <- combinazioni di piatti (es. menu fisso)
-│   ├── cookies.txt         <- sessione per lo scraping
-│   ├── menu.json           <- menù aggiornato quotidianamente
-│   └── rates.json          <- tariffe per fascia ISEE
-├── bot.py                  <- entrypoint del bot Telegram
+│   ├── canteens.json         <- dati delle mense (orari, servizi, coordinate)
+│   ├── combinations.json     <- combinazioni di piatti (es. menu fisso)
+│   ├── cookies.txt           <- sessione per lo scraping
+│   ├── menu.json             <- menù aggiornato quotidianamente
+│   └── rates.json            <- tariffe per fascia ISEE
+├── bot.py                    <- entrypoint del bot Telegram
 ├── scripts/
-│   ├── debug_parser.py     <- utility per debug del parser
-│   ├── extract_menu.py     <- scraper menù da canteen.dsutoscana.cloud
-│   ├── fetch_combinations.py <- recupera le combinazioni
-│   ├── fetch_rates.py      <- scraper tariffe DSU
-│   ├── generate_table.py   <- generatore tabella tariffe
-│   ├── migrate_json.py     <- utility migrazione dati JSON
-│   └── smart_update.py     <- aggiornamento intelligente dei dati
+│   ├── extract_menu.py       <- scraper menù da canteen.dsutoscana.cloud
+│   ├── fetch_rates.py        <- scraper tariffe DSU
+│   ├── generate_menu_images.py <- genera i post immagine in HTML/ststili (Playwright)
+│   ├── publish_instagram.py  <- pubblica Carousel su Instagram tramite Graph API
+│   └── smart_update.py       <- aggiornamento intelligente dei dati testuali
 └── .github/
     └── workflows/
-        ├── update_menu.yml     <- aggiornamento giornaliero menù (06:00 UTC)
-        └── update_rates.yml    <- aggiornamento tariffe
+        ├── update_menu.yml       <- aggiornamento giornaliero menù testuale
+        ├── generate_images.yml   <- crea e salva le immagini dei post
+        ├── publish_instagram.yml <- invia le immagini create su IG
+        └── update_rates.yml      <- aggiornamento tariffe
 ```
 
 ## Flowchart
@@ -83,15 +86,20 @@ graph LR
     C["DSU Toscana - Tariffe"] --> D["rates.json"]
     E["canteens.json"] -->|Dati statici mense| F["bot.py"]
 
-    G["GitHub Actions<br>update_menu.yml<br>ogni giorno alle 06:00 UTC"] -->|smart_update.py| B
-    H["GitHub Actions<br>update_rates.yml"] -->|fetch_rates.py| D
+    G["Cloudflare Worker<br>(Scheduler ITEsatto)"] -->|Trigger workflow| H{"GitHub Actions"}
+
+    H -->|update_menu| B
+    H -->|update_rates| D
+    B -->|generate_images| I["Immagini Post (.png)"]
+    H -->|publish_instagram| J["Instagram @mense.unipi"]
+    I --> J
 
     B --> F
     D --> F
-    I["combinations.json"] --> F
+    K["combinations.json"] --> F
 
-    F -->|"Menù / Orari / Tariffe"| J["Utente Telegram"]
-    J -->|"@cibounipibot"| F
+    F -->|"Menù / Orari / Tariffe"| L["Utente Telegram"]
+    L -->|"@cibounipibot"| F
 ```
 
 ## Funzionalità
@@ -126,6 +134,16 @@ Il pulsante **APERTE ORA** nella tastiera persistente mostra subito le mense att
 Digitando `@cibounipibot t:` viene mostrata la tabella completa delle tariffe per fascia ISEE.
 
 Digitando `@cibounipibot t:<valore>` (es. `t:20000`) il bot calcola automaticamente la fascia di appartenenza e mostra la tariffa personalizzata per pranzo, cena e colazione.
+
+### Automazione Social (Instagram)
+
+Oltre al bot Telegram, il progetto include un sistema automatizzato per la **pubblicazione giornaliera dei menù su Instagram**. L'infrastruttura è basata su GitHub Actions suddivise in tre fasi:
+
+1. **`update_menu.yml`**: Scarica i testi aggiornati dei menù salvandoli in `menu.json`.
+2. **`generate_images.yml`**: Tramite uno script basato su Playwright (`generate_menu_images.py`), il sistema genera le grafiche ("slide") a partire da template HTML/CSS. **Il design cambia dinamicamente** e il sistema alterna vari colori per differenziare i giorni della settimana in maniera visiva ed elegante.
+3. **`publish_instagram.yml`**: Utilizzando le **Graph API di Meta**, le immagini generate vengono raggruppate e pubblicate come "Carousel" sul profilo Instagram dedicato ai menù.
+
+Per far sì che l'esecuzione di questi workflow sia precisa e rispetti l'orario italiano (gestendo in automatico il cambio tra ora legale e solare), i comandi vengono avviati da uno scheduler configurato tramite **Cloudflare Workers**. Questo risolve i noti problemi di ritardo e imprecisione dei classici `cron` integrati nativamente in GitHub Actions.
 
 ## Comandi
 

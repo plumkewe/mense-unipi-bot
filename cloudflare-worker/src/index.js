@@ -40,7 +40,7 @@ async function triggerWorkflow(token, workflow, inputs = {}) {
 }
 
 export default {
-  async scheduled(_event, env, _ctx) {
+  async scheduled(event, env, ctx) {
     // Ora italiana reale (gestisce automaticamente CET/CEST)
     const now  = new Date();
     const parts = new Intl.DateTimeFormat('it-IT', {
