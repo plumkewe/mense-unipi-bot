@@ -101,12 +101,30 @@ def _format_date_label(date_iso: str) -> str:
         return date_iso
 
 
-def _random_light_color(seed: str | None = None) -> str:
-    # Generate bright, vibrant (fluorescent/neon-like) pastel colors
-    # High Value (brightness), Medium-High Saturation (color intensity)
-    rng = random.Random(seed) if seed else random
+def _random_light_color(date_iso: str, canteen_id: str) -> str:
+    # Use the day of the year and year to spread hues apart
+    try:
+        dt_obj = dt.date.fromisoformat(date_iso)
+        day_of_week = dt_obj.weekday()  # 0 to 6
+        week_num = dt_obj.isocalendar()[1]
+    except ValueError:
+        day_of_week = 0
+        week_num = 0
+
+    import hashlib
+    h = hashlib.sha256(canteen_id.encode('utf-8')).hexdigest()
+    canteen_shift = int(h, 16) % 360
+
+    # Golden ratio conjugate is approx 0.618033988749895.
+    # We want a different hue each day of the week, well separated
+    hue = (canteen_shift / 360.0 + (day_of_week * 0.381966)) % 1.0
     
-    hue = rng.random()
+    # Introduce small variations with week number
+    rng = random.Random(f"{date_iso}_{canteen_id}")
+    
+    # Tiny random hue shift to avoid exact repeats for the same weekday across weeks
+    hue = (hue + rng.uniform(-0.05, 0.05)) % 1.0
+
     saturation = rng.uniform(0.5, 0.9)
     value = rng.uniform(0.95, 1.0)
     
@@ -164,22 +182,22 @@ def _wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, 
     return lines
 
 
-def _pattern_color(base_color: str, alpha: int = 90) -> tuple:
+def _pattern_color(base_color: str, alpha: int = 150) -> tuple:
     r, g, b = Image.new("RGB", (1, 1), base_color).getpixel((0, 0))
     lum = (r + g + b) / 3
-    factor = 1.20 if lum < 160 else 0.72
+    factor = 1.4 if lum < 160 else 0.55
     pr = min(255, max(0, int(r * factor)))
     pg = min(255, max(0, int(g * factor)))
     pb = min(255, max(0, int(b * factor)))
     return (pr, pg, pb, alpha)
 
 
-def _generate_background_pattern(base_color: str, width: int, height: int, seed: str) -> Image.Image:
+def _generate_background_pattern(base_color: str, width: int, height: int, seed: str, force_pattern: str = None) -> Image.Image:
     rng = random.Random(seed)
     bg = Image.new("RGBA", (width, height), base_color)
     pc = _pattern_color(base_color)
 
-    pattern_type = rng.choice([
+    pattern_type = force_pattern or rng.choice([
         "dot_grid",
         "diagonal_stripes",
         "crosshatch",
@@ -188,6 +206,13 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         "zigzag",
         "concentric_circles",
         "plus_grid",
+        "waves",
+        "triangles",
+        "squares",
+        "hollow_dots",
+        "x_shapes",
+        "vertical_stripes",
+        "horizontal_stripes"
     ])
 
     layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
@@ -195,8 +220,8 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     if pattern_type == "dot_grid":
         # Offset polka-dot grid — perfectly aligned rows and columns
-        spacing = rng.choice([120, 150, 180, 220])
-        radius  = spacing // 5
+        spacing = rng.choice([140, 180, 220])
+        radius  = spacing // 4
         for row, y in enumerate(range(0, height + spacing, spacing)):
             x_offset = (spacing // 2) if (row % 2) else 0
             for x in range(-spacing, width + spacing, spacing):
@@ -205,8 +230,8 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     elif pattern_type == "diagonal_stripes":
         # Crisp parallel diagonal stripes at 45°
-        spacing   = rng.choice([80, 120, 160, 200])
-        thickness = spacing // 4
+        spacing   = rng.choice([120, 160, 200])
+        thickness = rng.choice([20, 30, 40])
         size      = (width + height) * 2
         tmp = Image.new("RGBA", (size, size), (0, 0, 0, 0))
         tmp_draw = ImageDraw.Draw(tmp)
@@ -217,8 +242,8 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     elif pattern_type == "crosshatch":
         # Regular grid of thin crossing lines
-        spacing = rng.choice([100, 140, 180, 240])
-        thickness = rng.choice([3, 4, 5])
+        spacing = rng.choice([140, 180, 240])
+        thickness = rng.choice([12, 16, 20])
         for x in range(0, width + spacing, spacing):
             draw.line([(x, 0), (x, height)], fill=pc, width=thickness)
         for y in range(0, height + spacing, spacing):
@@ -226,8 +251,8 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     elif pattern_type == "diamond_grid":
         # 45°-rotated square grid (diamond lattice)
-        spacing = rng.choice([120, 160, 200, 240])
-        thickness = rng.choice([3, 4, 5])
+        spacing = rng.choice([160, 200, 240])
+        thickness = rng.choice([12, 16, 20])
         size = (width + height) * 2
         tmp = Image.new("RGBA", (size, size), (0, 0, 0, 0))
         tmp_draw = ImageDraw.Draw(tmp)
@@ -239,8 +264,8 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     elif pattern_type == "hexagons":
         # Regular hexagonal tiling
-        size = rng.choice([80, 110, 140, 170])
-        thickness = rng.choice([3, 4, 5])
+        size = rng.choice([100, 140, 180])
+        thickness = rng.choice([10, 14, 18])
         hex_w = size * 2
         hex_h = int(size * 1.732)  # sqrt(3) * size
         import math
@@ -257,10 +282,10 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     elif pattern_type == "zigzag":
         # Horizontal chevron / zigzag bands
-        spacing = rng.choice([100, 140, 180, 220])
+        spacing = rng.choice([140, 180, 240])
         amplitude = spacing // 2
-        thickness = rng.choice([4, 5, 6])
-        step = 40
+        thickness = rng.choice([14, 18, 22])
+        step = 60
         for band in range(-1, height // spacing + 2):
             y_base = band * spacing
             pts = []
@@ -275,20 +300,87 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         # Rings expanding from centre
         cx, cy = width // 2, height // 2
         max_r = int((width ** 2 + height ** 2) ** 0.5 // 2) + 200
-        spacing = rng.choice([100, 140, 180, 220])
-        thickness = rng.choice([3, 4, 5])
+        spacing = rng.choice([140, 180, 240])
+        thickness = rng.choice([14, 18, 22])
         for r in range(spacing, max_r, spacing):
             draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=pc, width=thickness)
 
     elif pattern_type == "plus_grid":
         # Evenly spaced + signs on a regular grid
-        spacing  = rng.choice([120, 160, 200, 240])
+        spacing  = rng.choice([160, 200, 240])
         arm_len  = spacing // 3
-        thickness = rng.choice([6, 8, 10])
+        thickness = rng.choice([14, 18, 24])
         for y in range(0, height + spacing, spacing):
             for x in range(0, width + spacing, spacing):
                 draw.line([(x - arm_len, y), (x + arm_len, y)], fill=pc, width=thickness)
                 draw.line([(x, y - arm_len), (x, y + arm_len)], fill=pc, width=thickness)
+
+    elif pattern_type == "waves":
+        import math
+        spacing = rng.choice([140, 180, 220])
+        amplitude = spacing // 3
+        thickness = rng.choice([14, 18, 22])
+        for y_base in range(0, height + spacing, spacing):
+            pts = []
+            for x in range(0, width + 40, 40):
+                y = y_base + int(math.sin(x / 100.0) * amplitude)
+                pts.append((x, y))
+            for i in range(len(pts) - 1):
+                draw.line([pts[i], pts[i + 1]], fill=pc, width=thickness)
+
+    elif pattern_type == "triangles":
+        spacing = rng.choice([160, 200, 240])
+        thickness = rng.choice([10, 14, 18])
+        for row, y in enumerate(range(0, height + spacing, spacing)):
+            for col, x in enumerate(range(0, width + spacing, spacing)):
+                x_off = x + (spacing // 2 if row % 2 == 0 else 0)
+                pts = [
+                    (x_off, y),
+                    (x_off - spacing//2, y + spacing),
+                    (x_off + spacing//2, y + spacing)
+                ]
+                draw.polygon(pts, outline=pc, width=thickness)
+
+    elif pattern_type == "squares":
+        spacing = rng.choice([140, 180, 220])
+        size = spacing // 2
+        thickness = rng.choice([14, 18, 24])
+        for y in range(0, height + spacing, spacing):
+            for x in range(0, width + spacing, spacing):
+                draw.rectangle((x - size//2, y - size//2, x + size//2, y + size//2), outline=pc, width=thickness)
+
+    elif pattern_type == "hollow_dots":
+        spacing = rng.choice([140, 180, 220])
+        radius = spacing // 3
+        thickness = rng.choice([14, 18, 24])
+        for row, y in enumerate(range(0, height + spacing, spacing)):
+            x_offset = (spacing // 2) if (row % 2) else 0
+            for x in range(-spacing, width + spacing, spacing):
+                cx = x + x_offset
+                draw.ellipse((cx - radius, y - radius, cx + radius, y + radius), outline=pc, width=thickness)
+
+    elif pattern_type == "x_shapes":
+        spacing = rng.choice([160, 200, 240])
+        arm_len = spacing // 3
+        thickness = rng.choice([14, 18, 24])
+        for y in range(0, height + spacing, spacing):
+            for x in range(0, width + spacing, spacing):
+                draw.line([(x - arm_len, y - arm_len), (x + arm_len, y + arm_len)], fill=pc, width=thickness)
+                draw.line([(x - arm_len, y + arm_len), (x + arm_len, y - arm_len)], fill=pc, width=thickness)
+
+    elif pattern_type == "vertical_stripes":
+        spacing = rng.choice([120, 160, 200])
+        # matching diagonal_stripes logic which is spacing // 4
+        thickness = spacing // 4
+        for x in range(0, width + spacing, spacing):
+            draw.line([(x, 0), (x, height)], fill=pc, width=thickness)
+
+    elif pattern_type == "horizontal_stripes":
+        spacing = rng.choice([120, 160, 200])
+        # matching diagonal_stripes logic which is spacing // 4
+        thickness = spacing // 4
+        for y in range(0, height + spacing, spacing):
+            draw.line([(0, y), (width, y)], fill=pc, width=thickness)
 
     bg.paste(layer, (0, 0), layer)
     return bg
@@ -537,7 +629,7 @@ def main():
         
         # Color is consistent for the canteen on a specific day
         bg_seed = f"{date_tag}_{canteen_id}"
-        base_color = _random_light_color(seed=bg_seed)
+        base_color = _random_light_color(target_date, canteen_id)
         
         canteen_menu = collect_canteen_menu(day_menu, canteen_name)
 

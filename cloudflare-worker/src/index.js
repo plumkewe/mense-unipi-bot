@@ -17,7 +17,7 @@ const BRANCH       = 'main';
 const SCHEDULES = [
   { hour: 0,  minute: 0,  workflow: 'update_menu.yml'       },
   { hour: 1,  minute: 21, workflow: 'generate_images.yml'   },
-  { hour: 9,  minute: 21, workflow: 'publish_instagram.yml' },
+  { hour: 9,  minute: 20, workflow: 'publish_instagram.yml' },
 ];
 
 async function triggerWorkflow(token, workflow, inputs = {}) {

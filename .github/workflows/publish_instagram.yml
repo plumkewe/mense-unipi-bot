@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements-actions.txt
+          pip install requests
 
       # Le immagini sono pre-generate e committate in assets/posts/
       - name: Publish to Instagram

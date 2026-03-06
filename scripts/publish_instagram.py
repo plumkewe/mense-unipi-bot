@@ -4,6 +4,10 @@ import time
 import requests
 from pathlib import Path
 import datetime as dt
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    ZoneInfo = None
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MENU_PATH = REPO_ROOT / "data" / "menu.json"
@@ -264,6 +268,18 @@ def main():
     print()
 
     # 2) Crea i container e pubblica tramite Graph API
+    if not is_manual and ZoneInfo is not None:
+        tz_rome = ZoneInfo("Europe/Rome")
+        now_rome = dt.datetime.now(tz_rome)
+        target_time = now_rome.replace(hour=9, minute=21, second=0, microsecond=0)
+        
+        # Se siamo tra le 09:20 e le 09:21, aspetta il momento esatto
+        if now_rome < target_time and now_rome.hour == 9 and now_rome.minute == 20:
+            wait_seconds = (target_time - now_rome).total_seconds()
+            print(f"Action avviata alle {now_rome.strftime('%H:%M:%S')}. Attendo {wait_seconds:.1f} secondi per pubblicare esattamente alle 09:21:00...")
+            time.sleep(wait_seconds)
+            print("Ora esatta raggiunta. Avvio pubblicazione!")
+
     try:
         if len(public_urls) == 1:
             # Singola foto

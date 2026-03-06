@@ -8,7 +8,7 @@ compatibility_date = "2025-01-01"
 #
 #   update_menu.yml     → 00:00 IT  →  23:00 CET / 22:00 CEST
 #   generate_images.yml → 01:21 IT  →  00:21 CET / 23:21 CEST (giorno prec.)
-#   publish_instagram   → 09:21 IT  →  08:21 CET / 07:21 CEST
+#   publish_instagram   → 09:20 IT  →  08:20 CET / 07:20 CEST
 
 # I cron vengono aggiornati automaticamente dalla GitHub Action dst_update.yml
 # ogni volta che cambia l'ora (ultima domenica di marzo/ottobre).
@@ -17,5 +17,5 @@ compatibility_date = "2025-01-01"
 crons = [
   "0 23 * * *",    # update_menu       — CET  (inverno, 00:00 IT)
   "21 0 * * *",    # generate_images   — CET  (inverno, 01:21 IT)
-  "21 8 * * *",    # publish_instagram — CET  (inverno, 09:21 IT)
+  "20 8 * * *",    # publish_instagram — CET  (inverno, 09:20 IT)
 ]

@@ -54,7 +54,7 @@ jobs:
 crons = [
   "0 22 * * *",    # update_menu       — CEST (estate, 00:00 IT)
   "21 23 * * *",   # generate_images   — CEST (estate, 01:21 IT)
-  "21 7 * * *",    # publish_instagram — CEST (estate, 09:21 IT)
+  "20 7 * * *",    # publish_instagram — CEST (estate, 09:20 IT)
 ]"""
           else:
               triggers = """\
@@ -62,7 +62,7 @@ crons = [
 crons = [
   "0 23 * * *",    # update_menu       — CET  (inverno, 00:00 IT)
   "21 0 * * *",    # generate_images   — CET  (inverno, 01:21 IT)
-  "21 8 * * *",    # publish_instagram — CET  (inverno, 09:21 IT)
+  "20 8 * * *",    # publish_instagram — CET  (inverno, 09:20 IT)
 ]"""
 
           with open('cloudflare-worker/wrangler.toml', 'r') as f:

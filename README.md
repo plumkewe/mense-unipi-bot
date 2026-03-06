@@ -20,6 +20,7 @@
   - [Info e Orari](#info-e-orari)
   - [Tariffe ISEE](#tariffe-isee)
   - [Automazione Social (Instagram)](#automazione-social-instagram)
+    - [Pattern Generativi disponibili per i post](#pattern-generativi-disponibili-per-i-post)
 - [Comandi](#comandi)
 - [Data Sources](#data-sources)
 - [Problemi noti](#problemi-noti)
@@ -140,8 +141,18 @@ Digitando `@cibounipibot t:<valore>` (es. `t:20000`) il bot calcola automaticame
 Oltre al bot Telegram, il progetto include un sistema automatizzato per la **pubblicazione giornaliera dei menù su Instagram**. L'infrastruttura è basata su GitHub Actions suddivise in tre fasi:
 
 1. **`update_menu.yml`**: Scarica i testi aggiornati dei menù salvandoli in `menu.json`.
-2. **`generate_images.yml`**: Tramite uno script basato su Playwright (`generate_menu_images.py`), il sistema genera le grafiche ("slide") a partire da template HTML/CSS. **Il design cambia dinamicamente** e il sistema alterna vari colori per differenziare i giorni della settimana in maniera visiva ed elegante.
+2. **`generate_images.yml`**: Tramite uno script Python nativo (`generate_menu_images.py`), il sistema genera le grafiche ("slide") a partire da template, scrivendo testo personalizzato e uno sfondo procedurale con geometrie dinamiche e vibranti. **Il design cambia dinamicamente** e il sistema alterna vari colori e pattern su base settimanale e giornaliera.
 3. **`publish_instagram.yml`**: Utilizzando le **Graph API di Meta**, le immagini generate vengono raggruppate e pubblicate come "Carousel" sul profilo Instagram dedicato ai menù.
+
+#### Pattern Generativi disponibili per i post
+
+| Dot Grid | Diagonal Stripes | Crosshatch | Diamond Grid | Hexagons |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="assets/img/patterns/dot_grid.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/diagonal_stripes.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/crosshatch.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/diamond_grid.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/hexagons.png" width="88" height="88" style="aspect-ratio:1/1;"> |
+| **Zigzag** | **Concentric Circles** | **Plus Grid** | **Waves** | **Triangles** |
+| <img src="assets/img/patterns/zigzag.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/concentric_circles.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/plus_grid.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/waves.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/triangles.png" width="88" height="88" style="aspect-ratio:1/1;"> |
+| **Squares** | **Hollow Dots** | **X Shapes** | **Vertical Stripes** | **Horizontal Stripes** |
+| <img src="assets/img/patterns/squares.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/hollow_dots.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/x_shapes.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/vertical_stripes.png" width="88" height="88" style="aspect-ratio:1/1;"> | <img src="assets/img/patterns/horizontal_stripes.png" width="88" height="88" style="aspect-ratio:1/1;"> |
 
 Per far sì che l'esecuzione di questi workflow sia precisa e rispetti l'orario italiano (gestendo in automatico il cambio tra ora legale e solare), i comandi vengono avviati da uno scheduler configurato tramite **Cloudflare Workers**. Questo risolve i noti problemi di ritardo e imprecisione dei classici `cron` integrati nativamente in GitHub Actions.
 

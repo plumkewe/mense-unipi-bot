@@ -1,5 +1,0 @@
-pandas
-matplotlib
-great_tables
-Pillow
-requests
