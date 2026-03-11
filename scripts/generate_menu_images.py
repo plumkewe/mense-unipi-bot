@@ -219,13 +219,15 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
     draw = ImageDraw.Draw(layer)
 
     if pattern_type == "dot_grid":
-        # Offset polka-dot grid — perfectly aligned rows and columns
+        # Offset polka-dot grid — perfectly aligned rows and columns, centered
         spacing = rng.choice([140, 180, 220])
         radius  = spacing // 4
-        for row, y in enumerate(range(0, height + spacing, spacing)):
+        ox = (width % spacing) // 2
+        oy = (height % spacing) // 2
+        for row, y in enumerate(range(oy, height + spacing, spacing)):
             x_offset = (spacing // 2) if (row % 2) else 0
             for x in range(-spacing, width + spacing, spacing):
-                cx = x + x_offset
+                cx = x + x_offset + ox
                 draw.ellipse((cx - radius, y - radius, cx + radius, y + radius), fill=pc)
 
     elif pattern_type == "diagonal_stripes":
@@ -241,12 +243,14 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         layer.paste(rotated, (-(size - width) // 2, -(size - height) // 2), rotated)
 
     elif pattern_type == "crosshatch":
-        # Regular grid of thin crossing lines
+        # Regular grid of thin crossing lines, centered
         spacing = rng.choice([140, 180, 240])
         thickness = rng.choice([12, 16, 20])
-        for x in range(0, width + spacing, spacing):
+        ox = (width % spacing) // 2
+        oy = (height % spacing) // 2
+        for x in range(ox, width + spacing, spacing):
             draw.line([(x, 0), (x, height)], fill=pc, width=thickness)
-        for y in range(0, height + spacing, spacing):
+        for y in range(oy, height + spacing, spacing):
             draw.line([(0, y), (width, y)], fill=pc, width=thickness)
 
     elif pattern_type == "diamond_grid":
@@ -281,18 +285,20 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
                 draw.polygon(pts, outline=pc, width=thickness)
 
     elif pattern_type == "zigzag":
-        # Horizontal chevron / zigzag bands
+        # Horizontal chevron / zigzag bands, centered
         spacing = rng.choice([140, 180, 240])
         amplitude = spacing // 2
         thickness = rng.choice([14, 18, 22])
         step = 60
+        ox = (width % (step * 2)) // 2
+        oy = (height % spacing) // 2
         for band in range(-1, height // spacing + 2):
-            y_base = band * spacing
+            y_base = band * spacing + oy
             pts = []
-            for x in range(0, width + step * 2, step):
+            for x in range(-step * 2, width + step * 2, step):
                 phase = (x // step) % 2
                 y = y_base + (amplitude if phase else -amplitude)
-                pts.append((x, y))
+                pts.append((x + ox, y))
             for i in range(len(pts) - 1):
                 draw.line([pts[i], pts[i + 1]], fill=pc, width=thickness)
 
@@ -306,12 +312,14 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
             draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=pc, width=thickness)
 
     elif pattern_type == "plus_grid":
-        # Evenly spaced + signs on a regular grid
+        # Evenly spaced + signs on a regular grid, centered
         spacing  = rng.choice([160, 200, 240])
         arm_len  = spacing // 3
         thickness = rng.choice([14, 18, 24])
-        for y in range(0, height + spacing, spacing):
-            for x in range(0, width + spacing, spacing):
+        ox = (width % spacing) // 2
+        oy = (height % spacing) // 2
+        for y in range(oy, height + spacing, spacing):
+            for x in range(ox, width + spacing, spacing):
                 draw.line([(x - arm_len, y), (x + arm_len, y)], fill=pc, width=thickness)
                 draw.line([(x, y - arm_len), (x, y + arm_len)], fill=pc, width=thickness)
 
@@ -320,10 +328,13 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         spacing = rng.choice([140, 180, 220])
         amplitude = spacing // 3
         thickness = rng.choice([14, 18, 22])
-        for y_base in range(0, height + spacing, spacing):
+        oy = (height % spacing) // 2
+        # Center the sine wave horizontally: shift phase so wave is symmetric around center
+        cx = width / 2.0
+        for y_base in range(oy, height + spacing, spacing):
             pts = []
-            for x in range(0, width + 40, 40):
-                y = y_base + int(math.sin(x / 100.0) * amplitude)
+            for x in range(-40, width + 80, 40):
+                y = y_base + int(math.sin((x - cx) / 100.0) * amplitude)
                 pts.append((x, y))
             for i in range(len(pts) - 1):
                 draw.line([pts[i], pts[i + 1]], fill=pc, width=thickness)
@@ -331,8 +342,10 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
     elif pattern_type == "triangles":
         spacing = rng.choice([160, 200, 240])
         thickness = rng.choice([10, 14, 18])
-        for row, y in enumerate(range(0, height + spacing, spacing)):
-            for col, x in enumerate(range(0, width + spacing, spacing)):
+        ox = (width % spacing) // 2
+        oy = (height % spacing) // 2
+        for row, y in enumerate(range(oy, height + spacing, spacing)):
+            for col, x in enumerate(range(ox - spacing, width + spacing, spacing)):
                 x_off = x + (spacing // 2 if row % 2 == 0 else 0)
                 pts = [
                     (x_off, y),
@@ -345,26 +358,32 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         spacing = rng.choice([140, 180, 220])
         size = spacing // 2
         thickness = rng.choice([14, 18, 24])
-        for y in range(0, height + spacing, spacing):
-            for x in range(0, width + spacing, spacing):
+        ox = (width % spacing) // 2
+        oy = (height % spacing) // 2
+        for y in range(oy, height + spacing, spacing):
+            for x in range(ox, width + spacing, spacing):
                 draw.rectangle((x - size//2, y - size//2, x + size//2, y + size//2), outline=pc, width=thickness)
 
     elif pattern_type == "hollow_dots":
         spacing = rng.choice([140, 180, 220])
         radius = spacing // 3
         thickness = rng.choice([14, 18, 24])
-        for row, y in enumerate(range(0, height + spacing, spacing)):
+        ox = (width % spacing) // 2
+        oy = (height % spacing) // 2
+        for row, y in enumerate(range(oy, height + spacing, spacing)):
             x_offset = (spacing // 2) if (row % 2) else 0
             for x in range(-spacing, width + spacing, spacing):
-                cx = x + x_offset
+                cx = x + x_offset + ox
                 draw.ellipse((cx - radius, y - radius, cx + radius, y + radius), outline=pc, width=thickness)
 
     elif pattern_type == "x_shapes":
         spacing = rng.choice([160, 200, 240])
         arm_len = spacing // 3
         thickness = rng.choice([14, 18, 24])
-        for y in range(0, height + spacing, spacing):
-            for x in range(0, width + spacing, spacing):
+        ox = (width % spacing) // 2
+        oy = (height % spacing) // 2
+        for y in range(oy, height + spacing, spacing):
+            for x in range(ox, width + spacing, spacing):
                 draw.line([(x - arm_len, y - arm_len), (x + arm_len, y + arm_len)], fill=pc, width=thickness)
                 draw.line([(x - arm_len, y + arm_len), (x + arm_len, y - arm_len)], fill=pc, width=thickness)
 
@@ -372,14 +391,16 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         spacing = rng.choice([120, 160, 200])
         # matching diagonal_stripes logic which is spacing // 4
         thickness = spacing // 4
-        for x in range(0, width + spacing, spacing):
+        ox = (width % spacing) // 2
+        for x in range(ox, width + spacing, spacing):
             draw.line([(x, 0), (x, height)], fill=pc, width=thickness)
 
     elif pattern_type == "horizontal_stripes":
         spacing = rng.choice([120, 160, 200])
         # matching diagonal_stripes logic which is spacing // 4
         thickness = spacing // 4
-        for y in range(0, height + spacing, spacing):
+        oy = (height % spacing) // 2
+        for y in range(oy, height + spacing, spacing):
             draw.line([(0, y), (width, y)], fill=pc, width=thickness)
 
     bg.paste(layer, (0, 0), layer)

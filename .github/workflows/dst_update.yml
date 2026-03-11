@@ -2,10 +2,10 @@ name: Aggiorna Worker per cambio ora (DST)
 
 on:
   schedule:
-    # Ultima domenica di marzo → passaggio a CEST (UTC+2), alle 02:30 UTC
-    - cron: '30 2 25-31 3 0'
-    # Ultima domenica di ottobre → passaggio a CET (UTC+1), alle 02:30 UTC
-    - cron: '30 2 25-31 10 0'
+    # Sabato prima dell'ultima domenica di marzo → per preparare il passaggio a CEST, alle 21:00 UTC (22:00 CET)
+    - cron: '0 21 24-30 3 6'
+    # Sabato prima dell'ultima domenica di ottobre → per preparare il passaggio a CET, alle 21:00 UTC (23:00 CEST)
+    - cron: '0 21 24-30 10 6'
   workflow_dispatch:
     inputs:
       season:
