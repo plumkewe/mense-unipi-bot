@@ -149,7 +149,7 @@ def create_carousel_container(ig_user_id: str, access_token: str,
 
 
 def wait_for_container(ig_user_id: str, access_token: str, container_id: str,
-                        max_wait: int = 60) -> None:
+                        max_wait: int = 120) -> None:
     """Attende che il container sia nello stato FINISHED prima di pubblicarlo."""
     for _ in range(max_wait // 5):
         resp = requests.get(
@@ -168,16 +168,25 @@ def wait_for_container(ig_user_id: str, access_token: str, container_id: str,
     raise TimeoutError(f"Container {container_id} non pronto dopo {max_wait}s.")
 
 
-def publish_container(ig_user_id: str, access_token: str, container_id: str) -> str:
-    """Pubblica il container e restituisce l'ID del media pubblicato."""
-    result = _ig_post(
-        f"{ig_user_id}/media_publish",
-        access_token,
-        creation_id=container_id,
-    )
-    media_id = result["id"]
-    print(f"  Media pubblicato con ID: {media_id}")
-    return media_id
+def publish_container(ig_user_id: str, access_token: str, container_id: str,
+                      max_retries: int = 3, retry_delay: int = 10) -> str:
+    """Pubblica il container con retry per errori 'media not ready' (9007)."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            result = _ig_post(
+                f"{ig_user_id}/media_publish",
+                access_token,
+                creation_id=container_id,
+            )
+            media_id = result["id"]
+            print(f"  Media pubblicato con ID: {media_id}")
+            return media_id
+        except RuntimeError as e:
+            if "9007" in str(e) and attempt < max_retries:
+                print(f"  Media non ancora pronto (tentativo {attempt}/{max_retries}). Riprovo tra {retry_delay}s...")
+                time.sleep(retry_delay)
+            else:
+                raise
 
 
 # ---------------------------------------------------------------------------
@@ -298,6 +307,7 @@ def main():
                 cid = create_image_container(
                     IG_USER_ID, ACCESS_TOKEN, url, is_carousel_item=True
                 )
+                wait_for_container(IG_USER_ID, ACCESS_TOKEN, cid)
                 children_ids.append(cid)
 
             print("Creazione container carousel...")
