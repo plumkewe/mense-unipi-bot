@@ -841,24 +841,6 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 note = None
                 reply_markup = None
                 
-                is_scholarship = band.get("scholarship") is True
-                change_date = datetime(2026, 4, 1).date()
-                today_date = datetime.now(pytz.timezone('Europe/Rome')).date()
-                
-                if is_scholarship:
-                    if today_date >= change_date:
-                        # DATA RAGGIUNTA: Mostra direttamente i prezzi della prima fascia
-                        # Cerchiamo la prima fascia per sostituire 'band'
-                        for r in RATES:
-                             if r.get("min_isee") == 0 and r.get("scholarship") is False:
-                                 band = r
-                                 break
-                        note = "*Nota:* Dal 01/04/2026 i prezzi per i borsisti sono equiparati alla prima fascia."
-                    else:
-                        # DATA NON RAGGIUNTA: Mostra prezzi attuali (0€) ma con bottone per vedere i futuri
-                        note = "*Nota:* Dal 01/04/2026 i prezzi cambieranno."
-                        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Visualizza prezzi I fascia", callback_data="show_first_fascia")]])
-                
                 final_msg = get_rate_message_text(band, note)
                 
                 items_ord = [
@@ -1140,35 +1122,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await links_command(update, context)
         return
 
-    if action == "show_first_fascia":
-        # Trova la prima fascia
-        target_band = None
-        for r in RATES:
-             # Prima fascia: non scholarship, min_isee 0
-             if r.get("min_isee") == 0 and r.get("scholarship") is False:
-                 target_band = r
-                 break
-        
-        if target_band:
-            text = get_rate_message_text(target_band)
-            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("INDIETRO", callback_data="back_to_scholarship")]])
-            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        return
-
-    if action == "back_to_scholarship":
-         # Trova la fascia scholarship
-        target_band = None
-        for r in RATES:
-             if r.get("scholarship") is True:
-                 target_band = r
-                 break
-        
-        if target_band:
-            note = "*Nota:* Dal 01/04/2026 i prezzi per i borsisti sono equiparati alla prima fascia."
-            text = get_rate_message_text(target_band, note)
-            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("PREZZI I FASCIA", callback_data="show_first_fascia")]])
-            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        return
 
     if action == "sel_canteen":
         # Data format: sel_canteen|canteen_id
