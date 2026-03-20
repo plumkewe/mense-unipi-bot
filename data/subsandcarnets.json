@@ -1,0 +1,241 @@
+{
+  "abbonamenti": [
+    {
+      "pasti_al_giorno": 2,
+      "min_isee": 0.0,
+      "max_isee": 75000.0,
+      "prezzo_totale": 400.0,
+      "original_label": "2 pasti al giorno ISEE fino a Euro 75.000,00: Euro 400,00"
+    },
+    {
+      "pasti_al_giorno": 1,
+      "min_isee": 0.0,
+      "max_isee": 75000.0,
+      "prezzo_totale": 220.0,
+      "original_label": "1 pasto al giorno ISEE fino a Euro 75.000,00: Euro 220,00"
+    },
+    {
+      "pasti_al_giorno": 2,
+      "min_isee": 75000.0,
+      "max_isee": null,
+      "prezzo_totale": 500.0,
+      "original_label": "2 pasti al giorno ISEE > Euro 75.000,00: Euro 500,00"
+    },
+    {
+      "pasti_al_giorno": 1,
+      "min_isee": 75000.0,
+      "max_isee": null,
+      "prezzo_totale": 280.0,
+      "original_label": "1 pasti al giorno ISEE > Euro 75.000,00: Euro 280,00"
+    }
+  ],
+  "carnet_pasti": [
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 2.8,
+      "min_isee": 0.0,
+      "max_isee": 27000.0,
+      "prezzo_totale": 14.0,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 2,80: Euro 14,00 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 3.0,
+      "min_isee": 27000.0,
+      "max_isee": 30000.0,
+      "prezzo_totale": 15.0,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 3,00: Euro 15,00 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 4.5,
+      "min_isee": 30000.0,
+      "max_isee": 45000.0,
+      "prezzo_totale": 22.5,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 4,50: Euro 22,50 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 5.5,
+      "min_isee": 45000.0,
+      "max_isee": 60000.0,
+      "prezzo_totale": 27.5,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 5,50: Euro 27,50 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 6.5,
+      "min_isee": 60000.0,
+      "max_isee": 75000.0,
+      "prezzo_totale": 32.5,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 6,50: Euro 32,50 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 7.5,
+      "min_isee": 75000.0,
+      "max_isee": 100000.0,
+      "prezzo_totale": 27.5,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 7,50: Euro 27,50 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 8.5,
+      "min_isee": 100000.0,
+      "max_isee": null,
+      "prezzo_totale": 42.5,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 8,50: Euro 42,50 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 5,
+      "tariffa_base": 9.9,
+      "min_isee": null,
+      "max_isee": null,
+      "prezzo_totale": 49.5,
+      "pasti_omaggio": 1,
+      "original_label": "5 pasti tariffa Euro 9,90: Euro 49,50 + 1 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 2.8,
+      "min_isee": 0.0,
+      "max_isee": 27000.0,
+      "prezzo_totale": 28.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 2,80: Euro 28,00 + 2 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 3.0,
+      "min_isee": 27000.0,
+      "max_isee": 30000.0,
+      "prezzo_totale": 30.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 3,00: Euro 30,00 + 2 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 4.5,
+      "min_isee": 30000.0,
+      "max_isee": 45000.0,
+      "prezzo_totale": 45.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 4,50: Euro 45,00 + 2 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 5.5,
+      "min_isee": 45000.0,
+      "max_isee": 60000.0,
+      "prezzo_totale": 55.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 5,50: Euro 55,00 + 2 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 6.5,
+      "min_isee": 60000.0,
+      "max_isee": 75000.0,
+      "prezzo_totale": 65.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 6,50: Euro 65,00 + 2 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 7.5,
+      "min_isee": 75000.0,
+      "max_isee": 100000.0,
+      "prezzo_totale": 75.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 7,50: Euro 75,00 + 2 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 8.5,
+      "min_isee": 100000.0,
+      "max_isee": null,
+      "prezzo_totale": 85.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 8,50: Euro 85,00 + 2 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 10,
+      "tariffa_base": 9.9,
+      "min_isee": null,
+      "max_isee": null,
+      "prezzo_totale": 99.0,
+      "pasti_omaggio": 2,
+      "original_label": "10 pasti tariffa Euro 9,90: Euro 99,00 + 2 pasto omaggio"
+    },
+    {
+      "pasti_acquistati": 20,
+      "tariffa_base": 2.8,
+      "min_isee": 0.0,
+      "max_isee": 27000.0,
+      "prezzo_totale": 56.0,
+      "pasti_omaggio": 5,
+      "original_label": "20 pasti tariffa Euro 2,80: Euro 56,00 + 5 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 20,
+      "tariffa_base": 3.0,
+      "min_isee": 27000.0,
+      "max_isee": 30000.0,
+      "prezzo_totale": 60.0,
+      "pasti_omaggio": 5,
+      "original_label": "20 pasti tariffa Euro 3,00: Euro 60,00 + 5 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 20,
+      "tariffa_base": 4.5,
+      "min_isee": 30000.0,
+      "max_isee": 45000.0,
+      "prezzo_totale": 90.0,
+      "pasti_omaggio": 5,
+      "original_label": "20 pasti tariffa Euro 4,50: Euro 90,00 + 5 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 20,
+      "tariffa_base": 5.5,
+      "min_isee": 45000.0,
+      "max_isee": 60000.0,
+      "prezzo_totale": 110.0,
+      "pasti_omaggio": 5,
+      "original_label": "20 pasti tariffa Euro 5,50: Euro 110,00 + 5 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 20,
+      "tariffa_base": 6.5,
+      "min_isee": 60000.0,
+      "max_isee": 75000.0,
+      "prezzo_totale": 130.0,
+      "pasti_omaggio": 5,
+      "original_label": "20 pasti tariffa Euro 6,50: Euro 130,00 + 5 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 20,
+      "tariffa_base": 7.5,
+      "min_isee": 75000.0,
+      "max_isee": 100000.0,
+      "prezzo_totale": 150.0,
+      "pasti_omaggio": 5,
+      "original_label": "20 pasti tariffa Euro 7,50: Euro 150,00 + 5 pasti omaggio"
+    },
+    {
+      "pasti_acquistati": 20,
+      "tariffa_base": 8.5,
+      "min_isee": 100000.0,
+      "max_isee": null,
+      "prezzo_totale": 170.0,
+      "pasti_omaggio": 5,
+      "original_label": "20 pasti tariffa Euro 8,50: Euro 170,00 + 5 pasti omaggio"
+    }
+  ]
+}
