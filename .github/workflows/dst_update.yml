@@ -3,15 +3,15 @@ name: Aggiorna Worker per cambio ora (DST)
 on:
   schedule:
     # Sabato prima dell'ultima domenica di marzo → per preparare il passaggio a CEST, alle 21:00 UTC (22:00 CET)
-    - cron: '0 21 24-30 3 6'
+    - cron: "0 21 24-30 3 6"
     # Sabato prima dell'ultima domenica di ottobre → per preparare il passaggio a CET, alle 21:00 UTC (23:00 CEST)
-    - cron: '0 21 24-30 10 6'
+    - cron: "0 21 24-30 10 6"
   workflow_dispatch:
     inputs:
       season:
-        description: 'Stagione da applicare'
+        description: "Stagione da applicare"
         required: true
-        default: 'winter'
+        default: "winter"
         type: choice
         options:
           - winter
@@ -50,20 +50,20 @@ jobs:
 
           if season == 'summer':
               triggers = """\
-[triggers]
-crons = [
-  "0 22 * * *",    # update_menu       — CEST (estate, 00:00 IT)
-  "21 23 * * *",   # generate_images   — CEST (estate, 01:21 IT)
-  "20 7 * * *",    # publish_instagram — CEST (estate, 09:20 IT)
-]"""
-          else:
-              triggers = """\
-[triggers]
-crons = [
-  "0 23 * * *",    # update_menu       — CET  (inverno, 00:00 IT)
-  "21 0 * * *",    # generate_images   — CET  (inverno, 01:21 IT)
-  "20 8 * * *",    # publish_instagram — CET  (inverno, 09:20 IT)
-]"""
+          [triggers]
+          crons = [
+            "0 22 * * *",    # update_menu       — CEST (estate, 00:00 IT)
+            "21 23 * * *",   # generate_images   — CEST (estate, 01:21 IT)
+            "20 7 * * *",    # publish_instagram — CEST (estate, 09:20 IT)
+          ]"""
+                    else:
+                        triggers = """\
+          [triggers]
+          crons = [
+            "0 23 * * *",    # update_menu       — CET  (inverno, 00:00 IT)
+            "21 0 * * *",    # generate_images   — CET  (inverno, 01:21 IT)
+            "20 8 * * *",    # publish_instagram — CET  (inverno, 09:20 IT)
+          ]"""
 
           with open('cloudflare-worker/wrangler.toml', 'r') as f:
               content = f.read()
@@ -80,7 +80,7 @@ crons = [
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Installa dipendenze
         run: npm install
