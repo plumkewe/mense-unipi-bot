@@ -1,0 +1,59 @@
+name: "Gestione Chiusure Mense (Feste)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      canteen:
+        description: 'Mensa'
+        required: true
+        type: choice
+        options:
+          - cammeo
+          - martiri
+          - betti
+      start_date:
+        description: 'Data Inizio (YYYY-MM-DD)'
+        required: true
+        type: string
+      end_date:
+        description: 'Data Fine (YYYY-MM-DD)'
+        required: true
+        type: string
+      status:
+        description: 'Stato'
+        required: true
+        type: choice
+        options:
+          - closed
+          - lunch_only
+          - dinner_only
+
+jobs:
+  update-closures:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Run script to update feste.json
+        run: |
+          python scripts/manage_closures.py \
+            --canteen "${{ github.event.inputs.canteen }}" \
+            --start "${{ github.event.inputs.start_date }}" \
+            --end "${{ github.event.inputs.end_date }}" \
+            --status "${{ github.event.inputs.status }}"
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/feste.json
+          # Commit solo se ci sono modifiche effettive
+          git commit -m "Aggiornata chiusura per mensa ${{ github.event.inputs.canteen }} (${{ github.event.inputs.start_date }} - ${{ github.event.inputs.end_date }})" || echo "No changes to commit"
+          git push

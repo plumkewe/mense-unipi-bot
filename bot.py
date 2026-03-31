@@ -77,6 +77,28 @@ def load_canteens_full():
 CANTEENS = load_canteens()
 CANTEENS_FULL = load_canteens_full()
 
+def load_feste():
+    try:
+        with open(os.path.join(DATA_DIR, "feste.json"), "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+FESTE = load_feste()
+
+def get_holiday_status(canteen_id, date_obj):
+    feste = load_feste()
+    canteen_feste = feste.get(canteen_id, [])
+    for f_period in canteen_feste:
+        try:
+            start_date = datetime.strptime(f_period["start_date"], "%Y-%m-%d").date()
+            end_date = datetime.strptime(f_period["end_date"], "%Y-%m-%d").date()
+            if start_date <= date_obj <= end_date:
+                return f_period["status"]
+        except Exception:
+            continue
+    return "normal"
+
 # Carica il file rates.json
 def load_rates():
     try:
@@ -381,12 +403,13 @@ def get_update_keyboard(dish_name):
 # --- FUNZIONI PER ORARI MENSE ---
 DAYS_REV = ["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"]
 
-def get_canteen_status_info(schedule_map, service_name=""):
+def get_canteen_status_info(canteen_id, schedule_map, service_name=""):
     """Calcola stato attuale (Aperta/Chiusa) e orari formattati per ogni giorno."""
     tz = pytz.timezone('Europe/Rome')
     now = datetime.now(tz)
     now_time = now.time()
     today_idx = now.weekday()
+    today_date = now.date()
     
     # Determina genere grammaticale
     # Default femminile (Mensa, Pizzeria), maschile se "Prendi e vai"
@@ -397,12 +420,35 @@ def get_canteen_status_info(schedule_map, service_name=""):
     txt_open = "APERTA" if is_female else "APERTO"
     txt_closed = "CHIUSA" if is_female else "CHIUSO"
     
-    # 1. Calcola Stato
-    status = txt_closed
+    # Applica feste alla settimana corrente per calcolare orari effettivi
+    # Creiamo una copia della map per non modificare l'originale
+    effective_schedule = {}
+    for i in range(7):
+        day_date = now.date() - timedelta(days=today_idx) + timedelta(days=i)
+        status = get_holiday_status(canteen_id, day_date)
+        
+        orig_slots = schedule_map.get(str(i), [])
+        
+        if status == "closed":
+            effective_schedule[str(i)] = []
+        elif status == "lunch_only":
+            effective_schedule[str(i)] = [s for s in orig_slots if int(s.split(":")[0]) < 16]
+        elif status == "dinner_only":
+            effective_schedule[str(i)] = [s for s in orig_slots if int(s.split(":")[0]) >= 16]
+        else:
+            effective_schedule[str(i)] = orig_slots.copy()
+            
+    # Oggi status testuale
+    today_status = get_holiday_status(canteen_id, today_date)
     
-    # Recupera gli slot di ogg (da JSON sono stringhe "HH:MM-HH:MM")
-    # schedule_map ha chiavi stringa "0".."6"
-    today_slots_str = schedule_map.get(str(today_idx), [])
+    # 1. Calcola Stato
+    status_text = txt_closed
+    
+    if today_status == "closed":
+        status_text = f"{txt_closed} (CHIUSURA PROGRAMMATA)"
+    else:
+        # Recupera gli slot effettivi di oggi
+        today_slots_str = effective_schedule.get(str(today_idx), [])
     
     # Converti in oggetti time per confronto
     today_slots_objs = []
@@ -425,31 +471,40 @@ def get_canteen_status_info(schedule_map, service_name=""):
         if start_t <= now_time <= end_t:
             is_open = True
             # Controlla chiusura imminente (es. entro 30 min)
-            today_date = now.date()
             dt_end = tz.localize(datetime.combine(today_date, end_t))
             
             closing_in = dt_end - now
             if closing_in < timedelta(minutes=30):
-                status = f"CHIUDE ALLE {end_t.strftime('%H:%M')}"
+                status_text = f"CHIUDE ALLE {end_t.strftime('%H:%M')}"
             else:
-                status = f"{txt_open} FINO ALLE {end_t.strftime('%H:%M')}"
+                status_text = f"{txt_open} FINO ALLE {end_t.strftime('%H:%M')}"
             break
         elif now_time < start_t:
             if next_open is None:
                 next_open = start_t
                 
-    if not is_open:
+    if not is_open and status_text == txt_closed:
         if next_open:
-            status = f"{txt_closed} (Apre {next_open.strftime('%H:%M')})"
+            status_text = f"{txt_closed} (Apre {next_open.strftime('%H:%M')})"
         else:
-            status = txt_closed
+            if today_status == "lunch_only":
+                status_text = f"{txt_closed} (SOLO PRANZO)"
+            elif today_status == "dinner_only":
+                status_text = f"{txt_closed} (SOLO CENA)"
 
     # 2. Formatta Tabella Orari (Lun ... Dom)
     lines = []
     for i in range(7):
+        day_date = now.date() - timedelta(days=today_idx) + timedelta(days=i)
         day_name = DAYS_REV[i]
-        # Recupera stringhe orari
-        slots_str = schedule_map.get(str(i), [])
+        
+        day_status = get_holiday_status(canteen_id, day_date)
+        if day_status == "closed":
+             lines.append(f"{day_name:<3} Chiuso per festa")
+             continue
+             
+        # Recupera stringhe orari effettivi
+        slots_str = effective_schedule.get(str(i), [])
         
         if not slots_str:
              lines.append(f"{day_name:<3} Chiuso")
@@ -466,7 +521,7 @@ def get_canteen_status_info(schedule_map, service_name=""):
                 
     formatted_schedule = "\n".join(lines) if lines else "    Chiuso"
     
-    return status, formatted_schedule
+    return status_text, formatted_schedule
 
 def format_canteen_info_for_day(canteen, date_str):
     """Genera il testo HTML con gli orari di una mensa per un giorno specifico."""
@@ -493,15 +548,27 @@ def format_canteen_info_for_day(canteen, date_str):
                 svc_title = "Mensa"
             
             if target_date == today_date:
-                status_text, _ = get_canteen_status_info(schedule_map, service_name=service_type)
+                status_text, _ = get_canteen_status_info(canteen.get("id"), schedule_map, service_name=service_type)
                 message_lines.append(f"<b>{svc_title}</b> {status_text}")
             else:
                 message_lines.append(f"<b>{svc_title}</b>")
             
+            day_status = get_holiday_status(canteen.get("id"), target_date)
             slots_str = schedule_map.get(str(day_idx), [])
+            
+            if day_status == "closed":
+                slots_str = []
+            elif day_status == "lunch_only":
+                slots_str = [s for s in slots_str if int(s.split(":")[0]) < 16]
+            elif day_status == "dinner_only":
+                slots_str = [s for s in slots_str if int(s.split(":")[0]) >= 16]
+            
             schedule_block = ""
             if not slots_str:
-                 schedule_block = f"{day_name:<3} Chiuso"
+                 if day_status == "closed":
+                     schedule_block = f"{day_name:<3} Chiuso per festa"
+                 else:
+                     schedule_block = f"{day_name:<3} Chiuso"
             else:
                  lines = []
                  first_slot = True
@@ -549,7 +616,7 @@ def format_canteen_info(canteen):
         # Iteriamo su tutti i tipi di orari (mensa, prendi_e_vai, ecc)
         for service_type, schedule_map in oh.items():
             # Status
-            status_text, schedule_block = get_canteen_status_info(schedule_map, service_name=service_type)
+            status_text, schedule_block = get_canteen_status_info(canteen.get("id"), schedule_map, service_name=service_type)
             
             # Pretty service name
             svc_title = service_type.replace("_", " ").capitalize()
