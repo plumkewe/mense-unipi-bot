@@ -9,6 +9,8 @@ permissions:
 jobs:
   update-menu:
     runs-on: ubuntu-latest
+    env:
+      TZ: "Europe/Rome"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,5 +46,5 @@ jobs:
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add data/menu.json
-          git commit -m "chore: aggiornamento menu $(date -u '+%Y-%m-%d') [auto]"
+          git commit -m "chore: aggiornamento menu $(date '+%Y-%m-%d') [auto]"
           git push

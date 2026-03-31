@@ -10,6 +10,8 @@ permissions:
 jobs:
   publish-instagram:
     runs-on: ubuntu-latest
+    env:
+      TZ: "Europe/Rome"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
