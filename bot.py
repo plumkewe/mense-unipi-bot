@@ -99,6 +99,23 @@ def get_holiday_status(canteen_id, date_obj):
             continue
     return "normal"
 
+def get_future_closures_text(canteen_id, target_date):
+    """Calcola se ci sono chiusure future rispetto alla data target"""
+    feste = load_feste()
+    canteen_feste = feste.get(canteen_id, [])
+    for f_period in canteen_feste:
+        try:
+            start_date = datetime.strptime(f_period["start_date"], "%Y-%m-%d").date()
+            end_date = datetime.strptime(f_period["end_date"], "%Y-%m-%d").date()
+            
+            if start_date > target_date and f_period.get("status") == "closed":
+                start_str = start_date.strftime("%d/%m")
+                end_str = end_date.strftime("%d/%m")
+                return f"<i>Chiusa dal {start_str} al {end_str} per festività</i>"
+        except Exception:
+            continue
+    return ""
+
 # Carica il file rates.json
 def load_rates():
     try:
@@ -158,8 +175,23 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
     if not meal_menu:
          return f"{header}Nessun menù disponibile per il {meal_type.lower()}."
 
-    # Calcoliamo le mense attive per questo pasto se siamo in modalità TUTTE
     is_all_mode = (canteen_name == "TUTTE")
+    if not is_all_mode and canteen_name:
+        c_id_match = next((k for k, v in CANTEENS.items() if v == canteen_name), None)
+        if c_id_match:
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+                holiday_status = get_holiday_status(c_id_match, date_obj)
+                if holiday_status == "closed":
+                    return f"{header}Nessun piatto disponibile per questa mensa."
+                elif holiday_status == "lunch_only" and meal_type.lower() == "cena":
+                    return f"{header}Nessun piatto disponibile per questa mensa."
+                elif holiday_status == "dinner_only" and meal_type.lower() == "pranzo":
+                    return f"{header}Nessun piatto disponibile per questa mensa."
+            except Exception:
+                pass
+
+    # Calcoliamo le mense attive per questo pasto se siamo in modalità TUTTE
     active_canteens = set()
     if is_all_mode:
         for cat, dishes in meal_menu.items():
@@ -353,7 +385,10 @@ def get_dish_schedule(dish_name):
     # Mesi abbreviati per risparmiare spazio e far entrare le mense
     months_short = ["", "GEN", "FEB", "MAR", "APR", "MAG", "GIU", "LUG", "AGO", "SET", "OTT", "NOV", "DIC"]
 
-    for occ in occurrences:
+    MAX_OCC = 60
+    has_more = len(occurrences) > MAX_OCC
+    
+    for occ in occurrences[:MAX_OCC]:
         d = occ["date"]
         wd = days_short[d.weekday()]
         day_month = f"{d.day} {months_short[d.month]}"
@@ -380,6 +415,10 @@ def get_dish_schedule(dish_name):
         
         line = f"{wd:<3} {day_month:<6} {diff_str:<4} {meal_flag} {c_str}"
         list_lines.append(line)
+        
+    if has_more:
+        list_lines.append("")
+        list_lines.append(f"... {len(occurrences) - MAX_OCC} altre")
     
     # Unico blocco codice per allineamento
     text_lines.append("```")
@@ -443,6 +482,7 @@ def get_canteen_status_info(canteen_id, schedule_map, service_name=""):
     
     # 1. Calcola Stato
     status_text = txt_closed
+    today_slots_str = []
     
     if today_status == "closed":
         status_text = f"{txt_closed} (CHIUSURA PROGRAMMATA)"
@@ -581,6 +621,12 @@ def format_canteen_info_for_day(canteen, date_str):
                  schedule_block = "\n".join(lines)
                  
             message_lines.append(f"<pre>{schedule_block}</pre>")
+            
+    day_status = get_holiday_status(canteen.get("id"), target_date)
+    if day_status != "closed":
+        future_closure = get_future_closures_text(canteen.get("id"), target_date)
+        if future_closure:
+            message_lines.append(future_closure)
                          
     return "\n".join(message_lines)
 
@@ -598,6 +644,9 @@ def format_all_canteens_info_for_today():
 
 def format_canteen_info(canteen):
     """Genera il testo HTML con le informazioni della mensa (stato, orari, ecc)."""
+    tz = pytz.timezone('Europe/Rome')
+    today_date = datetime.now(tz).date()
+    
     c_name = canteen["name"]
     seats = canteen.get("seats", "N/D")
     
@@ -625,6 +674,13 @@ def format_canteen_info(canteen):
             
             message_lines.append(f"<b>{svc_title}</b> {status_text}")
             message_lines.append(f"<pre>{schedule_block}</pre>")
+            message_lines.append("")
+
+    day_status = get_holiday_status(canteen.get("id"), today_date)
+    if day_status != "closed":
+        future_closure = get_future_closures_text(canteen.get("id"), today_date)
+        if future_closure:
+            message_lines.append(future_closure)
             message_lines.append("")
 
     # Link sito e Google Maps
@@ -964,15 +1020,15 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     search_term = query[2:].strip().lower() # Rimuove "p:"
-    # if len(search_term) < 3: # Opzionale: lunghezza minima
-    #     return
 
     results = []
+
     today = datetime.now(pytz.timezone('Europe/Rome')).date()
     
     # Ordina le date del menu
     sorted_dates = sorted(MENU.keys())
     
+    seen_dishes = set()
     count = 0
     for date_str in sorted_dates:
         # Controllo rapido per uscire dai loop esterni
@@ -1006,6 +1062,11 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
                          if search_term in dish_str.lower():
                              clean_dish_name = dish_str.strip().upper()
+                             
+                             if clean_dish_name in seen_dishes:
+                                 continue
+                             seen_dishes.add(clean_dish_name)
+                             
                              date_fmt = format_date_it(menu_date)
                              
                              # Recupera le mense per questo piatto specifico

@@ -215,6 +215,27 @@ def main():
     oggi_tag = dt.date.today().strftime("%Y%m%d")
     oggi_ita = dt.date.today().strftime("%d.%m.%Y")
 
+    # Check for holidays before publishing
+    feste_path = REPO_ROOT / "data" / "feste.json"
+    if feste_path.exists():
+        try:
+            with open(feste_path, "r", encoding="utf-8") as f:
+                feste_data = json.load(f)
+            martiri_feste = feste_data.get("martiri", [])
+            date_obj = dt.date.today()
+            is_closed = False
+            for period in martiri_feste:
+                start_d = dt.datetime.strptime(period["start_date"], "%Y-%m-%d").date()
+                end_d = dt.datetime.strptime(period["end_date"], "%Y-%m-%d").date()
+                if start_d <= date_obj <= end_d and period.get("status") == "closed":
+                    is_closed = True
+                    break
+            if is_closed:
+                print(f"Oggi ({oggi_ita}) la mensa Martiri è in vacanza. Salto la pubblicazione.")
+                return
+        except Exception as e:
+            print(f"Errore durante il controllo festività: {e}")
+
     # Prendi SOLO le immagini di OGGI per evitare ri-pubblicazioni di ieri
     pranzo_files = sorted(list(posts_dir.glob(f"{oggi_tag}_pranzo_martiri.jpg")))
     cena_files = sorted(list(posts_dir.glob(f"{oggi_tag}_cena_martiri.jpg")))
