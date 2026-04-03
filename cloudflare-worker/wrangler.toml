@@ -17,5 +17,5 @@ compatibility_date = "2025-01-01"
 crons = [
   "0 22 * * *",    # update_menu       — CEST (estate, 00:00 IT)
   "21 23 * * *",   # generate_images   — CEST (estate, 01:21 IT)
-  "20 7 * * *",    # publish_instagram — CEST (estate, 09:20 IT)
+  "17 7 * * *",    # publish_instagram — CEST (estate, 09:17 IT)
 ]

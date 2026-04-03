@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import time
 import requests
@@ -28,9 +29,24 @@ COURSE_LABELS = {
 }
 HASHTAGS = "#doveunipi #cibounipibot #mensa #universita #martiri"
 
+# ---------------------------------------------------------------------------
+# Retry config
+# ---------------------------------------------------------------------------
+# Retry per singole chiamate API (create container, publish, ecc.)
+API_MAX_RETRIES = 5
+API_RETRY_BASE_DELAY = 15  # seconds
+
+# Retry globale per l'intero flusso di pubblicazione
+GLOBAL_MAX_RETRIES = 5
+GLOBAL_RETRY_DELAYS = [30, 60, 120, 240, 480]  # backoff esponenziale ~15 min totali
+
+# Orario di pubblicazione
+PUBLISH_HOUR = 9
+PUBLISH_MINUTE = 21
+
 
 # ---------------------------------------------------------------------------
-# Caption builder (invariato)
+# Caption builder
 # ---------------------------------------------------------------------------
 
 def _get_dishes_for_canteen(meal_data: dict, canteen: str) -> dict[str, list[str]]:
@@ -92,9 +108,6 @@ def build_caption(menu_data: dict, date_iso: str, has_pranzo: bool, has_cena: bo
 
 # ---------------------------------------------------------------------------
 # URL pubblico raw di GitHub
-# La Graph API di Instagram richiede URL pubblici accessibili da internet.
-# Le immagini sono già committate nella repo pubblica, quindi usiamo
-# raw.githubusercontent.com direttamente — nessun servizio esterno.
 # ---------------------------------------------------------------------------
 
 def github_raw_url(relative_path: str) -> str:
@@ -103,17 +116,52 @@ def github_raw_url(relative_path: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Instagram Graph API helpers
+# Instagram Graph API helpers (con retry robusto)
 # ---------------------------------------------------------------------------
 
 def _ig_post(endpoint: str, access_token: str, **params) -> dict:
-    """Esegue una POST alla Graph API e restituisce il JSON della risposta."""
+    """Esegue una POST alla Graph API con retry automatico su errori."""
     params["access_token"] = access_token
-    resp = requests.post(f"{GRAPH_API_BASE}/{endpoint}", data=params, timeout=60)
-    result = resp.json()
-    if "error" in result:
-        raise RuntimeError(f"Graph API error: {result['error']}")
-    return result
+
+    for attempt in range(1, API_MAX_RETRIES + 1):
+        try:
+            resp = requests.post(
+                f"{GRAPH_API_BASE}/{endpoint}",
+                data=params,
+                timeout=60,
+            )
+            result = resp.json()
+
+            if "error" in result:
+                error_msg = result["error"].get("message", str(result["error"]))
+                error_code = result["error"].get("code", "")
+
+                # Non riprovare per errori di autenticazione/permessi
+                if error_code in (190, 10, 100):
+                    raise RuntimeError(f"Graph API error (non recuperabile, code {error_code}): {error_msg}")
+
+                if attempt < API_MAX_RETRIES:
+                    delay = API_RETRY_BASE_DELAY * attempt
+                    print(f"  ⚠ Graph API error (tentativo {attempt}/{API_MAX_RETRIES}, code {error_code}): {error_msg}")
+                    print(f"    Riprovo tra {delay}s...")
+                    time.sleep(delay)
+                    continue
+                else:
+                    raise RuntimeError(f"Graph API error dopo {API_MAX_RETRIES} tentativi: {error_msg}")
+
+            return result
+
+        except requests.RequestException as e:
+            if attempt < API_MAX_RETRIES:
+                delay = API_RETRY_BASE_DELAY * attempt
+                print(f"  ⚠ Errore di rete (tentativo {attempt}/{API_MAX_RETRIES}): {e}")
+                print(f"    Riprovo tra {delay}s...")
+                time.sleep(delay)
+            else:
+                raise RuntimeError(f"Errore di rete dopo {API_MAX_RETRIES} tentativi: {e}")
+
+    # Non dovrebbe mai arrivarci, ma per sicurezza
+    raise RuntimeError("Tentativi esauriti in _ig_post")
 
 
 def create_image_container(ig_user_id: str, access_token: str, image_url: str,
@@ -129,7 +177,7 @@ def create_image_container(ig_user_id: str, access_token: str, image_url: str,
 
     result = _ig_post(f"{ig_user_id}/media", access_token, **params)
     container_id = result["id"]
-    print(f"  Container immagine creato: {container_id}")
+    print(f"  ✓ Container immagine creato: {container_id}")
     return container_id
 
 
@@ -144,49 +192,144 @@ def create_carousel_container(ig_user_id: str, access_token: str,
         caption=caption,
     )
     container_id = result["id"]
-    print(f"  Container carousel creato: {container_id}")
+    print(f"  ✓ Container carousel creato: {container_id}")
     return container_id
 
 
 def wait_for_container(ig_user_id: str, access_token: str, container_id: str,
-                        max_wait: int = 120) -> None:
+                        max_wait: int = 180) -> None:
     """Attende che il container sia nello stato FINISHED prima di pubblicarlo."""
     for _ in range(max_wait // 5):
-        resp = requests.get(
-            f"{GRAPH_API_BASE}/{container_id}",
-            params={"fields": "status_code", "access_token": access_token},
-            timeout=30,
-        )
-        resp.raise_for_status()
-        status = resp.json().get("status_code", "")
-        print(f"  Stato container {container_id}: {status}")
-        if status == "FINISHED":
-            return
-        if status == "ERROR":
-            raise RuntimeError(f"Container {container_id} in stato ERROR.")
+        try:
+            resp = requests.get(
+                f"{GRAPH_API_BASE}/{container_id}",
+                params={"fields": "status_code", "access_token": access_token},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            status = resp.json().get("status_code", "")
+            print(f"  Stato container {container_id}: {status}")
+            if status == "FINISHED":
+                return
+            if status == "ERROR":
+                raise RuntimeError(f"Container {container_id} in stato ERROR.")
+        except requests.RequestException as e:
+            print(f"  ⚠ Errore durante polling stato container: {e}")
         time.sleep(5)
     raise TimeoutError(f"Container {container_id} non pronto dopo {max_wait}s.")
 
 
-def publish_container(ig_user_id: str, access_token: str, container_id: str,
-                      max_retries: int = 3, retry_delay: int = 10) -> str:
-    """Pubblica il container con retry per errori 'media not ready' (9007)."""
-    for attempt in range(1, max_retries + 1):
-        try:
-            result = _ig_post(
-                f"{ig_user_id}/media_publish",
-                access_token,
-                creation_id=container_id,
+def publish_container(ig_user_id: str, access_token: str, container_id: str) -> str:
+    """Pubblica il container. Il retry è gestito da _ig_post()."""
+    result = _ig_post(
+        f"{ig_user_id}/media_publish",
+        access_token,
+        creation_id=container_id,
+    )
+    media_id = result["id"]
+    print(f"  ✓ Media pubblicato con ID: {media_id}")
+    return media_id
+
+
+# ---------------------------------------------------------------------------
+# Pubblicazione con retry globale
+# ---------------------------------------------------------------------------
+
+def _do_publish(ig_user_id: str, access_token: str, public_urls: list[str],
+                didascalia: str) -> None:
+    """Esegue il flusso di pubblicazione (singola foto o carousel)."""
+    if len(public_urls) == 1:
+        # Singola foto
+        print("Creazione container per singola foto...")
+        container_id = create_image_container(
+            ig_user_id, access_token, public_urls[0], caption=didascalia
+        )
+        wait_for_container(ig_user_id, access_token, container_id)
+        publish_container(ig_user_id, access_token, container_id)
+    else:
+        # Carousel (Pranzo → Cena)
+        print("Creazione container per ogni immagine del carousel...")
+        children_ids = []
+        for url in public_urls:
+            cid = create_image_container(
+                ig_user_id, access_token, url, is_carousel_item=True
             )
-            media_id = result["id"]
-            print(f"  Media pubblicato con ID: {media_id}")
-            return media_id
-        except RuntimeError as e:
-            if "9007" in str(e) and attempt < max_retries:
-                print(f"  Media non ancora pronto (tentativo {attempt}/{max_retries}). Riprovo tra {retry_delay}s...")
-                time.sleep(retry_delay)
+            wait_for_container(ig_user_id, access_token, cid)
+            children_ids.append(cid)
+
+        print("Creazione container carousel...")
+        carousel_id = create_carousel_container(
+            ig_user_id, access_token, children_ids, didascalia
+        )
+        wait_for_container(ig_user_id, access_token, carousel_id)
+        publish_container(ig_user_id, access_token, carousel_id)
+
+
+def publish_with_retry(ig_user_id: str, access_token: str, public_urls: list[str],
+                       didascalia: str) -> None:
+    """
+    Esegue _do_publish con retry globale.
+    Se tutti i tentativi falliscono, rilancia l'eccezione.
+    """
+    last_error = None
+
+    for attempt in range(1, GLOBAL_MAX_RETRIES + 1):
+        try:
+            print(f"\n{'='*60}")
+            print(f"TENTATIVO DI PUBBLICAZIONE {attempt}/{GLOBAL_MAX_RETRIES}")
+            print(f"{'='*60}\n")
+
+            _do_publish(ig_user_id, access_token, public_urls, didascalia)
+
+            print(f"\n✓ Pubblicazione riuscita al tentativo {attempt}!")
+            return  # Successo!
+
+        except Exception as e:
+            last_error = e
+            print(f"\n✗ Tentativo {attempt}/{GLOBAL_MAX_RETRIES} fallito: {e}")
+
+            if attempt < GLOBAL_MAX_RETRIES:
+                delay = GLOBAL_RETRY_DELAYS[attempt - 1]
+                print(f"  Riprovo tra {delay}s (backoff esponenziale)...")
+                time.sleep(delay)
             else:
-                raise
+                print(f"\n{'='*60}")
+                print(f"TUTTI I {GLOBAL_MAX_RETRIES} TENTATIVI FALLITI!")
+                print(f"{'='*60}")
+
+    raise RuntimeError(f"Pubblicazione fallita dopo {GLOBAL_MAX_RETRIES} tentativi. Ultimo errore: {last_error}")
+
+
+# ---------------------------------------------------------------------------
+# Attesa orario di pubblicazione
+# ---------------------------------------------------------------------------
+
+def wait_for_publish_time() -> None:
+    """
+    Se non è un'esecuzione manuale, aspetta fino all'orario di pubblicazione
+    esatto (09:21:00 IT). Il workflow viene triggerato ~3 min prima per dare
+    tempo alla GitHub Action di avviarsi.
+    """
+    is_manual = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+    if is_manual or ZoneInfo is None:
+        return
+
+    tz_rome = ZoneInfo("Europe/Rome")
+    now_rome = dt.datetime.now(tz_rome)
+    target_time = now_rome.replace(hour=PUBLISH_HOUR, minute=PUBLISH_MINUTE, second=0, microsecond=0)
+
+    if now_rome < target_time:
+        wait_seconds = (target_time - now_rome).total_seconds()
+        if wait_seconds <= 900:  # max 15 minuti di attesa (copre tolleranza ±10min + startup)
+            print(f"Action avviata alle {now_rome.strftime('%H:%M:%S')}.")
+            print(f"Attendo {wait_seconds:.0f} secondi per pubblicare esattamente alle {PUBLISH_HOUR:02d}:{PUBLISH_MINUTE:02d}:00...")
+            time.sleep(wait_seconds)
+            print("Ora esatta raggiunta. Avvio pubblicazione!")
+        else:
+            print(f"Troppo presto ({now_rome.strftime('%H:%M:%S')}), attesa > 10 min. Pubblico subito.")
+    else:
+        diff = (now_rome - target_time).total_seconds()
+        print(f"Orario {PUBLISH_HOUR:02d}:{PUBLISH_MINUTE:02d} già passato da {diff:.0f}s. Pubblico subito.")
 
 
 # ---------------------------------------------------------------------------
@@ -200,16 +343,16 @@ def main():
 
     if not ACCESS_TOKEN:
         print("Errore: IG_ACCESS_TOKEN non impostato.")
-        return
+        sys.exit(1)
     if not IG_USER_ID:
         print("Errore: IG_USER_ID non impostato.")
-        return
+        sys.exit(1)
 
     # Cartella target
     posts_dir = REPO_ROOT / "assets" / "posts"
     if not posts_dir.exists():
         print(f"La cartella {posts_dir} non esiste. Non c'è nulla da pubblicare.")
-        return
+        sys.exit(1)
 
     oggi_iso = dt.date.today().isoformat()
     oggi_tag = dt.date.today().strftime("%Y%m%d")
@@ -285,8 +428,7 @@ def main():
     print(didascalia)
     print()
 
-    # 1) Costruisci URL raw di GitHub per ogni immagine
-    # Le immagini sono già committate nella repo pubblica su GitHub.
+    # Costruisci URL raw di GitHub per ogni immagine
     print("Costruzione URL raw GitHub per le immagini...")
     public_urls = []
     for path in album_paths:
@@ -297,55 +439,19 @@ def main():
 
     print()
 
-    # 2) Crea i container e pubblica tramite Graph API
-    if not is_manual and ZoneInfo is not None:
-        tz_rome = ZoneInfo("Europe/Rome")
-        now_rome = dt.datetime.now(tz_rome)
-        target_time = now_rome.replace(hour=9, minute=21, second=0, microsecond=0)
-        
-        # Se siamo tra le 09:20 e le 09:21, aspetta il momento esatto
-        if now_rome < target_time and now_rome.hour == 9 and now_rome.minute == 20:
-            wait_seconds = (target_time - now_rome).total_seconds()
-            print(f"Action avviata alle {now_rome.strftime('%H:%M:%S')}. Attendo {wait_seconds:.1f} secondi per pubblicare esattamente alle 09:21:00...")
-            time.sleep(wait_seconds)
-            print("Ora esatta raggiunta. Avvio pubblicazione!")
+    # ── Aspetta l'orario di pubblicazione esatto (09:21:00 IT) ──
+    wait_for_publish_time()
 
+    # ── Pubblica con retry globale ──
     try:
-        if len(public_urls) == 1:
-            # Singola foto
-            print(f"Creazione container per singola foto...")
-            container_id = create_image_container(
-                IG_USER_ID, ACCESS_TOKEN, public_urls[0], caption=didascalia
-            )
-            wait_for_container(IG_USER_ID, ACCESS_TOKEN, container_id)
-            publish_container(IG_USER_ID, ACCESS_TOKEN, container_id)
+        publish_with_retry(IG_USER_ID, ACCESS_TOKEN, public_urls, didascalia)
+    except RuntimeError as e:
+        print(f"\n❌ ERRORE FATALE: {e}")
+        sys.exit(1)
 
-        else:
-            # Carousel (Pranzo → Cena)
-            print("Creazione container per ogni immagine del carousel...")
-            children_ids = []
-            for url in public_urls:
-                cid = create_image_container(
-                    IG_USER_ID, ACCESS_TOKEN, url, is_carousel_item=True
-                )
-                wait_for_container(IG_USER_ID, ACCESS_TOKEN, cid)
-                children_ids.append(cid)
-
-            print("Creazione container carousel...")
-            carousel_id = create_carousel_container(
-                IG_USER_ID, ACCESS_TOKEN, children_ids, didascalia
-            )
-            wait_for_container(IG_USER_ID, ACCESS_TOKEN, carousel_id)
-            publish_container(IG_USER_ID, ACCESS_TOKEN, carousel_id)
-
-    except Exception as e:
-        print(f"Errore durante la pubblicazione: {e}")
-        return
-
-    print("Pubblicazione completata!")
+    print("\n🎉 Pubblicazione completata con successo!")
 
     # Crea un file di lock per impedire post duplicati
-    # se la GitHub action dovesse essere lanciata una seconda volta nello stesso giorno
     with open(lock_file, "w") as f:
         f.write("Pubblicato con successo.")
 
