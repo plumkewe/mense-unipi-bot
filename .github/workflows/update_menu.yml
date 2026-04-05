@@ -18,8 +18,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          python-version: "3.12"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -32,11 +32,11 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          if git diff --quiet data/menu.json; then
-            echo "Nessuna modifica rilevata in menu.json"
+          if git diff --quiet data/menu.json && git diff --quiet data/menu_today.json 2>/dev/null; then
+            echo "Nessuna modifica rilevata"
             echo "changes=false" >> $GITHUB_OUTPUT
           else
-            echo "Modifiche rilevate in menu.json"
+            echo "Modifiche rilevate"
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
@@ -45,6 +45,6 @@ jobs:
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
-          git add data/menu.json
+          git add data/menu.json data/menu_today.json
           git commit -m "chore: aggiornamento menu $(date '+%Y-%m-%d') [auto]"
           git push

@@ -172,16 +172,33 @@ def main():
     old_json = json.dumps(dict(sorted(menu_data.items())), ensure_ascii=False)
     new_json = json.dumps(sorted_menu, ensure_ascii=False)
 
-    if old_json == new_json:
+    menu_changed = old_json != new_json
+
+    if menu_changed:
+        with open(_menu_path, 'w', encoding='utf-8') as f:
+            json.dump(sorted_menu, f, indent=2, ensure_ascii=False)
+
+        added = len(new_days)
+        kept = len(filtered_old)
+        print(f"menu.json aggiornato: {kept} giorni passati conservati + {added} giorni da oggi riscritti.")
+    else:
         print("Nessuna modifica rilevata. menu.json invariato.")
+
+    # Genera menu_today.json con il menu di oggi
+    _today_path = os.path.join(DATA_DIR, 'menu_today.json')
+    if today_str in sorted_menu:
+        today_menu = {today_str: sorted_menu[today_str]}
+        with open(_today_path, 'w', encoding='utf-8') as f:
+            json.dump(today_menu, f, indent=2, ensure_ascii=False)
+        print(f"menu_today.json generato per {today_str}.")
+    else:
+        # Nessun menu per oggi: salva oggetto vuoto
+        with open(_today_path, 'w', encoding='utf-8') as f:
+            json.dump({}, f, indent=2, ensure_ascii=False)
+        print(f"Nessun menu trovato per oggi ({today_str}). menu_today.json vuoto.")
+
+    if not menu_changed:
         sys.exit(0)
-
-    with open(_menu_path, 'w', encoding='utf-8') as f:
-        json.dump(sorted_menu, f, indent=2, ensure_ascii=False)
-
-    added = len(new_days)
-    kept = len(filtered_old)
-    print(f"menu.json aggiornato: {kept} giorni passati conservati + {added} giorni da oggi riscritti.")
 
 
 if __name__ == "__main__":
