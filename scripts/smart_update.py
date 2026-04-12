@@ -133,16 +133,24 @@ def build_final_days(aggregated):
 
 def main():
     _menu_path = os.path.join(DATA_DIR, 'menu.json')
+    _history_path = os.path.join(DATA_DIR, 'menu_history.json')
     _canteens_path = os.path.join(DATA_DIR, 'canteens.json')
     if not os.path.exists(_menu_path) or not os.path.exists(_canteens_path):
         print("File richiesti mancanti.")
         sys.exit(1)
 
-    with open(_menu_path, 'r') as f:
-        menu_data = json.load(f)
+    with open(_menu_path, 'r', encoding='utf-8') as f:
+        menu_raw = f.read()
+    menu_data = json.loads(menu_raw)
 
-    with open(_canteens_path, 'r') as f:
+    with open(_canteens_path, 'r', encoding='utf-8') as f:
         canteens = json.load(f)
+
+    if os.path.exists(_history_path):
+        with open(_history_path, 'r', encoding='utf-8') as f:
+            history_data = json.load(f)
+    else:
+        history_data = {}
 
     today = datetime.date.today()
     # Lunedì della settimana corrente (include anche i giorni già passati questa settimana)
@@ -153,20 +161,29 @@ def main():
     aggregated = scrape_from_today(canteens, start_monday)
 
     today_str = today.isoformat()
+
+    # Sposta i giorni passati dallo snapshot corrente allo storico.
+    # Lo storico mantiene i record esistenti e appende solo nuove date.
+    past_days = {d: v for d, v in menu_data.items() if d < today_str}
+    history_merged = dict(history_data)
+    appended_to_history = 0
+    for date_key in sorted(past_days.keys()):
+        if date_key not in history_merged:
+            history_merged[date_key] = past_days[date_key]
+            appended_to_history += 1
+    sorted_history = dict(sorted(history_merged.items()))
+
     if aggregated:
         # Costruisci i giorni nel formato finale (liste di piatti)
         new_days = build_final_days(aggregated)
         print(f"Trovati dati per {len(new_days)} giorni (da oggi in poi).")
 
-        # Rimuovi dal menu esistente tutti i giorni >= oggi e sostituiscili con i dati freschi
-        # I giorni passati (< oggi) restano intatti
-        filtered_old = {d: v for d, v in menu_data.items() if d < today_str}
-
-        merged = {**filtered_old, **new_days}
-        sorted_menu = dict(sorted(merged.items()))
+        # menu.json contiene solo oggi e giorni futuri.
+        sorted_menu = dict(sorted(new_days.items()))
     else:
-        print("Nessun dato nuovo trovato. Uso menu.json esistente per generare i file di oggi.")
-        sorted_menu = dict(sorted(menu_data.items()))
+        print("Nessun dato nuovo trovato. Mantengo in menu.json solo i giorni da oggi in poi.")
+        future_days = {d: v for d, v in menu_data.items() if d >= today_str}
+        sorted_menu = dict(sorted(future_days.items()))
 
     # Salva solo se ci sono modifiche effettive
     old_json = json.dumps(dict(sorted(menu_data.items())), ensure_ascii=False)
@@ -174,35 +191,46 @@ def main():
 
     menu_changed = old_json != new_json
 
-    if menu_changed:
-        with open(_menu_path, 'w', encoding='utf-8') as f:
-            json.dump(sorted_menu, f, indent=2, ensure_ascii=False)
+    old_history_json = json.dumps(dict(sorted(history_data.items())), ensure_ascii=False)
+    new_history_json = json.dumps(sorted_history, ensure_ascii=False)
+    history_changed = old_history_json != new_history_json
 
-        added = len(new_days)
-        kept = len(filtered_old)
-        print(f"menu.json aggiornato: {kept} giorni passati conservati + {added} giorni da oggi riscritti.")
+    minified_menu_json = json.dumps(sorted_menu, separators=(',', ':'), ensure_ascii=False)
+    menu_already_minified = menu_raw.strip() == minified_menu_json
+    menu_write_required = menu_changed or not menu_already_minified
+
+    if menu_write_required:
+        with open(_menu_path, 'w', encoding='utf-8') as f:
+            f.write(minified_menu_json)
+
+    if menu_changed:
+        print(f"menu.json aggiornato con {len(sorted_menu)} giorni da oggi in poi.")
+    elif menu_write_required:
+        print("Nessuna modifica dati rilevata. menu.json riscritto in formato minificato.")
     else:
         print("Nessuna modifica rilevata. menu.json invariato.")
 
+    if history_changed:
+        with open(_history_path, 'w', encoding='utf-8') as f:
+            json.dump(sorted_history, f, indent=2, ensure_ascii=False)
+        print(f"menu_history.json aggiornato: aggiunte {appended_to_history} nuove date passate.")
+    else:
+        print("Nessuna modifica rilevata su menu_history.json.")
+
     # Genera sempre menu_today.json con il menu di oggi
     _today_path = os.path.join(DATA_DIR, 'menu_today.json')
-    _today_min_path = os.path.join(DATA_DIR, 'menu_today.min.json')
     if today_str in sorted_menu:
         today_menu = {today_str: sorted_menu[today_str]}
         with open(_today_path, 'w', encoding='utf-8') as f:
-            json.dump(today_menu, f, indent=2, ensure_ascii=False)
-        with open(_today_min_path, 'w', encoding='utf-8') as f:
             json.dump(today_menu, f, separators=(',', ':'), ensure_ascii=False)
-        print(f"menu_today.json e menu_today.min.json generati per {today_str}.")
+        print(f"menu_today.json generato per {today_str}.")
     else:
         # Nessun menu per oggi: salva oggetto vuoto
         with open(_today_path, 'w', encoding='utf-8') as f:
-            json.dump({}, f, indent=2, ensure_ascii=False)
-        with open(_today_min_path, 'w', encoding='utf-8') as f:
             json.dump({}, f, separators=(',', ':'), ensure_ascii=False)
-        print(f"Nessun menu trovato per oggi ({today_str}). menu_today.json e menu_today.min.json vuoti.")
+        print(f"Nessun menu trovato per oggi ({today_str}). menu_today.json vuoto.")
 
-    if not menu_changed:
+    if not menu_changed and not history_changed:
         sys.exit(0)
 
 

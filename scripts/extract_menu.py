@@ -294,7 +294,7 @@ def main():
 
     output_file = os.path.join(DATA_DIR, 'menu.json')
     with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(final_output, f, indent=2, ensure_ascii=False)
+        json.dump(final_output, f, separators=(',', ':'), ensure_ascii=False)
         
     print(f"Done. Saved {len(final_output)} days to {output_file}.")
 
