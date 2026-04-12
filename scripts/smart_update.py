@@ -152,21 +152,21 @@ def main():
     # Scarica i menu da oggi in poi
     aggregated = scrape_from_today(canteens, start_monday)
 
-    if not aggregated:
-        print("Nessun dato trovato. Nessuna modifica a menu.json.")
-        sys.exit(0)
-
-    # Costruisci i giorni nel formato finale (liste di piatti)
-    new_days = build_final_days(aggregated)
-    print(f"Trovati dati per {len(new_days)} giorni (da oggi in poi).")
-
-    # Rimuovi dal menu esistente tutti i giorni >= oggi e sostituiscili con i dati freschi
-    # I giorni passati (< oggi) restano intatti
     today_str = today.isoformat()
-    filtered_old = {d: v for d, v in menu_data.items() if d < today_str}
+    if aggregated:
+        # Costruisci i giorni nel formato finale (liste di piatti)
+        new_days = build_final_days(aggregated)
+        print(f"Trovati dati per {len(new_days)} giorni (da oggi in poi).")
 
-    merged = {**filtered_old, **new_days}
-    sorted_menu = dict(sorted(merged.items()))
+        # Rimuovi dal menu esistente tutti i giorni >= oggi e sostituiscili con i dati freschi
+        # I giorni passati (< oggi) restano intatti
+        filtered_old = {d: v for d, v in menu_data.items() if d < today_str}
+
+        merged = {**filtered_old, **new_days}
+        sorted_menu = dict(sorted(merged.items()))
+    else:
+        print("Nessun dato nuovo trovato. Uso menu.json esistente per generare i file di oggi.")
+        sorted_menu = dict(sorted(menu_data.items()))
 
     # Salva solo se ci sono modifiche effettive
     old_json = json.dumps(dict(sorted(menu_data.items())), ensure_ascii=False)
@@ -184,18 +184,23 @@ def main():
     else:
         print("Nessuna modifica rilevata. menu.json invariato.")
 
-    # Genera menu_today.json con il menu di oggi
+    # Genera sempre menu_today.json con il menu di oggi
     _today_path = os.path.join(DATA_DIR, 'menu_today.json')
+    _today_min_path = os.path.join(DATA_DIR, 'menu_today.min.json')
     if today_str in sorted_menu:
         today_menu = {today_str: sorted_menu[today_str]}
         with open(_today_path, 'w', encoding='utf-8') as f:
             json.dump(today_menu, f, indent=2, ensure_ascii=False)
-        print(f"menu_today.json generato per {today_str}.")
+        with open(_today_min_path, 'w', encoding='utf-8') as f:
+            json.dump(today_menu, f, separators=(',', ':'), ensure_ascii=False)
+        print(f"menu_today.json e menu_today.min.json generati per {today_str}.")
     else:
         # Nessun menu per oggi: salva oggetto vuoto
         with open(_today_path, 'w', encoding='utf-8') as f:
             json.dump({}, f, indent=2, ensure_ascii=False)
-        print(f"Nessun menu trovato per oggi ({today_str}). menu_today.json vuoto.")
+        with open(_today_min_path, 'w', encoding='utf-8') as f:
+            json.dump({}, f, separators=(',', ':'), ensure_ascii=False)
+        print(f"Nessun menu trovato per oggi ({today_str}). menu_today.json e menu_today.min.json vuoti.")
 
     if not menu_changed:
         sys.exit(0)
