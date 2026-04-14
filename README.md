@@ -58,7 +58,9 @@
 │   ├── canteens.json         <- dati delle mense (orari, servizi, coordinate)
 │   ├── combinations.json     <- combinazioni di piatti (es. menu fisso)
 │   ├── cookies.txt           <- sessione per lo scraping
-│   ├── menu.json             <- menù aggiornato quotidianamente
+│   ├── menu.json             <- menù da oggi in poi (snapshot corrente)
+│   ├── menu_today.json       <- snapshot del solo menù di oggi
+│   ├── menu_history.json     <- storico menù passati (append-only)
 │   └── rates.json            <- tariffe per fascia ISEE
 ├── bot.py                    <- entrypoint del bot Telegram
 ├── scripts/
@@ -83,24 +85,35 @@
 
 ```mermaid
 graph LR
-    A["canteen.dsutoscana.cloud"] --> B["menu.json"]
-    C["DSU Toscana - Tariffe"] --> D["rates.json"]
-    E["canteens.json"] -->|Dati statici mense| F["bot.py"]
+  A["canteen.dsutoscana.cloud"] --> U["scripts/smart_update.py"]
+  C["DSU Toscana - Tariffe"] --> R["scripts/fetch_rates.py + fetch_combinations.py"]
 
-    G["Cloudflare Worker<br>(Scheduler ITEsatto)"] -->|Trigger workflow| H{"GitHub Actions"}
+  G["Cloudflare Worker<br>(Scheduler ora IT)"] -->|workflow_dispatch| H{"GitHub Actions"}
 
-    H -->|update_menu| B
-    H -->|update_rates| D
-    B -->|generate_images| I["Immagini Post (.png)"]
-    H -->|publish_instagram| J["Instagram @mense.unipi"]
-    I --> J
+  H -->|update_menu.yml| U
+  U --> B["data/menu.json<br>(solo da oggi in poi)"]
+  U --> BH["data/menu_history.json<br>(append giorni passati)"]
+  U --> BT["data/menu_today.json<br>(snapshot di oggi)"]
 
-    B --> F
-    D --> F
-    K["combinations.json"] --> F
+  H -->|update_rates.yml| R
+  R --> D["data/rates.json"]
+  R --> K["data/combinations.json"]
+  R --> T["assets/img/table.png"]
 
-    F -->|"Menù / Orari / Tariffe"| L["Utente Telegram"]
-    L -->|"@cibounipibot"| F
+  H -->|generate_images.yml| I["assets/posts/*.png"]
+  B -->|input menu| I
+
+  H -->|publish_instagram.yml| J["Instagram @cibounipibot"]
+  I --> J
+  B -->|caption/testi| J
+
+  E["data/canteens.json"] -->|Dati statici mense| F["bot.py"]
+  B --> F
+  D --> F
+  K --> F
+
+  F -->|"Menù / Orari / Tariffe"| L["Utente Telegram"]
+  L -->|"@cibounipibot"| F
 ```
 
 ## Funzionalità
@@ -140,7 +153,7 @@ Digitando `@cibounipibot t:<valore>` (es. `t:20000`) il bot calcola automaticame
 
 Oltre al bot Telegram, il progetto include un sistema automatizzato per la **pubblicazione giornaliera dei menù su Instagram**. L'infrastruttura è basata su GitHub Actions suddivise in tre fasi:
 
-1. **`update_menu.yml`**: Scarica i testi aggiornati dei menù salvandoli in `menu.json`.
+1. **`update_menu.yml`**: Aggiorna i testi dei menù da oggi in poi salvandoli in `menu.json`, genera `menu_today.json` e sposta i giorni passati in `menu_history.json` (append).
 2. **`generate_images.yml`**: Tramite uno script Python nativo (`generate_menu_images.py`), il sistema genera le grafiche ("slide") a partire da template, scrivendo testo personalizzato e uno sfondo procedurale con geometrie dinamiche e vibranti. **Il design cambia dinamicamente** e il sistema alterna vari colori e pattern su base settimanale e giornaliera.
 3. **`publish_instagram.yml`**: Utilizzando le **Graph API di Meta**, le immagini generate vengono raggruppate e pubblicate come "Carousel" sul profilo Instagram dedicato ai menù.
 
