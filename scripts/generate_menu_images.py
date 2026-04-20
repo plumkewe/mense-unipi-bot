@@ -22,12 +22,6 @@ COURSE_ORDER = [
 ]
 
 POST_BG_COLOR = "#F3F4F6"
-CARD_BG_COLOR = "#FFFFFF"
-TEXT_COLOR = "#374151"
-TITLE_COLOR = "#111827"
-TOP_BAR_COLOR = "#E5E7EB"
-BORDER_COLOR = "#F3F4F6"
-DIVIDER_COLOR = "#D1D5DB"
 
 
 def slugify(value: str) -> str:
@@ -125,7 +119,7 @@ def _random_light_color(date_iso: str, canteen_id: str) -> str:
     # Tiny random hue shift to avoid exact repeats for the same weekday across weeks
     hue = (hue + rng.uniform(-0.05, 0.05)) % 1.0
 
-    saturation = rng.uniform(0.5, 0.9)
+    saturation = rng.uniform(0.25, 0.5)  # pastel colors (lower saturation)
     value = rng.uniform(0.95, 1.0)
     
     r, g, b = colorsys.hsv_to_rgb(hue, saturation, value)
@@ -140,15 +134,72 @@ def _darken_color(hex_color: str, factor: float = 0.75) -> str:
     red = max(0, min(255, int(red * factor)))
     green = max(0, min(255, int(green * factor)))
     blue = max(0, min(255, int(blue * factor)))
+    blue = max(0, min(255, int(blue * factor)))
     return f"#{red:02X}{green:02X}{blue:02X}"
 
 
-def _load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
+def _derive_ui_colors(hex_color: str) -> dict:
+    color = hex_color.lstrip("#")
+    r, g, b = int(color[0:2], 16)/255.0, int(color[2:4], 16)/255.0, int(color[4:6], 16)/255.0
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    
+    # Distinctly tinted background (no white) with relative contrast steps
+    c_card_bg = colorsys.hsv_to_rgb(h, 0.15, 0.96)  # distinctly colored pastel base
+    c_tab_act = c_card_bg
+    c_dish_bg = colorsys.hsv_to_rgb(h, 0.20, 0.90)  # slightly more saturated/darker
+    c_cat_bg  = colorsys.hsv_to_rgb(h, 0.25, 0.84)  # category/tab background
+    c_border  = colorsys.hsv_to_rgb(h, 0.30, 0.76)  # borders
+    c_sec     = colorsys.hsv_to_rgb(h, 0.55, 0.45)  # secondary text (high contrast)
+    c_title   = colorsys.hsv_to_rgb(h, 0.60, 0.15)  # title text (almost black)
+
+    def to_hex(rgb):
+        return f"#{int(rgb[0]*255):02X}{int(rgb[1]*255):02X}{int(rgb[2]*255):02X}"
+
+    return {
+        "CARD": to_hex(c_card_bg),
+        "TAB_ACTIVE": to_hex(c_tab_act),
+        "DISH": to_hex(c_dish_bg),
+        "CAT": to_hex(c_cat_bg),
+        "BORDER": to_hex(c_border),
+        "SECONDARY": to_hex(c_sec),
+        "TITLE": to_hex(c_title)
+    }
+
+def _lighten_color(hex_color: str, factor: float = 0.95) -> str:
+    color = hex_color.lstrip("#")
+    red = int(color[0:2], 16)
+    green = int(color[2:4], 16)
+    blue = int(color[4:6], 16)
+    red = int(red + (255 - red) * factor)
+    green = int(green + (255 - green) * factor)
+    blue = int(blue + (255 - blue) * factor)
+    return f"#{red:02X}{green:02X}{blue:02X}"
+
+
+def _load_font(size: int, bold: bool = False, weight: str = None) -> ImageFont.FreeTypeFont:
     _fonts_dir = REPO_ROOT / "assets" / "fonts"
-    if bold:
+    if weight:
+        font_path = _fonts_dir / f"Poppins-{weight}.ttf"
+    elif bold:
         font_path = _fonts_dir / "Poppins-Bold.ttf"
     else:
         font_path = _fonts_dir / "Poppins-Regular.ttf"
+    return ImageFont.truetype(str(font_path), size)
+
+
+def _load_nunito(size: int, weight: int = 800) -> ImageFont.FreeTypeFont:
+    """Load Nunito variable font at a specific weight (200-1000)."""
+    _fonts_dir = REPO_ROOT / "assets" / "fonts"
+    font_path = _fonts_dir / "Nunito-latin.ttf"
+    font = ImageFont.truetype(str(font_path), size)
+    font.set_variation_by_axes([weight])
+    return font
+
+
+def _load_fa_solid(size: int) -> ImageFont.FreeTypeFont:
+    """Load FontAwesome Solid font."""
+    _fonts_dir = REPO_ROOT / "assets" / "fonts" / "fa-webfonts"
+    font_path = _fonts_dir / "fa-solid-900.ttf"
     return ImageFont.truetype(str(font_path), size)
 
 
@@ -202,14 +253,11 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         "diagonal_stripes",
         "crosshatch",
         "diamond_grid",
-        "hexagons",
         "zigzag",
         "concentric_circles",
         "plus_grid",
         "waves",
         "triangles",
-        "squares",
-        "hollow_dots",
         "x_shapes",
         "vertical_stripes",
         "horizontal_stripes"
@@ -220,11 +268,11 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     if pattern_type == "dot_grid":
         # Offset polka-dot grid — perfectly aligned rows and columns, centered
-        spacing = rng.choice([140, 180, 220])
+        spacing = rng.choice([240, 300, 360])
         radius  = spacing // 4
-        ox = (width % spacing) // 2
-        oy = (height % spacing) // 2
-        for row, y in enumerate(range(oy, height + spacing, spacing)):
+        ox = (width // 2) % spacing
+        oy = (height // 2) % spacing
+        for row, y in enumerate(range(oy - spacing * 2, height + spacing, spacing)):
             x_offset = (spacing // 2) if (row % 2) else 0
             for x in range(-spacing, width + spacing, spacing):
                 cx = x + x_offset + ox
@@ -232,8 +280,8 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     elif pattern_type == "diagonal_stripes":
         # Crisp parallel diagonal stripes at 45°
-        spacing   = rng.choice([120, 160, 200])
-        thickness = rng.choice([20, 30, 40])
+        spacing   = rng.choice([240, 300, 360])
+        thickness = rng.choice([50, 70, 90])
         size      = (width + height) * 2
         tmp = Image.new("RGBA", (size, size), (0, 0, 0, 0))
         tmp_draw = ImageDraw.Draw(tmp)
@@ -244,19 +292,19 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
 
     elif pattern_type == "crosshatch":
         # Regular grid of thin crossing lines, centered
-        spacing = rng.choice([140, 180, 240])
-        thickness = rng.choice([12, 16, 20])
-        ox = (width % spacing) // 2
-        oy = (height % spacing) // 2
-        for x in range(ox, width + spacing, spacing):
+        spacing = rng.choice([240, 300, 360])
+        thickness = rng.choice([50, 70, 90])
+        ox = (width // 2) % spacing
+        oy = (height // 2) % spacing
+        for x in range(ox - spacing * 2, width + spacing, spacing):
             draw.line([(x, 0), (x, height)], fill=pc, width=thickness)
-        for y in range(oy, height + spacing, spacing):
+        for y in range(oy - spacing * 2, height + spacing, spacing):
             draw.line([(0, y), (width, y)], fill=pc, width=thickness)
 
     elif pattern_type == "diamond_grid":
         # 45°-rotated square grid (diamond lattice)
-        spacing = rng.choice([160, 200, 240])
-        thickness = rng.choice([12, 16, 20])
+        spacing = rng.choice([240, 300, 360])
+        thickness = rng.choice([50, 70, 90])
         size = (width + height) * 2
         tmp = Image.new("RGBA", (size, size), (0, 0, 0, 0))
         tmp_draw = ImageDraw.Draw(tmp)
@@ -266,32 +314,16 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         rotated = tmp.rotate(45, center=(size // 2, size // 2))
         layer.paste(rotated, (-(size - width) // 2, -(size - height) // 2), rotated)
 
-    elif pattern_type == "hexagons":
-        # Regular hexagonal tiling
-        size = rng.choice([100, 140, 180])
-        thickness = rng.choice([10, 14, 18])
-        hex_w = size * 2
-        hex_h = int(size * 1.732)  # sqrt(3) * size
-        import math
-        for row in range(-1, height // hex_h + 2):
-            for col in range(-1, width // (hex_w - size // 2) + 2):
-                cx = col * (hex_w - size // 2) + (hex_w // 2 if row % 2 else 0)
-                cy = row * hex_h + hex_h // 2
-                pts = [
-                    (cx + int(size * math.cos(math.radians(60 * i - 30))),
-                     cy + int(size * math.sin(math.radians(60 * i - 30))))
-                    for i in range(6)
-                ]
-                draw.polygon(pts, outline=pc, width=thickness)
+ 
 
     elif pattern_type == "zigzag":
         # Horizontal chevron / zigzag bands, centered
-        spacing = rng.choice([140, 180, 240])
+        spacing = rng.choice([240, 300, 360])
         amplitude = spacing // 2
-        thickness = rng.choice([14, 18, 22])
+        thickness = rng.choice([50, 70, 90])
         step = 60
-        ox = (width % (step * 2)) // 2
-        oy = (height % spacing) // 2
+        ox = (width // 2) % (step * 2)
+        oy = (height // 2) % spacing
         for band in range(-1, height // spacing + 2):
             y_base = band * spacing + oy
             pts = []
@@ -306,32 +338,32 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
         # Rings expanding from centre
         cx, cy = width // 2, height // 2
         max_r = int((width ** 2 + height ** 2) ** 0.5 // 2) + 200
-        spacing = rng.choice([140, 180, 240])
-        thickness = rng.choice([14, 18, 22])
+        spacing = rng.choice([240, 300, 360])
+        thickness = rng.choice([50, 70, 90])
         for r in range(spacing, max_r, spacing):
             draw.ellipse((cx - r, cy - r, cx + r, cy + r), outline=pc, width=thickness)
 
     elif pattern_type == "plus_grid":
         # Evenly spaced + signs on a regular grid, centered
-        spacing  = rng.choice([160, 200, 240])
+        spacing  = rng.choice([240, 300, 360])
         arm_len  = spacing // 3
-        thickness = rng.choice([14, 18, 24])
-        ox = (width % spacing) // 2
-        oy = (height % spacing) // 2
-        for y in range(oy, height + spacing, spacing):
-            for x in range(ox, width + spacing, spacing):
+        thickness = rng.choice([50, 70, 90])
+        ox = (width // 2) % spacing
+        oy = (height // 2) % spacing
+        for y in range(oy - spacing * 2, height + spacing, spacing):
+            for x in range(ox - spacing * 2, width + spacing, spacing):
                 draw.line([(x - arm_len, y), (x + arm_len, y)], fill=pc, width=thickness)
                 draw.line([(x, y - arm_len), (x, y + arm_len)], fill=pc, width=thickness)
 
     elif pattern_type == "waves":
         import math
-        spacing = rng.choice([140, 180, 220])
+        spacing = rng.choice([240, 300, 360])
         amplitude = spacing // 3
-        thickness = rng.choice([14, 18, 22])
-        oy = (height % spacing) // 2
+        thickness = rng.choice([50, 70, 90])
+        oy = (height // 2) % spacing
         # Center the sine wave horizontally: shift phase so wave is symmetric around center
         cx = width / 2.0
-        for y_base in range(oy, height + spacing, spacing):
+        for y_base in range(oy - spacing * 2, height + spacing, spacing):
             pts = []
             for x in range(-40, width + 80, 40):
                 y = y_base + int(math.sin((x - cx) / 100.0) * amplitude)
@@ -340,11 +372,11 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
                 draw.line([pts[i], pts[i + 1]], fill=pc, width=thickness)
 
     elif pattern_type == "triangles":
-        spacing = rng.choice([160, 200, 240])
-        thickness = rng.choice([10, 14, 18])
-        ox = (width % spacing) // 2
-        oy = (height % spacing) // 2
-        for row, y in enumerate(range(oy, height + spacing, spacing)):
+        spacing = rng.choice([240, 300, 360])
+        thickness = rng.choice([50, 70, 90])
+        ox = (width // 2) % spacing
+        oy = (height // 2) % spacing
+        for row, y in enumerate(range(oy - spacing * 2, height + spacing, spacing)):
             for col, x in enumerate(range(ox - spacing, width + spacing, spacing)):
                 x_off = x + (spacing // 2 if row % 2 == 0 else 0)
                 pts = [
@@ -354,53 +386,31 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
                 ]
                 draw.polygon(pts, outline=pc, width=thickness)
 
-    elif pattern_type == "squares":
-        spacing = rng.choice([140, 180, 220])
-        size = spacing // 2
-        thickness = rng.choice([14, 18, 24])
-        ox = (width % spacing) // 2
-        oy = (height % spacing) // 2
-        for y in range(oy, height + spacing, spacing):
-            for x in range(ox, width + spacing, spacing):
-                draw.rectangle((x - size//2, y - size//2, x + size//2, y + size//2), outline=pc, width=thickness)
-
-    elif pattern_type == "hollow_dots":
-        spacing = rng.choice([140, 180, 220])
-        radius = spacing // 3
-        thickness = rng.choice([14, 18, 24])
-        ox = (width % spacing) // 2
-        oy = (height % spacing) // 2
-        for row, y in enumerate(range(oy, height + spacing, spacing)):
-            x_offset = (spacing // 2) if (row % 2) else 0
-            for x in range(-spacing, width + spacing, spacing):
-                cx = x + x_offset + ox
-                draw.ellipse((cx - radius, y - radius, cx + radius, y + radius), outline=pc, width=thickness)
+ 
 
     elif pattern_type == "x_shapes":
-        spacing = rng.choice([160, 200, 240])
+        spacing = rng.choice([240, 300, 360])
         arm_len = spacing // 3
-        thickness = rng.choice([14, 18, 24])
-        ox = (width % spacing) // 2
-        oy = (height % spacing) // 2
-        for y in range(oy, height + spacing, spacing):
-            for x in range(ox, width + spacing, spacing):
+        thickness = rng.choice([50, 70, 90])
+        ox = (width // 2) % spacing
+        oy = (height // 2) % spacing
+        for y in range(oy - spacing * 2, height + spacing, spacing):
+            for x in range(ox - spacing * 2, width + spacing, spacing):
                 draw.line([(x - arm_len, y - arm_len), (x + arm_len, y + arm_len)], fill=pc, width=thickness)
                 draw.line([(x - arm_len, y + arm_len), (x + arm_len, y - arm_len)], fill=pc, width=thickness)
 
     elif pattern_type == "vertical_stripes":
-        spacing = rng.choice([120, 160, 200])
-        # matching diagonal_stripes logic which is spacing // 4
-        thickness = spacing // 4
-        ox = (width % spacing) // 2
-        for x in range(ox, width + spacing, spacing):
+        spacing = rng.choice([240, 300, 360])
+        thickness = spacing // 3
+        ox = (width // 2) % spacing
+        for x in range(ox - spacing * 2, width + spacing, spacing):
             draw.line([(x, 0), (x, height)], fill=pc, width=thickness)
 
     elif pattern_type == "horizontal_stripes":
-        spacing = rng.choice([120, 160, 200])
-        # matching diagonal_stripes logic which is spacing // 4
-        thickness = spacing // 4
-        oy = (height % spacing) // 2
-        for y in range(oy, height + spacing, spacing):
+        spacing = rng.choice([240, 300, 360])
+        thickness = spacing // 3
+        oy = (height // 2) % spacing
+        for y in range(oy - spacing * 2, height + spacing, spacing):
             draw.line([(0, y), (width, y)], fill=pc, width=thickness)
 
     bg.paste(layer, (0, 0), layer)
@@ -422,191 +432,269 @@ def build_and_save_gt(
         course_dishes = meal_menu.get(course, [])
         if not course_dishes:
             continue
-        section_name = _strip_piatti(course).upper()
+        section_name = _strip_piatti(course)
         sections.append((section_name, course_dishes))
 
     if not sections:
-        sections = [("MENU", ["Nessun menu disponibile"])]
+        sections = [("Menu", ["Nessun menu disponibile"])]
 
     canvas_w, canvas_h = 2160, 2880
-    
-    # Generate Pattern Background
-    # Same pattern for the whole day (based on date)
-    # The geometric pattern will be identical across all canteens and meals for this date
+
+    # Generate patterned background (same pattern for the whole day)
     seed_key = f"{target_date}"
     base_bg = accent_color or POST_BG_COLOR
-    
-    # Create the background with pattern
     bg_image = _generate_background_pattern(base_bg, canvas_w, canvas_h, seed_key)
     image = bg_image.convert("RGB")
 
-    sheet_w = 1660
-    
-    # 1. First pass: Measure content height to determine sheet_h
-    # We need a dummy draw object for text measurements
-    dummy_img = Image.new("RGB", (1, 1))
-    dummy_draw = ImageDraw.Draw(dummy_img)
+    # ── Card UI constants (matching mensa-menu-ui.html) ──────────────
+    card_w      = 1660
+    card_radius = 80
 
-    title_font = _load_font(84, bold=True)
-    body_font = _load_font(66, bold=False)
-    section_font = _load_font(52, bold=True)
-    footer_font = _load_font(48, bold=True)
+    # Dynamically derive contrasting UI palette based purely on background hue
+    palette = _derive_ui_colors(base_bg)
+    C_CARD_BG     = palette["CARD"]
+    C_TITLE       = palette["TITLE"]
+    C_SECONDARY   = palette["SECONDARY"]
+    C_TAB_BG      = palette["CAT"]
+    C_TAB_ACTIVE  = palette["TAB_ACTIVE"]
+    C_CAT_BG      = palette["CAT"]
+    C_DISH_BG     = palette["DISH"]
+    C_DISH_BORDER = palette["BORDER"]
 
-    display_name = canteen_name.upper().replace("MENSA ", "").replace(" MENSA", "").strip()
-    title_text = display_name
-    
-    inner_pad_x = 80
-    inner_left = inner_pad_x
-    inner_right = sheet_w - inner_pad_x
-    max_text_width = inner_right - inner_left
+    # ── Fonts (Nunito, matching mensa-menu-ui.html) ───────────────────
+    title_font = _load_nunito(72, weight=800)   # h2: 18px × 4, weight 800
+    tab_font   = _load_nunito(52, weight=800)   # tab: 13px × 4, weight 800
+    cat_font   = _load_nunito(52, weight=800)   # cat: 13px × 4, weight 800
+    dish_font  = _load_nunito(60, weight=700)   # dish: 15px × 4, weight 700
+    date_font  = _load_nunito(44, weight=800)   # badge text
+    fa_font    = _load_fa_solid(44)             # FontAwesome icons
 
-    # Measure Title
-    current_y = 120
-    title_lines = _wrap_text(dummy_draw, title_text, title_font, max_text_width)
-    current_y += len(title_lines) * (_line_height(dummy_draw, title_font) + 8)
-    current_y += 20 # Gap after title
+    # ── Layout constants (≈ 4× scale from 420 px HTML) ──────────────
+    pad_x             = 80       # header side padding: 20px × 4
+    header_top        = 72       # header top padding: 18px × 4
+    header_bottom     = 48       # header bottom padding: 12px × 4
+    tab_margin_top    = 16       # mensa-tabs margin-top: 4px × 4
+    tab_margin_bottom = 48       # mensa-tabs margin-bottom: 12px × 4
+    tab_pad           = 24       # mensa-tabs padding: 6px × 4
+    tab_btn_pad_v     = 32       # tab button padding: 8px × 4
+    tab_radius        = 56       # mensa-tabs border-radius: 14px × 4
+    tab_btn_radius    = 40       # tab button border-radius: 10px × 4
+    list_radius       = 56       # menu-list border-radius: 14px × 4
+    cat_pad_top       = 32       # cat padding-top: 8px × 4
+    cat_pad_bottom    = 16       # cat padding-bottom: 4px × 4
+    cat_pad_x         = 64       # cat padding-left: 16px × 4
+    dish_pad_v        = 48       # dish padding vertical: 12px × 4
+    dish_pad_x        = 64       # dish padding horizontal: 16px × 4
+    dish_border_w     = 4        # border-bottom: 1px × 4
+    bottom_pad        = 80       # body bottom padding: 20px × 4 (matches pad_x)
 
-    # Measure Body Blocks
-    body_blocks: list[tuple[str, str]] = []
-    for section_name, section_dishes in sections:
-        body_blocks.append(("section", section_name))
-        for dish in section_dishes:
-            body_blocks.append(("dish", dish))
-        body_blocks.append(("gap", ""))
+    # ── Derived metrics ──────────────────────────────────────────────
+    dummy = Image.new("RGB", (1, 1))
+    dd    = ImageDraw.Draw(dummy)
 
-    if body_blocks and body_blocks[-1][0] == "gap":
-        body_blocks.pop()
+    title_h     = _line_height(dd, title_font)
+    tab_text_h  = _line_height(dd, tab_font)
+    cat_text_h  = _line_height(dd, cat_font)
+    dish_line_h = _line_height(dd, dish_font)
+    date_text_h = _line_height(dd, date_font)
 
-    section_line_height = _line_height(dummy_draw, section_font)
-    body_line_height = _line_height(dummy_draw, body_font)
-    
-    for block_type, value in body_blocks:
-        if block_type == "section":
-            current_y += section_line_height + 18
-        elif block_type == "dish":
-            wrapped_lines = _wrap_text(dummy_draw, value, body_font, max_text_width)
-            current_y += len(wrapped_lines) * (body_line_height + 10) + 10
-        else:
-             current_y += 22
+    tab_btn_h       = tab_btn_pad_v * 2 + tab_text_h
+    tab_container_h = tab_pad * 2 + tab_btn_h
+    cat_row_h       = cat_pad_top + cat_text_h + cat_pad_bottom
+    max_dish_text_w = card_w - pad_x * 2 - dish_pad_x * 2
 
-    # Measure Footer
-    footer_text = f"{date_label}"
-    footer_height = _line_height(dummy_draw, footer_font)
-    
-    # Add footer padding: gap before footer (60) + footer height + bottom padding (60)
-    total_required_height = current_y + 140 + footer_height
-    
-    # Clamp height
-    min_sheet_h = 800
-    max_sheet_h = 2600
-    sheet_h = max(min_sheet_h, min(total_required_height, max_sheet_h))
+    # ── 1. Measurement pass ──────────────────────────────────────────
+    y_m = header_top + title_h + header_bottom
+    y_m += tab_margin_top + tab_container_h + tab_margin_bottom
 
-    # 2. Second pass: Draw everything on the sized sheet
-    sheet = Image.new("RGBA", (sheet_w, sheet_h), (0, 0, 0, 0))
-    sheet_draw = ImageDraw.Draw(sheet)
+    for _, dishes in sections:
+        y_m += cat_row_h
+        for dish in dishes:
+            dish = dish.strip().capitalize()
+            wrapped = _wrap_text(dd, dish, dish_font, max_dish_text_w)
+            y_m += dish_pad_v * 2 + max(1, len(wrapped)) * (dish_line_h + 6) - 6
 
-    radius = 36
-    sheet_draw.rounded_rectangle(
-        [(0, 0), (sheet_w - 1, sheet_h - 1)],
-        radius=radius,
-        fill=CARD_BG_COLOR,
-    )
-    
-    top_bar_height = 80
-    sheet_draw.rounded_rectangle(
-        [(0, 0), (sheet_w - 1, top_bar_height)],
-        radius=radius,
-        fill=TOP_BAR_COLOR,
-    )
-    sheet_draw.rectangle([(0, radius), (sheet_w - 1, top_bar_height)], fill=TOP_BAR_COLOR)
-    
-    # Draw outline last to ensure perfect rounded corners
-    sheet_draw.rounded_rectangle(
-        [(0, 0), (sheet_w - 1, sheet_h - 1)],
-        radius=radius,
-        outline=BORDER_COLOR,
-        width=4,
+    y_m += bottom_pad
+    card_h = max(800, min(y_m, 2600))
+
+    # ── 2. Draw the card ─────────────────────────────────────────────
+    card = Image.new("RGBA", (card_w, card_h), (0, 0, 0, 0))
+    cd   = ImageDraw.Draw(card)
+
+    cd.rounded_rectangle(
+        [(0, 0), (card_w - 1, card_h - 1)],
+        radius=card_radius, fill=C_CARD_BG,
     )
 
-    y = 120
-    for line in title_lines:
-        sheet_draw.text((inner_left, y), line, fill=TITLE_COLOR, font=title_font)
-        y += _line_height(sheet_draw, title_font) + 8
+    y = header_top
 
-    y += 20
-    
-    max_body_bottom = sheet_h - 140 - footer_height
-    line_height = _line_height(sheet_draw, body_font)
+    # ── Header: title + date badge ───────────────────────────────────
+    cd.text((pad_x, y + title_h // 2), canteen_name, fill=C_TITLE, font=title_font, anchor="lm")
 
-    for block_type, value in body_blocks:
-        if block_type == "section":
-            next_y = y + section_line_height
-            if next_y > max_body_bottom:
-                break
-            
-            # Restore section divider line
-            sheet_draw.line(
-                [(inner_left, y + section_line_height // 2), (inner_right, y + section_line_height // 2)],
-                fill=DIVIDER_COLOR,
-                width=3,
+    badge_pad_h, badge_pad_v_ = 36, 16
+    date_w  = _text_width(dd, date_label, date_font)
+    badge_w = date_w + badge_pad_h * 2
+    badge_h = date_text_h + badge_pad_v_ * 2
+    badge_x = card_w - pad_x - badge_w
+    badge_y = y + (title_h - badge_h) // 2
+    cd.rounded_rectangle(
+        [(badge_x, badge_y), (badge_x + badge_w, badge_y + badge_h)],
+        radius=badge_h // 2, fill=C_TAB_BG,
+    )
+    cd.text(
+        (badge_x + badge_pad_h, badge_y + badge_h // 2),
+        date_label, fill=C_SECONDARY, font=date_font, anchor="lm",
+    )
+
+    y += title_h + header_bottom
+
+    # ── Tab bar (Pranzo / Cena) ──────────────────────────────────────
+    tab_x       = pad_x
+    tab_y       = y + tab_margin_top
+    tab_total_w = card_w - pad_x * 2
+
+    cd.rounded_rectangle(
+        [(tab_x, tab_y), (tab_x + tab_total_w, tab_y + tab_container_h)],
+        radius=tab_radius, fill=C_TAB_BG,
+    )
+
+    btn_area_w   = tab_total_w - tab_pad * 2
+    single_btn_w = btn_area_w // 2          # each tab is exactly 50%, no gap
+    btn_y        = tab_y + tab_pad
+
+    for idx, tab_label in enumerate(MEAL_ORDER):
+        bx     = tab_x + tab_pad + idx * single_btn_w
+        active = tab_label == meal_name
+
+        if active:
+            cd.rounded_rectangle(
+                [(bx, btn_y), (bx + single_btn_w, btn_y + tab_btn_h)],
+                radius=tab_btn_radius, fill=C_TAB_ACTIVE,
             )
 
-            section_text_w = _text_width(sheet_draw, value, section_font)
-            label_pad_x = 18
-            # Align section title exactly with dishes (inner_left)
-            label_x = inner_left
-            label_y = y
-            
-            # Mask the line behind the text
-            sheet_draw.rectangle(
-                [
-                    (label_x - 4, label_y - 4),
-                    (label_x + section_text_w + label_pad_x, label_y + section_line_height + 2),
-                ],
-                fill=CARD_BG_COLOR,
-            )
-            sheet_draw.text((label_x, label_y), value, fill=TITLE_COLOR, font=section_font)
-            y += section_line_height + 18
-        elif block_type == "dish":
-            wrapped_lines = _wrap_text(sheet_draw, value, body_font, max_text_width)
-            required_h = len(wrapped_lines) * (line_height + 10)
-            if y + required_h > max_body_bottom:
-                ellipsis = "..."
-                last_line = wrapped_lines[0] if wrapped_lines else ""
-                while last_line and _text_width(sheet_draw, f"{last_line} {ellipsis}", body_font) > max_text_width:
-                    last_line = last_line[:-1]
-                sheet_draw.text((inner_left, y), f"{last_line} {ellipsis}".strip(), fill=TEXT_COLOR, font=body_font)
-                break
+        tw = _text_width(dd, tab_label, tab_font)
+        cd.text(
+            (bx + single_btn_w // 2, btn_y + tab_btn_h // 2),
+            tab_label,
+            fill=C_TITLE if active else C_SECONDARY,
+            font=tab_font,
+            anchor="mm",
+        )
 
-            for line in wrapped_lines:
-                sheet_draw.text((inner_left, y), line, fill=TEXT_COLOR, font=body_font)
-                y += line_height + 10
-            y += 10
-        else:
-            y += 22
+    y = tab_y + tab_container_h + tab_margin_bottom
 
-    # Draw footer
-    footer_w = _text_width(sheet_draw, footer_text, footer_font)
-    footer_x = (sheet_w - footer_w) // 2
-    footer_y = sheet_h - 60 - footer_height
-    sheet_draw.text((footer_x, footer_y), footer_text, fill="#6B7280", font=footer_font)
+    # ── Menu list (rendered into a buffer, masked for rounded corners) ──
+    list_x = pad_x
+    list_w = card_w - pad_x * 2
 
-    shadow = Image.new("RGBA", (sheet_w, sheet_h), (0, 0, 0, 0))
-    shadow_draw = ImageDraw.Draw(shadow)
-    shadow_draw.rounded_rectangle(
-        [(0, 0), (sheet_w - 1, sheet_h - 1)],
-        radius=radius,
-        fill=(0, 0, 0, 38),
+    menu_h = 0
+    for _, dishes in sections:
+        menu_h += cat_row_h
+        for dish in dishes:
+            dish = dish.strip().capitalize()
+            wrapped = _wrap_text(dd, dish, dish_font, max_dish_text_w)
+            menu_h += dish_pad_v * 2 + max(1, len(wrapped)) * (dish_line_h + 6) - 6
+
+    max_menu_h = card_h - y - bottom_pad
+    menu_h = min(menu_h, max(max_menu_h, 200))
+
+    menu_img = Image.new("RGBA", (list_w, menu_h), (0, 0, 0, 0))
+    md = ImageDraw.Draw(menu_img)
+
+    # base fill (dish background colour)
+    md.rounded_rectangle(
+        [(0, 0), (list_w - 1, menu_h - 1)],
+        radius=list_radius, fill=C_DISH_BG,
     )
 
+    total_dishes  = sum(len(d) for _, d in sections)
+    dish_counter  = 0
+    my            = 0
+    overflow      = False
+
+    for sec_idx, (section_name, dishes) in enumerate(sections):
+        if my >= menu_h or overflow:
+            break
+
+        # ── category header ──
+        cat_icons = {
+            "primi": chr(58091),      # fa-bowl-rice
+            "secondi": chr(63191),    # fa-drumstick-bite
+            "contorni": chr(61548),   # fa-leaf
+            "dolci": chr(127874),     # fa-cake-candles
+        }
+        
+        md.rectangle([(0, my), (list_w - 1, my + cat_row_h - 1)], fill=C_CAT_BG)
+        
+        cat_lower_name = section_name.lower().strip()
+        icon = cat_icons.get(cat_lower_name, "")
+        
+        cx = cat_pad_x
+        if icon:
+            md.text((cx, my + cat_row_h // 2), icon, fill=C_SECONDARY, font=fa_font, anchor="lm")
+            cx += _text_width(dd, icon, fa_font) + 16  # spacing between icon and text
+            
+        md.text(
+            (cx, my + cat_row_h // 2),
+            section_name.upper(), fill=C_SECONDARY, font=cat_font, anchor="lm",
+        )
+        my += cat_row_h
+
+        # ── dishes ──
+        for dish in dishes:
+            dish = dish.strip().capitalize()
+            dish_counter += 1
+            is_last = dish_counter == total_dishes
+
+            wrapped   = _wrap_text(dd, dish, dish_font, max_dish_text_w)
+            content_h = max(1, len(wrapped)) * (dish_line_h + 6) - 6
+            row_h     = dish_pad_v * 2 + content_h
+
+            if my + row_h > menu_h:
+                remaining = menu_h - my
+                if remaining > dish_pad_v + dish_line_h:
+                    first = wrapped[0] if wrapped else dish
+                    ell = f"{first} \u2026"
+                    while (
+                        _text_width(dd, ell, dish_font) > max_dish_text_w
+                        and len(ell) > 3
+                    ):
+                        ell = ell[:-3] + "\u2026"
+                    md.text((dish_pad_x, my + dish_pad_v), ell, fill=C_TITLE, font=dish_font)
+                overflow = True
+                break
+
+            # Center text block vertically in the row
+            block_h = max(1, len(wrapped)) * (dish_line_h + 6) - 6
+            text_y = my + (row_h - block_h) // 2
+            for line in wrapped:
+                md.text((dish_pad_x, text_y + dish_line_h // 2), line, fill=C_TITLE, font=dish_font, anchor="lm")
+                text_y += dish_line_h + 6
+
+            if not is_last:
+                border_y = my + row_h - dish_border_w // 2
+                md.line(
+                    [(0, border_y), (list_w, border_y)],
+                    fill=C_DISH_BORDER, width=dish_border_w,
+                )
+
+            my += row_h
+
+    # rounded-corner mask
+    mask = Image.new("L", (list_w, menu_h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        [(0, 0), (list_w - 1, menu_h - 1)],
+        radius=list_radius, fill=255,
+    )
+    card.paste(menu_img, (list_x, y), mask)
+
+    # ── Slight rotation (no shadow) ──────────────────────────────────
     angle = random.uniform(-4, 4)
-    shadow_rot = shadow.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
-    sheet_rot = sheet.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
+    card_rot = card.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
 
-    x = (canvas_w - sheet_rot.width) // 2
-    y = (canvas_h - sheet_rot.height) // 2
-    image.paste(shadow_rot, (x + 18, y + 24), shadow_rot)
-    image.paste(sheet_rot, (x, y), sheet_rot)
+    cx = (canvas_w - card_rot.width)  // 2
+    cy = (canvas_h - card_rot.height) // 2
+    image.paste(card_rot, (cx, cy), card_rot)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     image.save(output_path, format="JPEG", quality=95, dpi=(300, 300))
@@ -661,8 +749,7 @@ def main():
                 continue
 
             accent_color = base_color
-            if meal == "Cena":
-                accent_color = _darken_color(base_color, factor=0.78)
+            
 
             filename    = f"{date_tag}_{meal.lower()}_{canteen_id}.jpg"
             output_path = args.output_dir / filename
