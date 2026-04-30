@@ -16,6 +16,11 @@
       "start_date": "2026-04-25",
       "end_date": "2026-04-25",
       "status": "closed"
+    },
+    {
+      "start_date": "2026-05-01",
+      "end_date": "2026-05-01",
+      "status": "closed"
     }
   ],
   "betti": [
