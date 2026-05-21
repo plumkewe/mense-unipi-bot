@@ -260,7 +260,105 @@ def update_site(data_dir, label):
             json.dump({}, f, separators=(',', ':'), ensure_ascii=False)
         print(f"[{label}] Nessun menu trovato per oggi ({today_str}). menu_today.json vuoto.")
 
-    return menu_changed or history_changed
+    return menu_changed or history_changed, sorted_menu
+
+
+# --- Generazione shortcuts.json ---
+
+# Mappatura portate -> frasi in italiano e inglese
+COURSE_PHRASES = {
+    'Primi Piatti':  {'it': 'per i primi abbiamo',         'en': 'for first courses we have'},
+    'Secondi Piatti':{'it': 'per quanto riguarda i secondi','en': 'as for second courses'},
+    'Contorni':      {'it': 'e come contorni',              'en': 'and for sides'},
+    'Salati':        {'it': 'tra i salati',                 'en': 'for savory snacks'},
+    'Insalatone':    {'it': 'tra le insalatone',            'en': 'for salads'},
+}
+
+# Ordine in cui le portate compaiono nella frase
+COURSE_ORDER = ['Primi Piatti', 'Secondi Piatti', 'Contorni', 'Salati', 'Insalatone']
+
+
+def _titlecase(name):
+    """Converte un nome piatto da MAIUSCOLO a Title Case."""
+    return name.strip().title()
+
+
+def _build_meal_text(canteen_name, meal_data, lang):
+    """
+    Costruisce il testo riassuntivo per un singolo pasto (Pranzo o Cena)
+    filtrando solo i piatti disponibili nella mensa specificata.
+    lang: 'it' o 'en'
+    """
+    parts = []
+    for course in COURSE_ORDER:
+        if course not in meal_data:
+            continue
+        # Filtra piatti disponibili in questa mensa
+        dishes = [
+            _titlecase(d['name'])
+            for d in meal_data[course]
+            if canteen_name in d.get('available_at', [])
+        ]
+        if not dishes:
+            continue
+        phrase = COURSE_PHRASES[course][lang]
+        dish_list = ', '.join(dishes)
+        parts.append(f"{phrase}: {dish_list}")
+
+    if not parts:
+        if lang == 'it':
+            return "Nessun piatto disponibile per oggi."
+        else:
+            return "No dishes available for today."
+
+    if lang == 'it':
+        prefix = "Oggi "
+    else:
+        prefix = "Today "
+
+    return prefix + '; '.join(parts) + '.'
+
+
+def generate_shortcuts(all_today_menus):
+    """
+    Genera data/shortcuts.json con un riassunto testuale per ogni mensa.
+    all_today_menus: lista di dicts (menu del giorno) da tutti i siti.
+    """
+    today_str = datetime.date.today().isoformat()
+    shortcuts = {}
+
+    for today_data in all_today_menus:
+        if today_str not in today_data:
+            continue
+        day = today_data[today_str]
+
+        # Raccogli tutti i nomi delle mense presenti nel menu di oggi
+        canteen_names = set()
+        for meal_type in MEAL_ORDER:
+            if meal_type not in day:
+                continue
+            for course, dishes in day[meal_type].items():
+                for dish in dishes:
+                    for cn in dish.get('available_at', []):
+                        canteen_names.add(cn)
+
+        for canteen_name in sorted(canteen_names):
+            if canteen_name not in shortcuts:
+                shortcuts[canteen_name] = {}
+
+            for meal_type in MEAL_ORDER:
+                meal_data = day.get(meal_type, {})
+                text_it = _build_meal_text(canteen_name, meal_data, 'it')
+                text_en = _build_meal_text(canteen_name, meal_data, 'en')
+                shortcuts[canteen_name][meal_type] = {
+                    'it': text_it,
+                    'en': text_en
+                }
+
+    _shortcuts_path = os.path.join(DATA_DIR, 'shortcuts.json')
+    with open(_shortcuts_path, 'w', encoding='utf-8') as f:
+        json.dump(shortcuts, f, indent=2, ensure_ascii=False)
+    print(f"\nshortcuts.json generato con {len(shortcuts)} mense.")
 
 
 def main():
@@ -273,10 +371,19 @@ def main():
     ]
 
     any_changed = False
+    all_today_menus = []
+
     for data_dir, label in sites:
-        changed = update_site(data_dir, label)
+        changed, sorted_menu = update_site(data_dir, label)
         if changed:
             any_changed = True
+        # Raccogli il menu di oggi per lo shortcuts
+        today_str = today.isoformat()
+        if today_str in sorted_menu:
+            all_today_menus.append({today_str: sorted_menu[today_str]})
+
+    # Genera sempre shortcuts.json (anche se i menu non sono cambiati)
+    generate_shortcuts(all_today_menus)
 
     if not any_changed:
         print("\nNessuna modifica rilevata su nessun sito.")
@@ -285,4 +392,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
