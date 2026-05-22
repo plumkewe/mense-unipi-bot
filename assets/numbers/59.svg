@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+    <defs>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800&amp;display=swap');
+            text {
+                font-family: 'Nunito', sans-serif;
+                font-weight: 800;
+            }
+        </style>
+    </defs>
+    <!-- Bordo (stroke) -->
+    <text x="50%" y="50%" dy="0.05em" dominant-baseline="central" text-anchor="middle"
+          font-size="76px" fill="none" stroke="#C49A76" stroke-width="16" stroke-linejoin="round">
+        59
+    </text>
+    <!-- Testo bianco in primo piano -->
+    <text x="50%" y="50%" dy="0.05em" dominant-baseline="central" text-anchor="middle"
+          font-size="76px" fill="white" stroke="none">
+        59
+    </text>
+</svg>

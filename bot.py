@@ -160,20 +160,20 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
         date_pretty = format_date_it(dt)
         if canteen_name:
             canteen_clean = canteen_name.replace("Mensa ", "").upper()
-            header = f"꧁   {canteen_clean}   ꧂\n_{date_pretty}_\n\n"
+            header = f"『 {canteen_clean} 』\n_{date_pretty}_\n\n"
         else:
-            header = f"꧁   {date_pretty}   ꧂\n\n"
+            header = f"『 {date_pretty} 』\n\n"
     except Exception:
-        header = f"꧁   {date_str}   ꧂\n\n"
+        header = f"『 {date_str} 』\n\n"
 
     if not day_menu:
-        return f"{header}Nessun menù disponibile per questa data."
+        return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun menù disponibile per questa data."
 
     meal_menu = day_menu.get(meal_type)
     
     # A volte potrebbe esserci la data ma non il tipo di pasto
     if not meal_menu:
-         return f"{header}Nessun menù disponibile per il {meal_type.lower()}."
+         return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun menù disponibile per il {meal_type.lower()}."
 
     is_all_mode = (canteen_name == "TUTTE")
     if not is_all_mode and canteen_name:
@@ -183,11 +183,11 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
                 holiday_status = get_holiday_status(c_id_match, date_obj)
                 if holiday_status == "closed":
-                    return f"{header}Nessun piatto disponibile per questa mensa."
+                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
                 elif holiday_status == "lunch_only" and meal_type.lower() == "cena":
-                    return f"{header}Nessun piatto disponibile per questa mensa."
+                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
                 elif holiday_status == "dinner_only" and meal_type.lower() == "pranzo":
-                    return f"{header}Nessun piatto disponibile per questa mensa."
+                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
             except Exception:
                 pass
 
@@ -254,8 +254,9 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                 text += "\n"
             
     if not has_dishes:
-        return f"{header}Nessun piatto disponibile per questa mensa."
+        return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
 
+    text += "ʕ•ᴥ•ʔﾉ♡ Buon Appetito!"
     return text
 
 def get_canteen_selection_keyboard():
@@ -1082,8 +1083,8 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                              if canteen_desc:
                                  description_text += f"\n{canteen_desc}"
                              
-                             # Immagine con il numero di giorni (#4cadfd, Bold, Transparent)
-                             thumb_url = f"https://placehold.co/128x128/transparent/4cadfd.png?text={days_diff}&font=oswald"
+                             # Immagine con il numero di giorni
+                             thumb_url = f"https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/numbers/{days_diff}.svg"
                              
                              # ID Univoco per il risultato
                              result_id = str(uuid4())
@@ -1113,22 +1114,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /start."""
     user = update.effective_user.first_name
     text = (
-        f"*CIBOUNIPI BOT*\n\n"
-        "Consulta i menù delle mense universitarie di Pisa.\n\n"
-        "*Ricerca Piatto*\n"
+        f"Ehy {user}! 🐻✨\n"
+        f"*Benvenuto/a* nel *CIBOUNIPI BOT*! 🍱\n\n"
+        "Sono qui per aiutarti a consultare i menù delle mense universitarie di Pisa. 🍕\n\n"
+        "🔍 *Ricerca Piatto*\n"
         "Digita `@cibounipibot p:nome piatto` in qualsiasi chat.\n\n"
-        "*Menu di Oggi*\n"
+        "📅 *Menu di Oggi*\n"
         "Digita `@cibounipibot` (seguito da spazio) in qualsiasi chat e seleziona la mensa.\n\n"
-        "*Info & Orari*\n"
+        "🕒 *Info & Orari*\n"
         "Digita `@cibounipibot i:` in qualsiasi chat per orari e stato.\n\n"
-        "*Tariffe ISEE*\n"
+        "💰 *Tariffe ISEE*\n"
         "Digita `@cibounipibot t:` per tabella, o `t:isee` (es. `t:20000`) per calcolo personalizzato.\n\n"
-        "*Comandi*\n"
+        "🛠 *Comandi*\n"
         "/menu - Seleziona mensa\n"
-            "/links - Link utili DSU\n"
-            "/help - Guida completa" +
-            FEEDBACK_TEXT
-        )
+        "/links - Link utili DSU\n"
+        "/help - Guida completa" +
+        FEEDBACK_TEXT
+    )
     
     keyboard = [
         [InlineKeyboardButton("Menu di Oggi", switch_inline_query_current_chat="")],
@@ -1147,7 +1149,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     ) if is_private else None
     
     # Invia lo sticker di benvenuto e imposta la tastiera persistente
-    await update.message.reply_sticker("CAACAgQAAxkBAAIZ8mmchOMO2Rz876mpp7_WxFD5O0m1AAJOGgACzXyZUdEKftV24SvlOgQ", reply_markup=reply_keyboard)
+    await update.message.reply_sticker("CAACAgQAAxkBAAIg52oQzua36OYXQ0zqwfRyIWhJogN0AALOIgACbf2JUIR-DlHVWWTlOwQ", reply_markup=reply_keyboard)
 
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN)
 
