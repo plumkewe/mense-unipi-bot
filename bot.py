@@ -1084,7 +1084,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                                  description_text += f"\n{canteen_desc}"
                              
                              # Immagine con il numero di giorni
-                             thumb_url = f"https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/numbers/{days_diff}.svg"
+                             thumb_url = f"https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/numbers/{days_diff}.svg?v=3"
                              
                              # ID Univoco per il risultato
                              result_id = str(uuid4())
