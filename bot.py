@@ -167,13 +167,13 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
         header = f"『 {date_str} 』\n\n"
 
     if not day_menu:
-        return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun menù disponibile per questa data."
+        return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥ ʔ Oh no... Nessun menù disponibile per questa data."
 
     meal_menu = day_menu.get(meal_type)
     
     # A volte potrebbe esserci la data ma non il tipo di pasto
     if not meal_menu:
-         return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun menù disponibile per il {meal_type.lower()}."
+         return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥ ʔ Oh no... Nessun menù disponibile per il {meal_type.lower()}."
 
     is_all_mode = (canteen_name == "TUTTE")
     if not is_all_mode and canteen_name:
@@ -183,11 +183,11 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
                 holiday_status = get_holiday_status(c_id_match, date_obj)
                 if holiday_status == "closed":
-                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
+                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥ ʔ Oh no... Nessun piatto disponibile per questa mensa."
                 elif holiday_status == "lunch_only" and meal_type.lower() == "cena":
-                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
+                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥ ʔ Oh no... Nessun piatto disponibile per questa mensa."
                 elif holiday_status == "dinner_only" and meal_type.lower() == "pranzo":
-                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
+                    return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥ ʔ Oh no... Nessun piatto disponibile per questa mensa."
             except Exception:
                 pass
 
@@ -254,7 +254,7 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                 text += "\n"
             
     if not has_dishes:
-        return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥`ʔ Oh no... Nessun piatto disponibile per questa mensa."
+        return f"{header}ʕ ´•̥̥̥ ᴥ•̥̥̥ ʔ Oh no... Nessun piatto disponibile per questa mensa."
 
     text += "ʕ•ᴥ•ʔﾉ♡ Buon Appetito!"
     return text
