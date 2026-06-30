@@ -41323,5 +41323,252 @@
         }
       ]
     }
+  },
+  "2026-06-30": {
+    "date": "2026-06-30",
+    "Pranzo": {
+      "Salati": [
+        {
+          "name": "BAGUETTE AL CRUDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/579-baguette-al-crudo/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "FOCACCE DEL PANAIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/688-focacce-del-panaio/4/3/1782727200",
+          "available_at": [
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PIADINA VEGETARIANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/640-piadina-vegetariana/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIZZA DEL PANAIO MARGHERITA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/57-pizza-del-panaio-margherita/4/3/1782727200",
+          "available_at": [
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "INSALATA DI RISO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/323-insalata-di-riso/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA AL TONNO E OLIVE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/61-pasta-al-tonno-e-olive/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA ALLA CARRETTIERA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/248-pasta-alla-carrettiera/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "BOCCONCINI DI TACCHINO OLIVE PEPERONI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/133-bocconcini-di-tacchino-olive-peperoni/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "TROTA SALMONATA ALLE ERBETTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/209-trota-salmonata-alle-erbette/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PATATE AL PREZZEMOLO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/269-patate-al-prezzemolo/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "SPINACI SALTATI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/726-spinaci-saltati/3/3/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti",
+            "Mensa Cammeo"
+          ]
+        }
+      ]
+    },
+    "Cena": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "INSALATA D'ORZO ALL'ORTOLANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/575-insalata-dorzo-allortolana/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PASTA ASPARAGI E GAMBERETTI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/7-pasta-asparagi-e-gamberetti/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "RAVIOLI AL POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/452-ravioli-al-pomodoro/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "HAMBURGER ALLA PIASTRA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/195-hamburger-alla-piastra/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PIADINA HUMMUS CIPOLLA E PEPERONI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/605-piadina-hummus-cipolla-e-peperoni/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PIZZA MARGHERITA A TRANCI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/505-pizza-margherita-a-tranci/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CAROTE BABY AL VAPORE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/730-carote-baby-al-vapore/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PATATE ALLA PAPRIKA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/491-patate-alla-paprika/3/5/1782727200",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ]
+    }
   }
 }
