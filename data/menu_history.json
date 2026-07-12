@@ -44043,5 +44043,182 @@
       ]
     },
     "Cena": {}
+  },
+  "2026-07-12": {
+    "date": "2026-07-12",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "CANNELLONI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/5-cannelloni/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RIGATONI DORATI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/465-rigatoni-dorati/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FESA DI TACCHINO IN CARPACCIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/280-fesa-di-tacchino-in-carpaccio/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "ROSTIES DI VERDURE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/541-rosties-di-verdure/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SPEZZATINO DI MANZO CON OLIVE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/119-spezzatino-di-manzo-con-olive/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CICORIA SALTATA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/648-cicoria-saltata/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PATATE ALLA PAPRIKA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/491-patate-alla-paprika/3/3/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    },
+    "Cena": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "CANNELLONI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/5-cannelloni/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RIGATONI DORATI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/465-rigatoni-dorati/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FESA DI TACCHINO IN CARPACCIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/280-fesa-di-tacchino-in-carpaccio/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "ROSTIES DI VERDURE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/541-rosties-di-verdure/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SPEZZATINO DI MANZO CON OLIVE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/119-spezzatino-di-manzo-con-olive/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CICORIA SALTATA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/648-cicoria-saltata/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PATATE ALLA PAPRIKA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/491-patate-alla-paprika/3/5/1783332000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    }
   }
 }
