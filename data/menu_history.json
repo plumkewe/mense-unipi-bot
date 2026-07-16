@@ -44960,5 +44960,249 @@
         }
       ]
     }
+  },
+  "2026-07-16": {
+    "date": "2026-07-16",
+    "Pranzo": {
+      "Salati": [
+        {
+          "name": "FOCACCE DEL PANAIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/688-focacce-del-panaio/4/3/1783936800",
+          "available_at": [
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "FOCACCINA CON MORTADELLA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/639-focaccina-con-mortadella/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "FOCACCINA VEGAN",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/636-focaccina-vegan/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIZZA DEL PANAIO MARGHERITA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/57-pizza-del-panaio-margherita/4/3/1783936800",
+          "available_at": [
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "INSALATA DI FARFALLE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/382-insalata-di-farfalle/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PASTA ALLA CHIANTIGIANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/74-pasta-alla-chiantigiana/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "RISOTTO ZUCCHINE E CURCUMA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/107-risotto-zucchine-e-curcuma/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FETTINA DI POLLO ALLA PIASTRA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/365-fettina-di-pollo-alla-piastra/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "INSALATA DI FAGIOLI NERI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/578-insalata-di-fagioli-neri/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CONTORNO CAMPAGNOLO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/136-contorno-campagnolo/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PATATE ARROSTO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/331-patate-arrosto/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ]
+    },
+    "Cena": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "INSALATA DI FARRO PANZANELLATA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/131-insalata-di-farro-panzanellata/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PASTA ALL'AMATRICIANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/198-pasta-allamatriciana/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "RISOTTO ALLA MILANESE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/6-risotto-alla-milanese/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FAGOTTINI POMODORO E MOZZARELLA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/542-fagottini-pomodoro-e-mozzarella/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "FESA DI TACCHINO IN CARPACCIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/280-fesa-di-tacchino-in-carpaccio/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "MINIBURGER QUINOA E SEMI DI LINO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/544-miniburger-quinoa-e-semi-di-lino/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PIZZA MARGHERITA A TRANCI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/505-pizza-margherita-a-tranci/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "BIETOLA BIO AL VAPORE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/729-bietola-bio-al-vapore/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        },
+        {
+          "name": "PATATE FRITTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/570-patate-fritte/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri",
+            "Mensa Betti"
+          ]
+        }
+      ]
+    }
   }
 }
