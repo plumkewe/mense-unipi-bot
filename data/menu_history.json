@@ -45547,5 +45547,182 @@
       ]
     },
     "Cena": {}
+  },
+  "2026-07-19": {
+    "date": "2026-07-19",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PASTA AL RAGU' BIANCO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/303-pasta-al-ragu-bianco/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RISOTTO GORGONZOLA E RADICCHIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/90-risotto-gorgonzola-e-radicchio/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "ARISTA PORCHETTATA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/699-arista-porchettata/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "INSALATA DI POLPETTI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/546-insalata-di-polpetti/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "ZUCCHINE CON POMOD. PICC. E PANURA AROM.",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/474-zucchine-con-pomod-picc-e-panura-arom/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PATATE SALTATE AGLIO E ROSMARINO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/496-patate-saltate-aglio-e-rosmarino/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SPINACI ALLA PARTENOPEA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/671-spinaci-alla-partenopea/3/3/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    },
+    "Cena": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PASTA PORRI E PANCETTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/302-pasta-porri-e-pancetta/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RISOTTO PRIMAVERA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/322-risotto-primavera/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "PANINO CON HAMBURGER",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/147-panino-con-hamburger/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PROSCIUTTO E MOZZARELLA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/187-prosciutto-e-mozzarella/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SUPPLI'",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/615-suppli/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PATATE FRITTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/570-patate-fritte/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SPADELLATA DELL' ORTO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/603-spadellata-dell-orto/3/5/1783936800",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    }
   }
 }
