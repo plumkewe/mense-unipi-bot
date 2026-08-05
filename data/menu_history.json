@@ -48438,5 +48438,89 @@
       ]
     },
     "Cena": {}
+  },
+  "2026-08-05": {
+    "date": "2026-08-05",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "INSALATA DI RISO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/323-insalata-di-riso/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA INTEGRALE AL POMODORO PICCANTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/193-pasta-integrale-al-pomodoro-piccante/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "ARISTA AL FORNO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/196-arista-al-forno/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "COTOLETTA DI MELANZANA E HUMMUS PISELLI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/488-cotoletta-di-melanzana-e-hummus-piselli/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PATATE ALLA GHIOTTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/362-patate-alla-ghiotta/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "TACCOLE AL POMODORO FRESCO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/243-taccole-al-pomodoro-fresco/6/3/1785751200",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
