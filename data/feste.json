@@ -33,6 +33,11 @@
       "start_date": "2026-04-03",
       "end_date": "2026-04-06",
       "status": "closed"
+    },
+    {
+      "start_date": "2026-08-03",
+      "end_date": "2026-08-30",
+      "status": "closed"
     }
   ]
 }
