@@ -49194,5 +49194,89 @@
       ]
     },
     "Cena": {}
+  },
+  "2026-08-17": {
+    "date": "2026-08-17",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "INSALATA D'ORZO ALL'ORTOLANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/575-insalata-dorzo-allortolana/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA ALLA CARRETTIERA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/248-pasta-alla-carrettiera/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FRITTATA DI PATATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/211-frittata-di-patate/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "SPEZZATINO DI MANZO ESTIVO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/621-spezzatino-di-manzo-estivo/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CAROTINE SALTATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/672-carotine-saltate/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "TRIS VEGETALE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/696-tris-vegetale/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
