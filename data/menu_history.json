@@ -49530,5 +49530,89 @@
       ]
     },
     "Cena": {}
+  },
+  "2026-08-21": {
+    "date": "2026-08-21",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PASTA ALLE VERDURE FRESCHE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/375-pasta-alle-verdure-fresche/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "TORTELLONI BURRO E SALVIA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/7236-tortelloni-burro-e-salvia/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "CAPRESE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/725-caprese/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "SPEZZATINO DI LENTICCHIE CURRY E LIMONE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/86-spezzatino-di-lenticchie-curry-e-limone/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PATATE ALLA GHIOTTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/362-patate-alla-ghiotta/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PEPERONI MARINATI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/593-peperoni-marinati/6/3/1786960800",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
