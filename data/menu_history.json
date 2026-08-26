@@ -49866,5 +49866,89 @@
       ]
     },
     "Cena": {}
+  },
+  "2026-08-26": {
+    "date": "2026-08-26",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "INSALATA DI FARRO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/2385-insalata-di-farro/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA AL RAGU' BIANCO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/303-pasta-al-ragu-bianco/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "ARISTA TONNATA AGLI AGRUMI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/500-arista-tonnata-agli-agrumi/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "FALAFEL CON SALSA TZAZIKI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/97-falafel-con-salsa-tzaziki/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PATATE ROSTIES",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/623-patate-rosties/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "VERDURE GRIGLIATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/689-verdure-grigliate/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
