@@ -50034,5 +50034,173 @@
       ]
     },
     "Cena": {}
+  },
+  "2026-08-28": {
+    "date": "2026-08-28",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "COUS COUS VEGETALE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/213-cous-cous-vegetale/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "GNOCCHI AL POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/378-gnocchi-al-pomodoro/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "COTOLETTA DI MELANZANA E HUMMUS PISELLI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/488-cotoletta-di-melanzana-e-hummus-piselli/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "GATEAU DI PATATE AL ROSMARINO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/565-gateau-di-patate-al-rosmarino/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "FAGIOLINI AL VAPORE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/731-fagiolini-al-vapore/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PATATE FRITTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/570-patate-fritte/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
+  },
+  "2026-08-29": {
+    "date": "2026-08-29",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "CRESPELLE RICOTTA E SPINACI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/210-crespelle-ricotta-e-spinaci/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA FREDDA CAPRESE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/232-pasta-fredda-caprese/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "CAPRESE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/725-caprese/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "POLLO ARROSTO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/710-pollo-arrosto/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CROCCHETTE DI PATATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/183-crocchette-di-patate/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        },
+        {
+          "name": "ZUCCHINE BIO TRIFOLATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/485-zucchine-bio-trifolate/6/3/1787565600",
+          "available_at": [
+            "Mensa Cammeo"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
