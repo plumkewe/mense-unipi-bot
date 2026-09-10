@@ -1,3 +1,4 @@
+from __future__ import annotations
 import argparse
 import datetime as dt
 import json
@@ -233,10 +234,10 @@ def _wrap_text(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, 
     return lines
 
 
-def _pattern_color(base_color: str, alpha: int = 150) -> tuple:
+def _pattern_color(base_color: str, alpha: int = 30) -> tuple:
     r, g, b = Image.new("RGB", (1, 1), base_color).getpixel((0, 0))
     lum = (r + g + b) / 3
-    factor = 1.4 if lum < 160 else 0.55
+    factor = 1.25 if lum < 160 else 0.75
     pr = min(255, max(0, int(r * factor)))
     pg = min(255, max(0, int(g * factor)))
     pb = min(255, max(0, int(b * factor)))
@@ -417,7 +418,327 @@ def _generate_background_pattern(base_color: str, width: int, height: int, seed:
     return bg
 
 
+GIORNI_SETTIMANA = [
+    "lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"
+]
+
+def _format_date_day_num(target_date: str) -> str:
+    try:
+        d = dt.date.fromisoformat(target_date)
+        return f"{GIORNI_SETTIMANA[d.weekday()]} {d.day}"
+    except Exception:
+        return target_date
+
+
+PALETTES = [
+    {
+        "id": 1,
+        "name": "Pastel Sage (Verde Salvia)",
+        "bg": "#CDE5D7",
+        "title": "#3C6E56",
+        "dish": "#121212",
+        "header": "#3C6E56",
+    },
+    {
+        "id": 2,
+        "name": "Pastel Butter (Giallo Burro)",
+        "bg": "#F9E8B2",
+        "title": "#8A6830",
+        "dish": "#121212",
+        "header": "#8A6830",
+    },
+    {
+        "id": 3,
+        "name": "Pastel Powder Blue (Celeste Polvere)",
+        "bg": "#C5DCF2",
+        "title": "#36608F",
+        "dish": "#121212",
+        "header": "#36608F",
+    },
+    {
+        "id": 4,
+        "name": "Pastel Peach (Pesca Morbido)",
+        "bg": "#FCD5BE",
+        "title": "#7F4430",
+        "dish": "#121212",
+        "header": "#7F4430",
+    },
+    {
+        "id": 5,
+        "name": "Pastel Lavender (Lavanda Lilla)",
+        "bg": "#E0D3F5",
+        "title": "#5E3988",
+        "dish": "#121212",
+        "header": "#5E3988",
+    },
+    {
+        "id": 6,
+        "name": "Pastel Rose (Rosa Cipria)",
+        "bg": "#F7CAD4",
+        "title": "#7A3549",
+        "dish": "#121212",
+        "header": "#7A3549",
+    },
+    {
+        "id": 7,
+        "name": "Pastel Mint (Menta Fresca)",
+        "bg": "#BCECE0",
+        "title": "#2A6E5E",
+        "dish": "#121212",
+        "header": "#2A6E5E",
+    },
+    {
+        "id": 8,
+        "name": "Pastel Apricot (Albicocca)",
+        "bg": "#FFE1B6",
+        "title": "#885223",
+        "dish": "#121212",
+        "header": "#885223",
+    },
+    {
+        "id": 9,
+        "name": "Pastel Periwinkle (Pervinca)",
+        "bg": "#CCD5F6",
+        "title": "#47589B",
+        "dish": "#121212",
+        "header": "#47589B",
+    },
+    {
+        "id": 10,
+        "name": "Pastel Pistachio (Pistacchio)",
+        "bg": "#DCE8B2",
+        "title": "#5B751D",
+        "dish": "#121212",
+        "header": "#5B751D",
+    },
+    {
+        "id": 11,
+        "name": "Pastel Sky Aqua (Acqua Marina)",
+        "bg": "#BEE3E8",
+        "title": "#266572",
+        "dish": "#121212",
+        "header": "#266572",
+    },
+    {
+        "id": 12,
+        "name": "Pastel Coral (Corallo)",
+        "bg": "#FDC7BE",
+        "title": "#7D3B30",
+        "dish": "#121212",
+        "header": "#7D3B30",
+    },
+    {
+        "id": 13,
+        "name": "Pastel Lilac Mist (Glicine)",
+        "bg": "#E8CCEC",
+        "title": "#6E3278",
+        "dish": "#121212",
+        "header": "#6E3278",
+    },
+    {
+        "id": 14,
+        "name": "Pastel Sand Wheat (Sabbia Calda)",
+        "bg": "#EDE1C4",
+        "title": "#6B5C3B",
+        "dish": "#121212",
+        "header": "#6B5C3B",
+    },
+]
+
+
+def get_palette_for_meal(target_date: str, meal_name: str = "", canteen_id: str = "") -> dict:
+    """Select deterministically one of the 14 palettes based on the date.
+    Pranzo and Cena on the same day share the EXACT same palette!
+    """
+    try:
+        d = dt.date.fromisoformat(target_date)
+        week_num = d.isocalendar()[1]
+        idx = ((week_num % 2) * 7 + d.weekday()) % len(PALETTES)
+    except Exception:
+        idx = 0
+    return PALETTES[idx]
+
+
+def render_flow_menu_post(
+    canteen_name: str,
+    meal_name: str,
+    meal_menu: dict,
+    target_date: str,
+    output_path: Path,
+    palette: dict | None = None,
+    pattern: str | None = None,
+) -> None:
+    if palette is None:
+        palette = get_palette_for_meal(target_date, meal_name)
+
+    canvas_w, canvas_h = 2160, 2880
+    c_bg = palette.get("bg", "#CDE5D7")
+    c_header = palette.get("header", "#3C6E56")
+    c_title = c_header  # Per primo, secondo, contorno si usa lo stesso colore di data e tipo
+    c_dish = palette.get("dish", "#121212")
+
+    course_map = [
+        ("Primi Piatti", "PRIMO"),
+        ("Secondi Piatti", "SECONDO"),
+        ("Contorni", "CONTORNO"),
+    ]
+
+    margin_x = 110
+    top_margin = 120
+    indent = 45
+    wrap_indent = 55
+    max_dish_w = canvas_w - (margin_x + indent) - margin_x
+    stroke_w = palette.get("stroke_w", 12)
+    # Contorno di colore più chiaro dello sfondo anziché sempre bianco
+    stroke_color = palette.get("stroke") or _lighten_color(c_bg, factor=0.65)
+
+    font_path = REPO_ROOT / "assets" / "fonts" / "Nunito-Black.ttf"
+
+    # Date & meal header (senza OGGI, giorno a sinistra e tipologia a destra senza puntino)
+    date_str = _format_date_day_num(target_date).upper()
+    meal_upper = meal_name.upper()
+
+    # Calcolo dinamico del font size per garantire la massima dimensione possibile senza tagli
+    font_size = 114
+    while font_size >= 85:
+        f_h_test = ImageFont.truetype(str(font_path), int(font_size * 0.72))
+        f_cat_test = ImageFont.truetype(str(font_path), int(font_size * 0.95))
+        f_dish_test = ImageFont.truetype(str(font_path), font_size)
+
+        dummy_img = Image.new("RGB", (10, 10))
+        d_test = ImageDraw.Draw(dummy_img)
+        space_w = d_test.textlength(" ", font=f_dish_test)
+
+        test_y = top_margin + int(font_size * 0.72) + 60
+        dish_lh = font_size + 24
+
+        for course_key, cat_label in course_map:
+            dishes = meal_menu.get(course_key, [])
+            if not dishes:
+                continue
+            test_y += int(font_size * 0.95) + 35
+            for dish_name in dishes:
+                clean_name = str(dish_name).strip().upper()
+                words = clean_name.split()
+                lines_count = 0
+                curr = []
+                curr_w = 0
+                for w in words:
+                    ww = d_test.textlength(w, font=f_dish_test)
+                    curr_max = max_dish_w - (wrap_indent if lines_count > 0 else 0)
+                    if curr and curr_w + space_w + ww > curr_max:
+                        lines_count += 1
+                        curr = [w]
+                        curr_w = ww
+                    else:
+                        curr_w += (space_w if curr else 0) + ww
+                        curr.append(w)
+                if curr:
+                    lines_count += 1
+                test_y += lines_count * dish_lh + 8
+            test_y += 35
+
+        if test_y <= canvas_h - 100:
+            break
+        font_size -= 2
+
+    # Sfondo con pattern geometrico tenue sottostante ("si vedono poco")
+    seed = f"{target_date}"
+    bg_pattern = _generate_background_pattern(c_bg, canvas_w, canvas_h, seed=seed, force_pattern=pattern)
+    img = bg_pattern.convert("RGB")
+    draw = ImageDraw.Draw(img)
+
+    f_header = ImageFont.truetype(str(font_path), int(font_size * 0.72))
+    f_cat = ImageFont.truetype(str(font_path), int(font_size * 0.95))
+    f_dish = ImageFont.truetype(str(font_path), font_size)
+    space_w = draw.textlength(" ", font=f_dish)
+
+    def draw_text_stroked(pos, text, font, fill_col):
+        """Disegna il testo con tecnica a due passaggi:
+        Passaggio 1: contorno pieno allargato verso l'esterno.
+        Passaggio 2: glifo solido originale sopra, preservando il corpo del carattere.
+        """
+        if stroke_w > 0:
+            draw.text(pos, text, font=font, fill=stroke_color, stroke_width=stroke_w, stroke_fill=stroke_color)
+        draw.text(pos, text, font=font, fill=fill_col)
+
+    first_char_offset = draw.textbbox((0, 0), "G", font=f_header)[1]
+    y = top_margin - first_char_offset
+
+    # Giorno a sinistra
+    draw_text_stroked((margin_x, y), date_str, f_header, c_header)
+    # Tipologia (PRANZO / CENA) allineata al margine destro
+    meal_w = draw.textlength(meal_upper, font=f_header)
+    meal_x = canvas_w - margin_x - meal_w
+    draw_text_stroked((meal_x, y), meal_upper, f_header, c_header)
+    y += int(font_size * 0.72) + 65
+
+    dish_lh = font_size + 24
+    has_dishes = False
+
+    for course_key, cat_label in course_map:
+        dishes = meal_menu.get(course_key, [])
+        if not dishes:
+            continue
+        has_dishes = True
+
+        # Category header
+        draw_text_stroked((margin_x, y), cat_label, f_cat, c_title)
+        y += int(font_size * 0.95) + 35
+
+        for dish_name in dishes:
+            clean_name = str(dish_name).strip().upper()
+            words = clean_name.split()
+            lines = []
+            curr = []
+            curr_w = 0
+            for w in words:
+                ww = draw.textlength(w, font=f_dish)
+                curr_max = max_dish_w - (wrap_indent if len(lines) > 0 else 0)
+                if curr and curr_w + space_w + ww > curr_max:
+                    lines.append(" ".join(curr))
+                    curr = [w]
+                    curr_w = ww
+                else:
+                    curr_w += (space_w if curr else 0) + ww
+                    curr.append(w)
+            if curr:
+                lines.append(" ".join(curr))
+
+            for line_idx, line_str in enumerate(lines):
+                cur_x = margin_x + indent + (wrap_indent if line_idx > 0 else 0)
+                draw_text_stroked((cur_x, y), line_str, f_dish, c_dish)
+                y += dish_lh
+            y += 8  # Extra spacing between distinct dishes
+
+        y += 35  # Gap between categories
+
+    if not has_dishes:
+        draw_text_stroked((margin_x, y), "NESSUN MENU DISPONIBILE", f_cat, c_header)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(output_path, format="JPEG", quality=95, dpi=(300, 300))
+
+
 def build_and_save_gt(
+    canteen_name: str,
+    meal_name: str,
+    meal_menu: dict,
+    target_date: str,
+    accent_color: str,
+    output_path: Path,
+    pattern: str | None = None,
+) -> None:
+    return render_flow_menu_post(
+        canteen_name=canteen_name,
+        meal_name=meal_name,
+        meal_menu=meal_menu,
+        target_date=target_date,
+        output_path=output_path,
+        pattern=pattern,
+    )
+
+def _old_build_and_save_gt(
     canteen_name: str,
     meal_name: str,
     meal_menu: dict,
