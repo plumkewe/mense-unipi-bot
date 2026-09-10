@@ -33,7 +33,7 @@ except ImportError:
 from datetime import datetime, timedelta, time
 import re
 from uuid import uuid4
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InputTextMessageContent, InlineQueryResultsButton, InlineQueryResultPhoto, ReplyKeyboardMarkup, KeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InlineQueryResultsButton, ReplyKeyboardMarkup, KeyboardButton
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler, MessageHandler, filters
@@ -87,8 +87,7 @@ def load_feste():
 FESTE = load_feste()
 
 def get_holiday_status(canteen_id, date_obj):
-    feste = load_feste()
-    canteen_feste = feste.get(canteen_id, [])
+    canteen_feste = FESTE.get(canteen_id, [])
     for f_period in canteen_feste:
         try:
             start_date = datetime.strptime(f_period["start_date"], "%Y-%m-%d").date()
@@ -101,8 +100,7 @@ def get_holiday_status(canteen_id, date_obj):
 
 def get_future_closures_text(canteen_id, target_date):
     """Calcola se ci sono chiusure future rispetto alla data target"""
-    feste = load_feste()
-    canteen_feste = feste.get(canteen_id, [])
+    canteen_feste = FESTE.get(canteen_id, [])
     for f_period in canteen_feste:
         try:
             start_date = datetime.strptime(f_period["start_date"], "%Y-%m-%d").date()
@@ -138,15 +136,7 @@ def load_combinations():
 
 COMBINATIONS = load_combinations()
 
-FEEDBACK_TEXT = (
-    "\n\n*Feedback e Supporto*\n"
-    "Hai suggerimenti o vuoi segnalare un bug?\n"
-    "Invia una mail: `lyubomyr.malay@gmail.com`\n"
-    "Scrivici su Telegram: @doveunipi"
-)
 
-
-# --- RIMOSSO PATCH APSCHEDULER RIDONDANTE ---
 
 
 def get_menu_text(date_str, meal_type, canteen_name=None):
@@ -246,7 +236,7 @@ def get_menu_text(date_str, meal_type, canteen_name=None):
                                     suffix = f" (Solo {', '.join(short_canteens)})"
 
                         if link:
-                            text += f"- {name}{suffix} [↗︎\uFE0E]({link})\n"
+                            text += f"- [{name}]({link}){suffix}\n"
                         else:
                             text += f"- {name}{suffix}\n"
                     else:
@@ -306,12 +296,9 @@ def get_keyboard(date_str, meal_type, canteen_id, is_inline=False):
         InlineKeyboardButton("▶︎\uFE0E", callback_data=f"nav|{next_date}|{meal_type}|{canteen_id}"),
     ]
     
-    orario_button = InlineKeyboardButton("ORARIO", callback_data=f"orario|{date_str}|{meal_type}|{canteen_id}")
-    
     keyboard = [
         nav_buttons,
-        [toggle_button],
-        [orario_button]
+        [toggle_button]
     ]
     
     return InlineKeyboardMarkup(keyboard)
@@ -439,6 +426,203 @@ def get_update_keyboard(dish_name):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("AGGIORNA", callback_data=f"upd|{safe_name}")]
     ])
+
+def build_dish_rich_message(dish_name: str):
+    """Costruisce il Rich Message (Bot API 10.3) con tabella per la programmazione del piatto e i fallback."""
+    target_clean = dish_name.strip().upper()
+    occurrences = []
+    today = datetime.now(pytz.timezone('Europe/Rome')).date()
+    sorted_dates = sorted(MENU.keys())
+    
+    for date_str in sorted_dates:
+        try:
+            menu_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+        
+        if menu_date < today:
+            continue
+            
+        days_diff = (menu_date - today).days
+        day_menu = MENU[date_str]
+        
+        for meal in ["Pranzo", "Cena"]:
+            if meal in day_menu:
+                found_canteens = []
+                found = False
+                
+                for cat_dishes in day_menu[meal].values():
+                    if not cat_dishes: 
+                        continue
+                    
+                    for d in cat_dishes:
+                        if isinstance(d, dict):
+                            d_name = d.get("name", "").strip().upper()
+                            d_canteens = d.get("available_at", [])
+                        else:
+                            d_name = d.strip().upper()
+                            d_canteens = []
+                            
+                        if d_name == target_clean:
+                            found = True
+                            if d_canteens:
+                                found_canteens.extend(d_canteens)
+                
+                if found:
+                    unique_canteens = sorted(list(set(found_canteens)))
+                    occurrences.append({
+                        "date": menu_date,
+                        "diff": days_diff,
+                        "meal": "P" if meal == "Pranzo" else "C",
+                        "canteens": unique_canteens
+                    })
+
+    safe_name = target_clean
+    if len(safe_name.encode('utf-8')) > 50:
+        safe_name = safe_name[:50]
+
+    blocks = [
+        {
+            "type": "heading",
+            "size": 1,
+            "text": target_clean
+        }
+    ]
+
+    days_short = ["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"]
+    months_short = ["", "GEN", "FEB", "MAR", "APR", "MAG", "GIU", "LUG", "AGO", "SET", "OTT", "NOV", "DIC"]
+
+    if not occurrences:
+        blocks.append({
+            "type": "paragraph",
+            "text": "Nessuna occorrenza futura trovata nei menù pubblicati."
+        })
+    else:
+        blocks.append({
+            "type": "paragraph",
+            "text": "Programmazione nei menù dei prossimi giorni:"
+        })
+
+        table_rows = [
+            [
+                {"text": "DATA", "is_header": True, "align": "left"},
+                {"text": "PASTO", "is_header": True, "align": "center"},
+                {"text": "MENSE", "is_header": True, "align": "left"}
+            ]
+        ]
+
+        MAX_OCC = 40
+        for occ in occurrences[:MAX_OCC]:
+            d = occ["date"]
+            wd = days_short[d.weekday()]
+            diff = occ["diff"]
+            month_name = months_short[d.month]
+            
+            if diff == 0:
+                date_label = f"OGGI ({d.day} {month_name})"
+            elif diff == 1:
+                date_label = f"DOMANI ({d.day} {month_name})"
+            else:
+                date_label = f"{wd} {d.day} {month_name} ({diff}G)"
+            
+            meal_label = "PRANZO" if occ["meal"] == "P" else "CENA"
+            
+            if len(occ["canteens"]) >= len(CANTEENS) and len(CANTEENS) > 0:
+                canteen_label = "TUTTE"
+            elif occ["canteens"]:
+                canteen_label = ", ".join([c.replace("Mensa ", "").upper() for c in occ["canteens"]])
+            else:
+                canteen_label = "-"
+
+            table_rows.append([
+                {"text": date_label, "align": "left"},
+                {"text": meal_label, "align": "center"},
+                {"text": canteen_label, "align": "left"}
+            ])
+
+        blocks.append({
+            "type": "table",
+            "cells": table_rows
+        })
+
+        if len(occurrences) > MAX_OCC:
+            blocks.append({
+                "type": "paragraph",
+                "text": f"... altre {len(occurrences) - MAX_OCC} occorrenze future non mostrate."
+            })
+
+    blocks.append({
+        "type": "buttons",
+        "align": "center",
+        "buttons": [
+            {"text": "AGGIORNA", "callback_data": f"upd_rm|{safe_name}"}
+        ]
+    })
+
+    fallback_text = get_dish_schedule(dish_name)
+    fallback_markup = get_update_keyboard(dish_name)
+    return blocks, fallback_text, fallback_markup
+
+async def edit_dish_rich_message(query, bot, dish_name: str):
+    """Aggiorna la programmazione del piatto in formato Rich Message (Bot API 10.3) con fallback standard."""
+    blocks, fallback_text, fallback_markup = build_dish_rich_message(dish_name)
+    
+    if query.inline_message_id:
+        rich_payload = {
+            "inline_message_id": query.inline_message_id,
+            "rich_message": {
+                "blocks": blocks
+            }
+        }
+    else:
+        rich_payload = {
+            "chat_id": query.message.chat_id,
+            "message_id": query.message.message_id,
+            "rich_message": {
+                "blocks": blocks
+            }
+        }
+    
+    try:
+        await bot._post("editMessageText", data=rich_payload)
+    except BadRequest as e:
+        if "Message is not modified" in str(e):
+            return
+        logger.warning(f"Rich dish edit fallito con BadRequest ({e}), provo fallback standard.")
+        try:
+            if query.inline_message_id:
+                await bot.edit_message_text(
+                    inline_message_id=query.inline_message_id,
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN
+                )
+            else:
+                await query.edit_message_text(
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN
+                )
+        except Exception:
+            pass
+    except Exception as e:
+        logger.warning(f"Rich dish edit fallito ({e}), provo fallback standard.")
+        try:
+            if query.inline_message_id:
+                await bot.edit_message_text(
+                    inline_message_id=query.inline_message_id,
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN
+                )
+            else:
+                await query.edit_message_text(
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN
+                )
+        except Exception:
+            pass
 
 # --- FUNZIONI PER ORARI MENSE ---
 DAYS_REV = ["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"]
@@ -660,20 +844,19 @@ def format_canteen_info(canteen):
     message_lines.append(f"<b>Capienza:</b> {seats} posti")
     message_lines.append("") # Spacer
     
-    # Orari e Stato
+    # Orari
     if "opening_hours" in canteen:
         oh = canteen["opening_hours"]
         # Iteriamo su tutti i tipi di orari (mensa, prendi_e_vai, ecc)
         for service_type, schedule_map in oh.items():
-            # Status
-            status_text, schedule_block = get_canteen_status_info(canteen.get("id"), schedule_map, service_name=service_type)
+            _, schedule_block = get_canteen_status_info(canteen.get("id"), schedule_map, service_name=service_type)
             
             # Pretty service name
             svc_title = service_type.replace("_", " ").capitalize()
             if svc_title.lower() == "mensa":
                 svc_title = "Mensa" # Just explicit
             
-            message_lines.append(f"<b>{svc_title}</b> {status_text}")
+            message_lines.append(f"<b>{svc_title}</b>")
             message_lines.append(f"<pre>{schedule_block}</pre>")
             message_lines.append("")
 
@@ -684,28 +867,249 @@ def format_canteen_info(canteen):
             message_lines.append(future_closure)
             message_lines.append("")
 
-    # Link sito e Google Maps
-    links = []
-    if "website" in canteen:
-        links.append(f"<a href='{canteen['website']}'>SITO↗︎\uFE0E</a>")
-        
-    lat = canteen.get("coordinates", {}).get("lat")
-    lon = canteen.get("coordinates", {}).get("lon")
-    
-    if lat and lon:
-            maps_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
-            links.append(f"<a href='{maps_url}'>GOOGLE MAPS↗︎\uFE0E</a>")
-    
-    if links:
-        message_lines.append("  ".join(links))
-
     return "\n".join(message_lines)
 
-def get_info_keyboard(canteen_id):
-    """Tastiera per aggiornare le info della mensa."""
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("AGGIORNA", callback_data=f"upd_info|{canteen_id}")]
-    ])
+def get_info_keyboard(canteen):
+    """Tastiera per sito web e google maps della mensa."""
+    buttons = []
+    row = []
+    if "website" in canteen:
+        row.append(InlineKeyboardButton("SITO WEB", url=canteen["website"]))
+    lat = canteen.get("coordinates", {}).get("lat")
+    lon = canteen.get("coordinates", {}).get("lon")
+    if lat and lon:
+        row.append(InlineKeyboardButton("GOOGLE MAPS", url=f"https://maps.google.com/?q={lat},{lon}"))
+    if row:
+        buttons.append(row)
+    return InlineKeyboardMarkup(buttons) if buttons else None
+
+def build_canteen_info_rich_message(canteen):
+    """Costruisce il Rich Message (Bot API 10.3) con mappa in alto, tabelle orari mensa e prendi e vai, e bottoni sito/maps."""
+    tz = pytz.timezone('Europe/Rome')
+    now = datetime.now(tz)
+    today_idx = now.weekday()
+    today_date = now.date()
+    
+    c_name = canteen["name"]
+    c_id = canteen.get("id")
+    seats = canteen.get("seats", "N/D")
+    lat = canteen.get("coordinates", {}).get("lat")
+    lon = canteen.get("coordinates", {}).get("lon")
+    website = canteen.get("website")
+    maps_url = f"https://maps.google.com/?q={lat},{lon}" if (lat and lon) else None
+    
+    blocks = [
+        {
+            "type": "heading",
+            "size": 1,
+            "text": c_name.upper()
+        }
+    ]
+    
+    # 1. Mappa nativa con coordinate in alto
+    if lat and lon:
+        blocks.append({
+            "type": "map",
+            "location": {
+                "latitude": float(lat),
+                "longitude": float(lon)
+            },
+            "zoom": 16,
+            "width": 640,
+            "height": 360
+        })
+
+    # 2. Informazioni generali (solo Capienza e Servizi, senza stato)
+    info_lines = []
+    if "services" in canteen:
+        services = ", ".join(canteen["services"])
+        info_lines.append(f"Servizi: {services}")
+    info_lines.append(f"Capienza: {seats} posti")
+    
+    blocks.append({
+        "type": "paragraph",
+        "text": "\n".join(info_lines)
+    })
+    
+    # Avviso chiusura festività / futura se presente
+    future_closure = get_future_closures_text(c_id, today_date)
+    if future_closure:
+        clean_closure = re.sub(r"<[^>]+>", "", future_closure).strip()
+        if clean_closure:
+            blocks.append({
+                "type": "paragraph",
+                "text": clean_closure
+            })
+
+    blocks.append({
+        "type": "divider"
+    })
+    
+    blocks.append({
+        "type": "heading",
+        "size": 2,
+        "text": "ORARI MENSA"
+    })
+    
+    # 3. Tabella degli orari della mensa
+    table_rows = [
+        [
+            {"text": "GIORNO", "is_header": True, "align": "left"},
+            {"text": "PRANZO", "is_header": True, "align": "center"},
+            {"text": "CENA", "is_header": True, "align": "center"}
+        ]
+    ]
+    
+    mensa_sched = canteen.get("opening_hours", {}).get("mensa", {})
+    for i in range(7):
+        day_date = today_date - timedelta(days=today_idx) + timedelta(days=i)
+        day_name = DAYS_REV[i]
+        d_status = get_holiday_status(c_id, day_date)
+        
+        if d_status == "closed":
+            pranzo_str = "Chiuso (festa)"
+            cena_str = "Chiuso (festa)"
+        else:
+            orig_slots = mensa_sched.get(str(i), [])
+            if d_status == "lunch_only":
+                pranzo_slots = [s for s in orig_slots if int(s.split(":")[0]) < 16]
+                cena_slots = []
+            elif d_status == "dinner_only":
+                pranzo_slots = []
+                cena_slots = [s for s in orig_slots if int(s.split(":")[0]) >= 16]
+            else:
+                pranzo_slots = [s for s in orig_slots if int(s.split(":")[0]) < 16]
+                cena_slots = [s for s in orig_slots if int(s.split(":")[0]) >= 16]
+                
+            pranzo_str = ", ".join(pranzo_slots) if pranzo_slots else "Chiuso"
+            cena_str = ", ".join(cena_slots) if cena_slots else "Chiuso"
+            
+        table_rows.append([
+            {"text": day_name, "align": "left"},
+            {"text": pranzo_str, "align": "center"},
+            {"text": cena_str, "align": "center"}
+        ])
+        
+    blocks.append({
+        "type": "table",
+        "cells": table_rows
+    })
+    
+    # 4. Tabella orari Prendi e vai se presente
+    pv_sched = canteen.get("opening_hours", {}).get("prendi_e_vai", {})
+    if pv_sched and any(pv_sched.get(str(i)) for i in range(7)):
+        blocks.append({
+            "type": "divider"
+        })
+        blocks.append({
+            "type": "heading",
+            "size": 2,
+            "text": "ORARI PRENDI E VAI"
+        })
+        pv_rows = [
+            [
+                {"text": "GIORNO", "is_header": True, "align": "left"},
+                {"text": "ORARIO", "is_header": True, "align": "center"}
+            ]
+        ]
+        for i in range(7):
+            day_date = today_date - timedelta(days=today_idx) + timedelta(days=i)
+            day_name = DAYS_REV[i]
+            d_status = get_holiday_status(c_id, day_date)
+            if d_status == "closed":
+                s_str = "Chiuso (festa)"
+            else:
+                slots = pv_sched.get(str(i), [])
+                s_str = ", ".join(slots) if slots else "Chiuso"
+            pv_rows.append([
+                {"text": day_name, "align": "left"},
+                {"text": s_str, "align": "center"}
+            ])
+        blocks.append({
+            "type": "table",
+            "cells": pv_rows
+        })
+            
+    # 5. Pulsanti per Sito Web e Google Maps (nessun bottone aggiorna, nessun link diretto nel testo)
+    buttons_row = []
+    if website:
+        buttons_row.append({"text": "SITO WEB", "url": website})
+    if maps_url:
+        buttons_row.append({"text": "GOOGLE MAPS", "url": maps_url})
+        
+    if buttons_row:
+        blocks.append({
+            "type": "buttons",
+            "align": "center",
+            "buttons": buttons_row
+        })
+
+    fallback_text = format_canteen_info(canteen)
+    fallback_markup = get_info_keyboard(canteen)
+    return blocks, fallback_text, fallback_markup
+
+async def edit_canteen_info_rich_message(query, bot, canteen):
+    """Aggiorna il Rich Message delle info mensa con fallback standard."""
+    blocks, fallback_text, fallback_markup = build_canteen_info_rich_message(canteen)
+    if query.inline_message_id:
+        rich_payload = {
+            "inline_message_id": query.inline_message_id,
+            "rich_message": {
+                "blocks": blocks
+            }
+        }
+    else:
+        rich_payload = {
+            "chat_id": query.message.chat_id,
+            "message_id": query.message.message_id,
+            "rich_message": {
+                "blocks": blocks
+            }
+        }
+    try:
+        await bot._post("editMessageText", data=rich_payload)
+    except BadRequest as e:
+        if "Message is not modified" in str(e):
+            return
+        logger.warning(f"Rich canteen info edit fallito ({e}), provo fallback standard.")
+        try:
+            if query.inline_message_id:
+                await bot.edit_message_text(
+                    inline_message_id=query.inline_message_id,
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.HTML,
+                    disable_web_page_preview=True
+                )
+            else:
+                await query.edit_message_text(
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.HTML,
+                    disable_web_page_preview=True
+                )
+        except Exception:
+            pass
+    except Exception as e:
+        logger.warning(f"Rich canteen info edit fallito ({e}), provo fallback standard.")
+        try:
+            if query.inline_message_id:
+                await bot.edit_message_text(
+                    inline_message_id=query.inline_message_id,
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.HTML,
+                    disable_web_page_preview=True
+                )
+            else:
+                await query.edit_message_text(
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.HTML,
+                    disable_web_page_preview=True
+                )
+        except Exception:
+            pass
 
 def get_rates_for_isee(isee_value):
     """Trova la fascia di prezzo corrispondente al valore ISEE."""
@@ -774,31 +1178,224 @@ def get_rate_message_text(band, note=None):
         
     return final_msg
 
+def build_all_rates_rich_message():
+    """Costruisce la tabella completa di tutte le tariffe ISEE in formato Rich Message (Bot API 10.3)."""
+    blocks = [
+        {
+            "type": "heading",
+            "size": 1,
+            "text": "TABELLA TARIFFE ISEE"
+        },
+        {
+            "type": "paragraph",
+            "text": "Tariffe agevolate del servizio ristorazione DSU Toscana per fascia ISEE:"
+        }
+    ]
+
+    header_row = [
+        {"text": "FASCIA ISEE", "is_header": True, "align": "left"},
+        {"text": "COMPLETO", "is_header": True, "align": "center"},
+        {"text": "RID. A", "is_header": True, "align": "center"},
+        {"text": "RID. B", "is_header": True, "align": "center"},
+        {"text": "RID. C", "is_header": True, "align": "center"}
+    ]
+
+    table_rows = [header_row]
+    for r in RATES:
+        if r.get("scholarship"):
+            label = "Borsisti ARDSU"
+        else:
+            orig = r.get("original_label", "")
+            label = orig.replace("≤ € ", "≤ ").replace("> € ", "> ").replace(" ≤ € ", " - ")
+        
+        comp_v = r.get("pasto_completo", 0)
+        ra_v = r.get("pasto_ridotto_a", 0)
+        rb_v = r.get("pasto_ridotto_b", 0)
+        rc_v = r.get("pasto_ridotto_c", 0)
+
+        comp = "Gratis" if comp_v == 0 else f"€ {comp_v:.2f}"
+        ra = "Gratis" if ra_v == 0 else f"€ {ra_v:.2f}"
+        rb = "Gratis" if rb_v == 0 else f"€ {rb_v:.2f}"
+        rc = "Gratis" if rc_v == 0 else f"€ {rc_v:.2f}"
+
+        table_rows.append([
+            {"text": label, "align": "left"},
+            {"text": comp, "align": "center"},
+            {"text": ra, "align": "center"},
+            {"text": rb, "align": "center"},
+            {"text": rc, "align": "center"}
+        ])
+
+    blocks.append({
+        "type": "table",
+        "cells": table_rows
+    })
+
+    blocks.append({
+        "type": "divider"
+    })
+
+    blocks.append({
+        "type": "heading",
+        "size": 2,
+        "text": "LEGENDA PASTI"
+    })
+
+    blocks.append({
+        "type": "paragraph",
+        "text": (
+            "• Pasto Completo: 1 primo, 1 secondo, 1 contorno, 1 frutto o dessert, pane e bevanda\n"
+            "• Pasto Ridotto A: 1 primo, 1 contorno, 1 frutto o dessert, pane e bevanda\n"
+            "• Pasto Ridotto B: 1 secondo, 1 contorno, 1 frutto o dessert, pane e bevanda\n"
+            "• Pasto Ridotto C: 1 primo o 1 secondo o 2 contorni, 1 frutto o dessert, pane e bevanda"
+        )
+    })
+
+    blocks.append({
+        "type": "divider"
+    })
+
+    blocks.append({
+        "type": "paragraph",
+        "text": [
+            "Per il regolamento completo visita il sito ",
+            {"type": "url", "text": "DSU Toscana", "url": "https://www.dsu.toscana.it/-/tariffa-agevolata-su-base-isee"},
+            "."
+        ]
+    })
+
+    fallback_text = (
+        "*TABELLA TARIFFE ISEE DSU TOSCANA*\n\n"
+        "Verifica le agevolazioni e i dettagli direttamente sul sito di DSU: https://www.dsu.toscana.it/-/tariffa-agevolata-su-base-isee"
+    )
+    fallback_markup = None
+    return blocks, fallback_text, fallback_markup
+
+def build_rate_rich_message(band, isee_val=None):
+    """Costruisce il Rich Message con tabella per una specifica fascia ISEE (Bot API 10.3)."""
+    orig_label = band.get("original_label", "")
+    if band.get("scholarship"):
+        heading_title = "TARIFFE IDONEI BORSA ARDSU"
+    else:
+        heading_title = f"TARIFFE FASCIA {orig_label.upper()}"
+
+    blocks = [
+        {
+            "type": "heading",
+            "size": 1,
+            "text": heading_title
+        }
+    ]
+
+    if isee_val is not None and not band.get("scholarship"):
+        blocks.append({
+            "type": "paragraph",
+            "text": f"Valore ISEE: € {isee_val:,.2f}"
+        })
+
+    items_ord = [
+        ("pasto_completo", "Pasto Completo"),
+        ("pasto_ridotto_a", "Pasto Ridotto A"),
+        ("pasto_ridotto_b", "Pasto Ridotto B"),
+        ("pasto_ridotto_c", "Pasto Ridotto C")
+    ]
+
+    table_rows = [
+        [
+            {"text": "TIPO DI PASTO", "is_header": True, "align": "left"},
+            {"text": "PREZZO", "is_header": True, "align": "center"}
+        ]
+    ]
+
+    for key, label in items_ord:
+        price = band.get(key)
+        if price is not None:
+            price_str = "Gratuito" if price == 0 else f"€ {price:.2f}"
+        else:
+            price_str = "N/A"
+
+        table_rows.append([
+            {"text": label, "align": "left"},
+            {"text": price_str, "align": "center"}
+        ])
+
+    blocks.append({
+        "type": "table",
+        "cells": table_rows
+    })
+
+    blocks.append({
+        "type": "divider"
+    })
+
+    blocks.append({
+        "type": "heading",
+        "size": 2,
+        "text": "COMPOSIZIONE DEI PASTI"
+    })
+
+    blocks.append({
+        "type": "paragraph",
+        "text": (
+            "• Pasto Completo: 1 primo, 1 secondo, 1 contorno, 1 frutto o dessert, pane e bevanda\n"
+            "• Pasto Ridotto A: 1 primo, 1 contorno, 1 frutto o dessert, pane e bevanda\n"
+            "• Pasto Ridotto B: 1 secondo, 1 contorno, 1 frutto o dessert, pane e bevanda\n"
+            "• Pasto Ridotto C: 1 primo o 1 secondo o 2 contorni, 1 frutto o dessert, pane e bevanda"
+        )
+    })
+
+    blocks.append({
+        "type": "divider"
+    })
+
+    blocks.append({
+        "type": "paragraph",
+        "text": [
+            "Per dettagli e informazioni visita ",
+            {"type": "url", "text": "DSU Toscana", "url": "https://www.dsu.toscana.it/-/tariffa-agevolata-su-base-isee"},
+            "."
+        ]
+    })
+
+    fallback_text = get_rate_message_text(band)
+    fallback_markup = None
+    return blocks, fallback_text, fallback_markup
+
+
+class CustomInputRichMessageContent:
+    """Rappresenta InputRichMessageContent per Telegram Bot API 10.3 nei risultati inline."""
+    def __init__(self, blocks):
+        self.blocks = blocks
+
+    def to_dict(self, recursive=True):
+        return {
+            "rich_message": {
+                "blocks": self.blocks
+            }
+        }
+
 
 async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce le ricerche inline dei piatti."""
     query = update.inline_query.query
     results = []
 
-    # Se la query è vuota, mostra il menu di ogni mensa
+    # Se la query è vuota, mostra il menu di ogni mensa in formato Rich Message (API 10.3)
     if not query:
-        today = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
-        meal_type = "Pranzo"
+        tz = pytz.timezone('Europe/Rome')
+        now = datetime.now(tz)
+        today = now.strftime("%Y-%m-%d")
+        meal_type = "Cena" if now.time() >= time(15, 0) else "Pranzo"
         
-        # --- AGGIUNTA VOCE TUTTE ---
-        text_all = get_menu_text(today, meal_type, canteen_name="TUTTE")
-        
-        # is_inline=True così il bottone centrale ricarica la stessa vista e non prova a tornare indietro
-        reply_markup_all = get_keyboard(today, meal_type, canteen_id="all", is_inline=True)
-        
+        # --- VOCE TUTTE (Rich Message) ---
+        blocks_all, _, _ = build_canteen_rich_message("all", today, meal_type)
         results.append(
             InlineQueryResultArticle(
                 id=str(uuid4()),
                 title="TUTTE",
                 description="Visualizza il menù di tutte le mense oggi...",
                 thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/tutte.png?v=5",
-                input_message_content=InputTextMessageContent(text_all, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
-                reply_markup=reply_markup_all
+                input_message_content=CustomInputRichMessageContent(blocks_all)
             )
         )
         
@@ -806,45 +1403,78 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
         
         for c_id, c_name in sorted_canteens:
-            # Testo e tastiera specifici per ogni mensa
-            text = get_menu_text(today, meal_type, canteen_name=c_name)
-            # Passiamo is_inline=True così il bottone centrale NON torna alla selezione mense
-            reply_markup = get_keyboard(today, meal_type, canteen_id=c_id, is_inline=True)
-            
-            clean_name = c_name.upper() # Nome mensa in CAPS
-            
+            clean_name = c_name.upper()
+            blocks_canteen, _, _ = build_canteen_rich_message(c_id, today, meal_type)
             results.append(
                 InlineQueryResultArticle(
                     id=str(uuid4()),
                     title=clean_name,
-                    description=f"Visualizza il menù di oggi...",
+                    description="Visualizza il menù di oggi...",
                     thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png?v=2", 
-                    input_message_content=InputTextMessageContent(text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
-                    reply_markup=reply_markup
+                    input_message_content=CustomInputRichMessageContent(blocks_canteen)
                 )
             )
 
-        # --- ISTRUZIONI DI UTILIZZO (stile vecchiobot) ---
+        # --- SUGGERIMENTI E ISTRUZIONI DI UTILIZZO IN FORMATO RICH MESSAGE (API 10.3) ---
         instructions = [
             {
                 "id": "inst_p",
                 "title": "Cerca Piatto",
                 "desc": "p:<piatto> (es. p:Arista)",
-                "text": "*COME CERCARE UN PIATTO*\n\nVuoi sapere dove fanno l'arista o le lasagne?\nDigita nella chat:\n`@cibounipibot p:nome_piatto`\n\n_Esempio:_ `@cibounipibot p:Arista`\n\nIl bot ti mostrerà in quali mense e in quali giorni dei prossimi menù sarà disponibile!",
+                "blocks": [
+                    {"type": "heading", "size": 1, "text": "CERCA PIATTO"},
+                    {
+                        "type": "paragraph",
+                        "text": "Vuoi sapere in quale mensa e in quali giorni sarà servito un piatto specifico?\nDigita nella chat:\n@cibounipibot p:nome_piatto\n\nEsempio: @cibounipibot p:Arista\n\nIl bot cercherà nei menù di tutte le mense!"
+                    },
+                    {
+                        "type": "buttons",
+                        "align": "center",
+                        "buttons": [
+                            {"text": "PROVA SUBITO", "switch_inline_query_current_chat": "p:"}
+                        ]
+                    }
+                ],
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             },
             {
                 "id": "inst_i",
                 "title": "Informazioni Mense",
                 "desc": "i:<mensa> (es. i:Martiri)",
-                "text": "*INFORMAZIONI E ORARI MENSE*\n\nVuoi sapere se una mensa è aperta ora o che orari fa?\nDigita nella chat:\n`@cibounipibot i:nome_mensa`\n\n_Esempio:_ `@cibounipibot i:Martiri`\n\nOppure digita solo `@cibounipibot i:` per vedere la lista di tutte le mense e cliccare su quella che ti interessa!",
+                "blocks": [
+                    {"type": "heading", "size": 1, "text": "INFORMAZIONI E ORARI MENSE"},
+                    {
+                        "type": "paragraph",
+                        "text": "Vuoi sapere se una mensa è aperta adesso o quali sono i suoi orari?\nDigita nella chat:\n@cibounipibot i:nome_mensa\n\nEsempio: @cibounipibot i:Martiri\n\nOppure digita solo @cibounipibot i: per visualizzare l'elenco completo di tutte le mense!"
+                    },
+                    {
+                        "type": "buttons",
+                        "align": "center",
+                        "buttons": [
+                            {"text": "PROVA SUBITO", "switch_inline_query_current_chat": "i:"}
+                        ]
+                    }
+                ],
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             },
             {
                 "id": "inst_t",
                 "title": "Tariffe & ISEE",
                 "desc": "t: <isee> (es. t:21065)",
-                "text": "*CALCOLO TARIFFE ISEE*\n\nVuoi sapere esattamente quanto paghi per il pasto in base alla tua fascia ISEE?\nDigita nella chat:\n`@cibounipibot t:tuo_valore_isee`\n\n_Esempi:_\n`@cibounipibot t:15500`\n`@cibounipibot t:borsa` (se sei borsista DSU)\n\nOppure digita solo `@cibounipibot t:` per vedere la tabella completa di tutte le tariffe.",
+                "blocks": [
+                    {"type": "heading", "size": 1, "text": "CALCOLO TARIFFE ISEE"},
+                    {
+                        "type": "paragraph",
+                        "text": "Vuoi sapere esattamente quanto paghi a pasto in base al tuo ISEE?\nDigita nella chat:\n@cibounipibot t:tuo_valore_isee\n\nEsempi:\n• @cibounipibot t:15500\n• @cibounipibot t:borsa (se borsista DSU)\n\nOppure digita solo @cibounipibot t: per visualizzare la tabella riassuntiva di tutte le fasce di costo."
+                    },
+                    {
+                        "type": "buttons",
+                        "align": "center",
+                        "buttons": [
+                            {"text": "PROVA SUBITO", "switch_inline_query_current_chat": "t:"}
+                        ]
+                    }
+                ],
                 "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
             }
         ]
@@ -855,35 +1485,52 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     id=inst["id"],
                     title=inst["title"],
                     description=inst["desc"],
-                    input_message_content=InputTextMessageContent(
-                        message_text=inst["text"],
-                        parse_mode=ParseMode.MARKDOWN
-                    ),
+                    input_message_content=CustomInputRichMessageContent(inst["blocks"]),
                     thumbnail_url=inst["thumb"],
                     thumbnail_width=48, 
                     thumbnail_height=48
                 )
             )
             
-        # --- AGGIUNTA VOCE INSTAGRAM in FONDO ---
+        # --- AGGIUNTA VOCE INSTAGRAM in FONDO (Rich Message) ---
         results.append(
             InlineQueryResultArticle(
                 id=str(uuid4()),
                 title="Seguici su Instagram",
                 description="Ora puoi scoprire il menù anche tramite il nostro profilo Instagram.",
                 thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/instagram.png?v=1",
-                input_message_content=InputTextMessageContent("Guarda il menù del giorno illustrato sulle storie e nei post del nostro profilo e non scordarti di seguirci per essere aggiornato: \nhttps://www.instagram.com/cibounipibot")
+                input_message_content=CustomInputRichMessageContent([
+                    {"type": "heading", "size": 1, "text": "SEGUICI SU INSTAGRAM"},
+                    {"type": "paragraph", "text": "Scopri i menù del giorno illustrati nelle storie e nei post del nostro profilo e non scordarti di seguirci per rimanere sempre aggiornato!"},
+                    {
+                        "type": "buttons",
+                        "align": "center",
+                        "buttons": [
+                            {"text": "APRI INSTAGRAM", "url": "https://instagram.com/cibounipibot"}
+                        ]
+                    }
+                ])
             )
         )
 
-        # --- AGGIUNTA VOCE GITHUB in FONDO ---
+        # --- AGGIUNTA VOCE GITHUB in FONDO (Rich Message) ---
         results.append(
             InlineQueryResultArticle(
                 id=str(uuid4()),
                 title="Repository GitHub",
                 description="Mettici una stella!",
                 thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/github.png?v=3",
-                input_message_content=InputTextMessageContent("https://github.com/plumkewe/mense-unipi-bot")
+                input_message_content=CustomInputRichMessageContent([
+                    {"type": "heading", "size": 1, "text": "REPOSITORY GITHUB"},
+                    {"type": "paragraph", "text": "Il bot è open source! Visita la repository ufficiale su GitHub per vedere il codice sorgente o lasciare una stella al progetto."},
+                    {
+                        "type": "buttons",
+                        "align": "center",
+                        "buttons": [
+                            {"text": "APRI REPOSITORY", "url": "https://github.com/plumkewe/mense-unipi-bot"}
+                        ]
+                    }
+                ])
             )
         )
         
@@ -902,8 +1549,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             if search_term in c_name.lower() or not search_term:
                 seats = canteen.get("seats", "N/D")
                 
-                message_text = format_canteen_info(canteen)
-                reply_markup = get_info_keyboard(c_id)
+                blocks, _, _ = build_canteen_info_rich_message(canteen)
 
                 results.append(
                     InlineQueryResultArticle(
@@ -911,8 +1557,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                         title=f"{c_name} (Informazioni)",
                         description=f"Capienza: {seats} posti",
                         thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png?v=3", 
-                        input_message_content=InputTextMessageContent(message_text, parse_mode=ParseMode.HTML, disable_web_page_preview=True),
-                        reply_markup=reply_markup
+                        input_message_content=CustomInputRichMessageContent(blocks)
                     )
                 )
         
@@ -926,23 +1571,22 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if query.lower().startswith("t:"):
         search_term = query[2:].strip()
         
-        # Caso 1: Solo "t:" -> Mostra immagine tabella generale
+        # Caso 1: Solo "t:" -> Mostra tabella generale in formato Rich Message (API 10.3)
         if not search_term:
+            blocks_all_rates, _, _ = build_all_rates_rich_message()
             results.append(
-                InlineQueryResultPhoto(
+                InlineQueryResultArticle(
                     id=str(uuid4()),
-                    title="TARIFFE",
-                    description="Visualizza le tariffe della mensa...",
-                    photo_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/img/table.png?v=1",
+                    title="TABELLA TARIFFE ISEE",
+                    description="Visualizza la tabella riassuntiva di tutte le fasce ISEE...",
                     thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/table.png?v=1",
-                    caption="Verifica le agevolazioni e i dettagli direttamente sul sito di DSU: https://www.dsu.toscana.it/-/tariffa-agevolata-su-base-isee",
-                    parse_mode=ParseMode.MARKDOWN
+                    input_message_content=CustomInputRichMessageContent(blocks_all_rates)
                 )
             )
             await update.inline_query.answer(results, cache_time=0)
             return
             
-        # Caso 2: t:<isee> -> Calcola tariffe specifiche (anche per borsa di studio)
+        # Caso 2: t:<isee> -> Calcola tariffe specifiche con tabella Rich Message (anche per borsa di studio)
         try:
             isee_val = None
             band = None
@@ -961,11 +1605,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 band = get_rates_for_isee(isee_val)
             
             if band:
-                # 1. Costruisci il messaggio completo (che verrà inviato al click)
-                note = None
-                reply_markup = None
-                
-                final_msg = get_rate_message_text(band, note)
+                blocks_rate, _, _ = build_rate_rich_message(band, isee_val)
                 
                 items_ord = [
                     ("pasto_completo", "PASTO COMPLETO"),
@@ -975,8 +1615,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 ]
                 thumb_money = "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/money.png?v=2"
                 
-                # 2. Genera i risultati singoli per la visualizzazione inline (come prima)
-                # Ognuno però invierà lo stesso final_msg
+                # Ognuno invierà il Rich Message con la tabella
                 for key, label in items_ord:
                     price = band.get(key)
                     
@@ -989,7 +1628,6 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     else:
                         price_text = "N/A"
 
-                    # Titolo formattato (es. Pasto Completo)
                     display_title = label.replace("_", " ").title()
                     
                     results.append(
@@ -998,8 +1636,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                             title=display_title,
                             description=price_text,
                             thumbnail_url=thumb_money,
-                            input_message_content=InputTextMessageContent(final_msg, parse_mode=ParseMode.MARKDOWN),
-                            reply_markup=reply_markup
+                            input_message_content=CustomInputRichMessageContent(blocks_rate)
                         )
                     )
                         
@@ -1089,9 +1726,8 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                              # ID Univoco per il risultato
                              result_id = str(uuid4())
                              
-                             # Costruisci il messaggio con la lista di tutte le occorrenze future
-                             content_text = get_dish_schedule(clean_dish_name)
-                             reply_markup = get_update_keyboard(clean_dish_name)
+                             # Costruisci il Rich Message con la tabella di programmazione
+                             dish_blocks, _, _ = build_dish_rich_message(clean_dish_name)
 
                              results.append(
                                  InlineQueryResultArticle(
@@ -1099,8 +1735,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                                      title=clean_dish_name,
                                      description=description_text,
                                      thumbnail_url=thumb_url,
-                                     input_message_content=InputTextMessageContent(content_text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True),
-                                     reply_markup=reply_markup
+                                     input_message_content=CustomInputRichMessageContent(dish_blocks)
                                  )
                              )
                              count += 1
@@ -1110,101 +1745,193 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         button = InlineQueryResultsButton(text="Piatto che non servono!", start_parameter="help")
     await update.inline_query.answer(results, cache_time=5, button=button)
 
+def build_welcome_rich_message():
+    """Costruisce il Rich Message di benvenuto senza emoji, con comandi e funzioni inline in collapse e bottone Instagram."""
+    blocks = [
+        {
+            "type": "heading",
+            "size": 1,
+            "text": "CIBOUNIPI BOT"
+        },
+        {
+            "type": "paragraph",
+            "text": "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso."
+        },
+        {
+            "type": "details",
+            "summary": "Comandi disponibili",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": (
+                        "• /start - Messaggio di benvenuto\n"
+                        "• /links - Link utili DSU e contatti"
+                    )
+                }
+            ]
+        },
+        {
+            "type": "details",
+            "summary": "Funzioni inline",
+            "blocks": [
+                {
+                    "type": "paragraph",
+                    "text": (
+                        "• Ricerca piatto: @cibounipibot p:nome piatto\n"
+                        "• Menu di oggi: @cibounipibot in chat\n"
+                        "• Info e orari: @cibounipibot i:\n"
+                        "• Tariffe ISEE: @cibounipibot t:"
+                    )
+                }
+            ]
+        },
+        {
+            "type": "buttons",
+            "align": "center",
+            "buttons": [
+                {
+                    "text": "SEGUICI SU INSTAGRAM",
+                    "url": "https://instagram.com/cibounipibot"
+                }
+            ]
+        }
+    ]
+
+    fallback_text = (
+        "*CIBOUNIPI BOT*\n\n"
+        "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso.\n\n"
+        "> *Comandi disponibili*\n"
+        "> • /start - Messaggio di benvenuto\n"
+        "> • /links - Link utili DSU e contatti\n\n"
+        "> *Funzioni inline*\n"
+        "> • Ricerca piatto: `@cibounipibot p:nome`\n"
+        "> • Menu di oggi: `@cibounipibot` in chat\n"
+        "> • Info e orari: `@cibounipibot i:`\n"
+        "> • Tariffe ISEE: `@cibounipibot t:`"
+    )
+    fallback_markup = InlineKeyboardMarkup([
+        [InlineKeyboardButton("SEGUICI SU INSTAGRAM", url="https://instagram.com/cibounipibot")]
+    ])
+    return blocks, fallback_text, fallback_markup
+
+async def send_welcome_rich_message(bot, chat_id: int):
+    """Invia il messaggio di benvenuto come Rich Message con fallback standard."""
+    blocks, fallback_text, fallback_markup = build_welcome_rich_message()
+    rich_payload = {
+        "chat_id": chat_id,
+        "rich_message": {
+            "blocks": blocks
+        }
+    }
+    try:
+        await bot._post("sendRichMessage", data=rich_payload)
+    except Exception as e:
+        logger.warning(f"Rich welcome message fallito ({e}), invio fallback standard.")
+        await bot.send_message(
+            chat_id=chat_id,
+            text=fallback_text,
+            reply_markup=fallback_markup,
+            parse_mode=ParseMode.MARKDOWN,
+            disable_web_page_preview=True
+        )
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /start."""
-    user = update.effective_user.first_name
-    text = (
-        f"Ehy {user}! 🐻✨\n"
-        f"*Benvenuto/a* nel *CIBOUNIPI BOT*! 🍱\n\n"
-        "Sono qui per aiutarti a consultare i menù delle mense universitarie di Pisa. 🍕\n\n"
-        "🔍 *Ricerca Piatto*\n"
-        "Digita `@cibounipibot p:nome piatto` in qualsiasi chat.\n\n"
-        "📅 *Menu di Oggi*\n"
-        "Digita `@cibounipibot` (seguito da spazio) in qualsiasi chat e seleziona la mensa.\n\n"
-        "🕒 *Info & Orari*\n"
-        "Digita `@cibounipibot i:` in qualsiasi chat per orari e stato.\n\n"
-        "💰 *Tariffe ISEE*\n"
-        "Digita `@cibounipibot t:` per tabella, o `t:isee` (es. `t:20000`) per calcolo personalizzato.\n\n"
-        "🛠 *Comandi*\n"
-        "/menu - Seleziona mensa\n"
-        "/links - Link utili DSU\n"
-        "/help - Guida completa" +
-        FEEDBACK_TEXT
-    )
-    
-    keyboard = [
-        [InlineKeyboardButton("Menu di Oggi", switch_inline_query_current_chat="")],
-        [InlineKeyboardButton("Cerca Piatto", switch_inline_query_current_chat="p:")],
-        [InlineKeyboardButton("Informazioni Mense", switch_inline_query_current_chat="i:")],
-        [InlineKeyboardButton("Calcola Tariffa", switch_inline_query_current_chat="t:")],
-        [InlineKeyboardButton("Scegli Mensa", callback_data="sel_canteen|reset")],
-        [InlineKeyboardButton("Guida", callback_data="show_help")]
-    ]
-    
     is_private = update.effective_chat.type == "private"
-    reply_keyboard = ReplyKeyboardMarkup(
-        [[KeyboardButton("APERTE ORA")]],
-        resize_keyboard=True,
-        is_persistent=True
-    ) if is_private else None
+    reply_keyboard = get_canteen_reply_keyboard() if is_private else None
     
-    # Invia lo sticker di benvenuto e imposta la tastiera persistente
-    await update.message.reply_sticker("CAACAgQAAxkBAAIg52oQzua36OYXQ0zqwfRyIWhJogN0AALOIgACbf2JUIR-DlHVWWTlOwQ", reply_markup=reply_keyboard)
+    # Invia lo sticker di benvenuto e imposta la tastiera persistente con le mense
+    await update.message.reply_sticker(
+        "CAACAgQAAxkBAAIpKGqiv6MPsEBXcmawt0aBHsU3PrmSAAJwHwACOxwRUYGOMtqXij1vPQQ",
+        reply_markup=reply_keyboard
+    )
 
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.MARKDOWN)
+    # Invia il Rich Message di benvenuto
+    await send_welcome_rich_message(context.bot, update.effective_chat.id)
 
-async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il comando /menu. Mostra la selezione della mensa."""
-    text = "*Seleziona una mensa per vedere il menù:*"
-    reply_markup = get_canteen_selection_keyboard()
-    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+def build_links_rich_message():
+    """Costruisce il Rich Message per il comando /links diviso tra i nostri canali e i canali DSU."""
+    blocks = [
+        {
+            "type": "heading",
+            "size": 1,
+            "text": "LINK UTILI"
+        },
+        {
+            "type": "heading",
+            "size": 2,
+            "text": "I NOSTRI CANALI"
+        },
+        {
+            "type": "paragraph",
+            "text": [
+                "• ", {"type": "url", "text": "Assistenza Telegram: @doveunipi", "url": "https://t.me/doveunipi"}, "\n",
+                "• ", {"type": "url", "text": "Instagram: @cibounipibot", "url": "https://instagram.com/cibounipibot"}, "\n",
+                "• ", {"type": "url", "text": "Canale aggiornamenti: @mensedsu", "url": "https://t.me/mensedsu"}
+            ]
+        },
+        {
+            "type": "divider"
+        },
+        {
+            "type": "heading",
+            "size": 2,
+            "text": "CANALI DSU TOSCANA"
+        },
+        {
+            "type": "paragraph",
+            "text": [
+                "• ", {"type": "url", "text": "Sito DSU Toscana", "url": "https://www.dsu.toscana.it"}, "\n",
+                "• ", {"type": "url", "text": "Sportello Studente", "url": "https://sportellostudente.dsu.toscana.it/"}, "\n",
+                "• ", {"type": "url", "text": "Instagram DSU", "url": "https://www.instagram.com/dsutoscana/"}, "\n",
+                "• ", {"type": "url", "text": "Facebook DSU", "url": "https://www.facebook.com/dsutoscana"}, "\n",
+                "• ", {"type": "url", "text": "Canale WhatsApp DSU", "url": "https://www.whatsapp.com/channel/0029Vb5mhtEKrWQsuxlBw73k"}, "\n",
+                "• ", {"type": "url", "text": "Canale Telegram DSU", "url": "https://t.me/DSUToscana"}
+            ]
+        }
+    ]
+
+    fallback_text = (
+        "*LINK UTILI*\n\n"
+        "*I NOSTRI CANALI*\n"
+        "• [Assistenza Telegram: @doveunipi](https://t.me/doveunipi)\n"
+        "• [Instagram: @cibounipibot](https://instagram.com/cibounipibot)\n"
+        "• [Canale aggiornamenti](https://t.me/mensedsu)\n\n"
+        "*CANALI DSU TOSCANA*\n"
+        "• [Sito DSU Toscana](https://www.dsu.toscana.it)\n"
+        "• [Sportello Studente](https://sportellostudente.dsu.toscana.it/)\n"
+        "• [Instagram DSU](https://www.instagram.com/dsutoscana/)\n"
+        "• [Facebook DSU](https://www.facebook.com/dsutoscana)\n"
+        "• [Canale WhatsApp DSU](https://www.whatsapp.com/channel/0029Vb5mhtEKrWQsuxlBw73k)\n"
+        "• [Canale Telegram DSU](https://t.me/DSUToscana)"
+    )
+    fallback_markup = None
+    return blocks, fallback_text, fallback_markup
+
+async def send_links_rich_message(bot, chat_id: int):
+    """Invia il comando /links come Rich Message con fallback standard."""
+    blocks, fallback_text, fallback_markup = build_links_rich_message()
+    rich_payload = {
+        "chat_id": chat_id,
+        "rich_message": {
+            "blocks": blocks
+        }
+    }
+    try:
+        await bot._post("sendRichMessage", data=rich_payload)
+    except Exception as e:
+        logger.warning(f"Rich links message fallito ({e}), invio fallback standard.")
+        await bot.send_message(
+            chat_id=chat_id,
+            text=fallback_text,
+            reply_markup=fallback_markup,
+            parse_mode=ParseMode.MARKDOWN,
+            disable_web_page_preview=True
+        )
 
 async def links_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il comando /links. Mostra link utili."""
-    text = (
-        "*LINK UTILI*\n\n"
-        "[Sito](https://www.dsu.toscana.it)\n\n"
-        "[Sportello studente](https://sportellostudente.dsu.toscana.it/)\n\n"
-        "[Instagram](https://www.instagram.com/dsutoscana/)\n\n"
-        "[Facebook](https://www.facebook.com/dsutoscana)\n\n"
-        "[Canale Whatsapp](https://www.whatsapp.com/channel/0029Vb5mhtEKrWQsuxlBw73k)\n\n"
-        "[Canale Telegram](https://t.me/DSUToscana)"
-    )
-    await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il comando /help."""
-    text = (
-        "*GUIDA ALL'USO*\n\n"
-        "*Comandi Principali*\n"
-        "/start - Avvia il bot e mostra il menu principale\n"
-        "/menu - Seleziona una mensa specifica\n"
-        "/links - Mostra link utili DSU\n"
-        "/help - Mostra questo messaggio\n\n"
-        "*1. Ricerca Piatto*\n"
-        "Puoi cercare un piatto specifico (es. \"Pollo\") per scoprire quando e dove verrà servito.\n"
-        "Digita `@cibounipibot p:Arista` in qualsiasi chat.\n\n"
-        "*2. Menu di Oggi*\n"
-        "Per vedere rapidamente il menu di oggi:\n"
-        "Digita `@cibounipibot` (seguito da spazio) in qualsiasi chat e seleziona la mensa.\n\n"
-        "*3. Info & Orari*\n"
-        "Vuoi sapere se una mensa è aperta?\n"
-        "Digita `@cibounipibot i:` in qualsiasi chat e seleziona la mensa per vedere orari e stato.\n\n"
-        "*4. Tariffe su base ISEE*\n"
-        "Digita `@cibounipibot t:` per visualizzare la tabella riassuntiva.\n"
-        "Digita `@cibounipibot t:<valore>` (es. `t:20000`) per calcolare la tua tariffa specifica.\n\n"
-        "*5. Navigazione Menu*\n"
-        "Una volta aperto un menu:\n"
-        "◀︎\uFE0E ▶︎\uFE0E : Scorri i giorni (Precedente / Successivo)\n"
-        "○︎\uFE0E : Torna ad oggi (o alla lista mense)\n"
-        "PRANZO / CENA : Cambia il pasto visualizzato" +
-        FEEDBACK_TEXT
-    )
-    
-    if update.callback_query:
-        await update.callback_query.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
-    else:
-        await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+    """Gestisce il comando /links. Mostra link utili come Rich Message."""
+    await send_links_rich_message(context.bot, update.effective_chat.id)
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce i cl sui bottoni inline."""
@@ -1213,6 +1940,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     data = query.data.split("|")
     action = data[0]
+
+    if action == "rm":
+        # Data format: rm|canteen_id|date_str|meal_type
+        canteen_id = data[1]
+        date_str = data[2]
+        meal_type = data[3]
+        await edit_canteen_rich_message(query, context.bot, canteen_id, date_str, meal_type)
+        return
 
     if action == "an_menu":
         canteen_id = data[1]
@@ -1244,13 +1979,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                 logger.warning(f"Errore an_back: {e}")
         return
 
-    if action == "show_help":
-        await help_command(update, context)
-        return
-
-    if action == "show_links":
-        await links_command(update, context)
-        return
 
 
     if action == "sel_canteen":
@@ -1286,82 +2014,18 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
         return
 
-    if action == "upd":
+    if action in ("upd", "upd_rm"):
         dish_name = data[1]
-        text = get_dish_schedule(dish_name)
-        reply_markup = get_update_keyboard(dish_name)
-        try:
-            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        except Exception:
-            pass
+        await edit_dish_rich_message(query, context.bot, dish_name)
         return
 
-    if action == "upd_info":
+    if action in ("upd_info", "upd_info_rm"):
         canteen_id = data[1]
-        # Trova la mensa nei dati completi
         canteen = next((c for c in CANTEENS_FULL if c["id"] == canteen_id), None)
-        
         if canteen:
-            try:
-                text = format_canteen_info(canteen)
-                reply_markup = get_info_keyboard(canteen_id)
-                await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-            except BadRequest as e:
-                # Se il messaggio non è cambiato, ignoriamo l'errore
-                if "Message is not modified" in str(e):
-                    pass
-                else:
-                    logger.warning(f"Errore durante l'aggiornamento info: {e}")
-            except Exception as e:
-                logger.error(f"Errore generico aggiornamento info: {e}")
+            await edit_canteen_info_rich_message(query, context.bot, canteen)
         return
 
-    if action == "orario":
-        date_str = data[1]
-        meal_type = data[2]
-        canteen_id = data[3]
-        
-        blocks = []
-        if canteen_id == "all":
-            # Mostriamo gli orari per tutte le mense (solo query del giorno stesso)
-            sorted_canteens = sorted(CANTEENS_FULL, key=lambda x: x["name"])
-            for c in sorted_canteens:
-                blocks.append(format_canteen_info_for_day(c, date_str))
-            text = "\n\n".join(blocks)
-        else:
-            canteen = next((c for c in CANTEENS_FULL if c["id"] == canteen_id), None)
-            if canteen:
-                text = format_canteen_info_for_day(canteen, date_str)
-            else:
-                text = "Mensa non trovata."
-        
-        reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton("AGGIORNA", callback_data=query.data)],
-            [InlineKeyboardButton("INDIETRO", callback_data=f"nav|{date_str}|{meal_type}|{canteen_id}")]
-        ])
-        
-        try:
-            if query.inline_message_id:
-                await context.bot.edit_message_text(
-                    inline_message_id=query.inline_message_id, 
-                    text=text, 
-                    reply_markup=reply_markup, 
-                    parse_mode=ParseMode.HTML, 
-                    disable_web_page_preview=True
-                )
-            else:
-                await query.edit_message_text(
-                    text=text, 
-                    reply_markup=reply_markup, 
-                    parse_mode=ParseMode.HTML, 
-                    disable_web_page_preview=True
-                )
-        except BadRequest as e:
-            if "Message is not modified" not in str(e):
-                logger.warning(f"Errore aggiornamento orario: {e}")
-        except Exception as e:
-            logger.warning(f"Errore aggiornamento orario: {e}")
-        return
 
     # Navigazione o Toggle: nav|date|meal|canteen_id
     if len(data) < 4:
@@ -1416,13 +2080,303 @@ async def handle_aperti_ora(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     keyboard = build_aperti_ora_keyboard()
     await update.message.reply_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True, reply_markup=keyboard)
 
+def get_canteen_reply_keyboard():
+    """Tastiera persistente con i bottoni per ogni mensa (MARTIRI, BETTI, CAMMEO)."""
+    buttons = []
+    row = []
+    sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
+    for c_id, c_name in sorted_canteens:
+        clean = c_name.replace("Mensa ", "").upper()
+        row.append(KeyboardButton(clean))
+        if len(row) == 3:
+            buttons.append(row)
+            row = []
+    if row:
+        buttons.append(row)
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True, is_persistent=True)
+
+def build_canteen_rich_message(canteen_id: str, date_str: str, meal_type: str):
+    """Costruisce la struttura per Telegram Bot API 10.3 (Rich Message con bottoni integrati) e i fallback."""
+    is_all = (canteen_id == "all")
+    if is_all:
+        canteen_name = "TUTTE"
+        header_title = "TUTTE LE MENSE"
+    else:
+        canteen_name = CANTEENS.get(canteen_id, canteen_id.capitalize())
+        clean_canteen = canteen_name.replace("Mensa ", "").upper()
+        header_title = f"MENSA {clean_canteen}"
+
+    meal_type_clean = meal_type.capitalize()
+    
+    # Formattazione data leggibile
+    date_pretty = date_str
+    try:
+        dt = datetime.strptime(date_str, "%Y-%m-%d")
+        date_pretty = format_date_it(dt)
+    except Exception:
+        pass
+
+    # Calcolo stato ferie/festività
+    is_closed = False
+    if not is_all:
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+            holiday_status = get_holiday_status(canteen_id, date_obj)
+            if holiday_status == "closed":
+                is_closed = True
+            elif holiday_status == "lunch_only" and meal_type_clean.lower() == "cena":
+                is_closed = True
+            elif holiday_status == "dinner_only" and meal_type_clean.lower() == "pranzo":
+                is_closed = True
+        except Exception:
+            pass
+
+    blocks = []
+    # 1. Intestazione (Heading) - Nessuna emoji
+    blocks.append({
+        "type": "heading",
+        "size": 1,
+        "text": header_title
+    })
+    
+    # 2. Informazioni data e pasto - Nessuna emoji
+    blocks.append({
+        "type": "paragraph",
+        "text": f"{date_pretty} • {meal_type_clean.upper()}"
+    })
+    
+    # 3. Separatore
+    blocks.append({
+        "type": "divider"
+    })
+
+    # 4. Contenuto menù
+    day_menu = MENU.get(date_str)
+    meal_menu = day_menu.get(meal_type_clean) if day_menu else None
+
+    if is_closed:
+        blocks.append({
+            "type": "paragraph",
+            "text": "Mensa chiusa per ferie o festività in questo pasto."
+        })
+    elif not day_menu or not meal_menu:
+        blocks.append({
+            "type": "paragraph",
+            "text": "Nessun piatto disponibile per questa data."
+        })
+    else:
+        has_any_dish = False
+        cat_order = ["Salati", "Primi Piatti", "Secondi Piatti", "Contorni", "Insalatone"]
+        all_cats = cat_order + [c for c in meal_menu.keys() if c not in cat_order]
+        
+        for cat in all_cats:
+            dishes = meal_menu.get(cat, [])
+            if not dishes:
+                continue
+            filtered = []
+            for d in dishes:
+                if isinstance(d, dict):
+                    avail = d.get("available_at", [])
+                    if is_all or not avail or canteen_name in avail:
+                        filtered.append(d)
+                else:
+                    filtered.append(d)
+            
+            if filtered:
+                has_any_dish = True
+                clean_cat = cat.upper().replace(" PIATTI", "")
+                blocks.append({
+                    "type": "heading",
+                    "size": 2,
+                    "text": clean_cat
+                })
+                dish_elements = []
+                for i, d in enumerate(filtered):
+                    if i > 0:
+                        dish_elements.append("\n")
+                    dish_elements.append("• ")
+                    if isinstance(d, dict):
+                        d_name = d.get("name", "").strip().capitalize()
+                        if is_all:
+                            avail = d.get("available_at", [])
+                            if avail and len(avail) < len(CANTEENS):
+                                short = [c.replace("Mensa ", "") for c in avail]
+                                d_name += f" (Solo {', '.join(short)})"
+                        d_link = d.get("link")
+                        if d_link:
+                            dish_elements.append({
+                                "type": "url",
+                                "text": d_name,
+                                "url": d_link
+                            })
+                        else:
+                            dish_elements.append(d_name)
+                    else:
+                        dish_elements.append(d.strip().capitalize())
+                blocks.append({
+                    "type": "paragraph",
+                    "text": dish_elements
+                })
+
+        if not has_any_dish:
+            blocks.append({
+                "type": "paragraph",
+                "text": "Nessun piatto disponibile per questa mensa." if not is_all else "Nessun piatto disponibile per questa data."
+            })
+
+    # 5. Bottoni integrati nel messaggio ricco (API 10.3): solo cambio pasto e domani/oggi
+    tz = pytz.timezone('Europe/Rome')
+    today_date = datetime.now(tz).date()
+    try:
+        current_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except Exception:
+        current_date = today_date
+
+    tomorrow_date = today_date + timedelta(days=1)
+    today_str = today_date.strftime("%Y-%m-%d")
+    tomorrow_str = tomorrow_date.strftime("%Y-%m-%d")
+    other_meal = "Cena" if meal_type_clean.lower() == "pranzo" else "Pranzo"
+    target_date_str = tomorrow_str if current_date == today_date else today_str
+    target_date_label = "DOMANI" if current_date == today_date else "OGGI"
+
+    buttons_row = [
+        {
+            "text": other_meal.upper(),
+            "callback_data": f"rm|{canteen_id}|{date_str}|{other_meal}"
+        },
+        {
+            "text": target_date_label,
+            "callback_data": f"rm|{canteen_id}|{target_date_str}|{meal_type_clean}"
+        }
+    ]
+
+    blocks.append({
+        "type": "buttons",
+        "align": "center",
+        "buttons": buttons_row
+    })
+
+    # Fallback tradizionale per client o server senza supporto API 10.3
+    fallback_text = get_menu_text(date_str, meal_type_clean, canteen_name)
+    fb_row = [
+        InlineKeyboardButton(other_meal.upper(), callback_data=f"rm|{canteen_id}|{date_str}|{other_meal}"),
+        InlineKeyboardButton(target_date_label, callback_data=f"rm|{canteen_id}|{target_date_str}|{meal_type_clean}")
+    ]
+    fallback_markup = InlineKeyboardMarkup([fb_row])
+
+    return blocks, fallback_text, fallback_markup
+
+async def send_canteen_rich_message(bot, chat_id: int, canteen_id: str, date_str: str, meal_type: str):
+    """Invia il menù come Rich Message (Bot API 10.3) con fallback a messaggio standard."""
+    blocks, fallback_text, fallback_markup = build_canteen_rich_message(canteen_id, date_str, meal_type)
+    rich_payload = {
+        "chat_id": chat_id,
+        "rich_message": {
+            "blocks": blocks
+        }
+    }
+    try:
+        await bot._post("sendRichMessage", data=rich_payload)
+    except Exception as e:
+        logger.warning(f"Rich message send fallito ({e}), invio messaggio standard di fallback.")
+        await bot.send_message(
+            chat_id=chat_id,
+            text=fallback_text,
+            reply_markup=fallback_markup,
+            parse_mode=ParseMode.MARKDOWN,
+            disable_web_page_preview=True
+        )
+
+async def edit_canteen_rich_message(query, bot, canteen_id: str, date_str: str, meal_type: str):
+    """Aggiorna un Rich Message esistente (Bot API 10.3) con fallback a modifica standard."""
+    blocks, fallback_text, fallback_markup = build_canteen_rich_message(canteen_id, date_str, meal_type)
+    
+    if query.inline_message_id:
+        rich_payload = {
+            "inline_message_id": query.inline_message_id,
+            "rich_message": {
+                "blocks": blocks
+            }
+        }
+    else:
+        rich_payload = {
+            "chat_id": query.message.chat_id,
+            "message_id": query.message.message_id,
+            "rich_message": {
+                "blocks": blocks
+            }
+        }
+    
+    try:
+        await bot._post("editMessageText", data=rich_payload)
+    except BadRequest as e:
+        if "Message is not modified" in str(e):
+            return
+        logger.warning(f"Rich message edit fallito con BadRequest ({e}), provo fallback.")
+        try:
+            if query.inline_message_id:
+                await bot.edit_message_text(
+                    inline_message_id=query.inline_message_id,
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN,
+                    disable_web_page_preview=True
+                )
+            else:
+                await query.edit_message_text(
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN,
+                    disable_web_page_preview=True
+                )
+        except Exception:
+            pass
+    except Exception as e:
+        logger.warning(f"Rich message edit fallito ({e}), provo fallback.")
+        try:
+            if query.inline_message_id:
+                await bot.edit_message_text(
+                    inline_message_id=query.inline_message_id,
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN,
+                    disable_web_page_preview=True
+                )
+            else:
+                await query.edit_message_text(
+                    text=fallback_text,
+                    reply_markup=fallback_markup,
+                    parse_mode=ParseMode.MARKDOWN,
+                    disable_web_page_preview=True
+                )
+        except Exception:
+            pass
+
+async def handle_canteen_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Gestisce il tap sui pulsanti delle mense (MARTIRI, BETTI, CAMMEO)."""
+    text = (update.message.text or "").strip().upper()
+    canteen_id = None
+    for c_id, c_name in CANTEENS.items():
+        clean = c_name.replace("Mensa ", "").upper()
+        if clean == text or c_id.upper() == text:
+            canteen_id = c_id
+            break
+
+    if not canteen_id:
+        return
+
+    tz = pytz.timezone('Europe/Rome')
+    now = datetime.now(tz)
+    today_str = now.strftime("%Y-%m-%d")
+    meal_type = "Cena" if now.time() >= time(15, 0) else "Pranzo"
+
+    await send_canteen_rich_message(context.bot, update.effective_chat.id, canteen_id, today_str, meal_type)
+
 async def post_init(application: Application) -> None:
     """Inizializza i comandi del bot."""
     await application.bot.set_my_commands([
         ("start", "Messaggio di benvenuto"),
-        ("menu", "Menù delle mense"),
-        ("links", "Link utili DSU"),
-        ("help", "Guida all'uso")
+        ("links", "Link utili DSU e contatti")
     ])
 
 async def self_ping(context: ContextTypes.DEFAULT_TYPE):
@@ -1450,9 +2404,10 @@ def main() -> None:
     application = Application.builder().token(token).post_init(post_init).build()
 
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("menu", menu_command))
     application.add_handler(CommandHandler("links", links_command))
-    application.add_handler(CommandHandler("help", help_command))
+    canteen_names = [re.escape(c.replace("Mensa ", "").upper()) for c in CANTEENS.values()]
+    canteen_pattern = f"^(?i)({'|'.join(canteen_names)})$"
+    application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.Regex(canteen_pattern), handle_canteen_text_message))
     application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.Regex("^APERTE ORA$"), handle_aperti_ora))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(InlineQueryHandler(inline_query))
