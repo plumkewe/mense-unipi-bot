@@ -33,7 +33,11 @@ except ImportError:
 from datetime import datetime, timedelta, time
 import re
 from uuid import uuid4
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle, InlineQueryResultsButton, ReplyKeyboardMarkup, KeyboardButton
+from telegram import (
+    InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle,
+    InlineQueryResultsButton, ReplyKeyboardMarkup, KeyboardButton,
+    BotCommand, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats, ReplyKeyboardRemove
+)
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, InlineQueryHandler, MessageHandler, filters
@@ -563,64 +567,94 @@ def build_dish_rich_message(dish_name: str):
     fallback_markup = get_update_keyboard(dish_name)
     return blocks, fallback_text, fallback_markup
 
-async def edit_dish_rich_message(query, bot, dish_name: str):
-    """Aggiorna la programmazione del piatto in formato Rich Message (Bot API 10.3) con fallback standard."""
-    blocks, fallback_text, fallback_markup = build_dish_rich_message(dish_name)
+async def safe_edit_message(bot, query, text: str = None, rich_blocks: list = None, reply_markup = None, parse_mode = ParseMode.MARKDOWN):
+    """Modifica un messaggio supportando sia messaggi effimeri nei gruppi sia messaggi standard o inline."""
+    is_group = bool(query.message and query.message.chat.type in ("group", "supergroup"))
     
-    if query.inline_message_id:
-        rich_payload = {
-            "inline_message_id": query.inline_message_id,
-            "rich_message": {
-                "blocks": blocks
+    if rich_blocks is not None:
+        if query.inline_message_id:
+            rich_payload = {
+                "inline_message_id": query.inline_message_id,
+                "rich_message": {"blocks": rich_blocks}
             }
-        }
-    else:
+            await bot._post("editMessageText", data=rich_payload)
+            return
+        
+        if is_group:
+            eph_id = getattr(query.message, "ephemeral_message_id", None) or query.message.message_id
+            eph_payload = {
+                "chat_id": query.message.chat_id,
+                "receiver_user_id": query.from_user.id,
+                "ephemeral_message_id": eph_id,
+                "rich_message": {"blocks": rich_blocks}
+            }
+            try:
+                await bot._post("editEphemeralMessageText", data=eph_payload)
+                return
+            except Exception as e:
+                logger.info(f"editEphemeralMessageText fallito ({e}), provo editMessageText standard.")
+        
         rich_payload = {
             "chat_id": query.message.chat_id,
             "message_id": query.message.message_id,
-            "rich_message": {
-                "blocks": blocks
-            }
+            "rich_message": {"blocks": rich_blocks}
         }
-    
-    try:
         await bot._post("editMessageText", data=rich_payload)
+        return
+
+    # Modifica testuale
+    if query.inline_message_id:
+        await bot.edit_message_text(
+            inline_message_id=query.inline_message_id,
+            text=text,
+            reply_markup=reply_markup,
+            parse_mode=parse_mode,
+            disable_web_page_preview=True
+        )
+        return
+
+    if is_group:
+        eph_id = getattr(query.message, "ephemeral_message_id", None) or query.message.message_id
+        try:
+            payload = {
+                "chat_id": query.message.chat_id,
+                "receiver_user_id": query.from_user.id,
+                "ephemeral_message_id": eph_id,
+                "text": text,
+                "parse_mode": "HTML" if parse_mode == ParseMode.HTML else "Markdown",
+                "disable_web_page_preview": True
+            }
+            if reply_markup:
+                payload["reply_markup"] = reply_markup.to_dict() if hasattr(reply_markup, "to_dict") else reply_markup
+            await bot._post("editEphemeralMessageText", data=payload)
+            return
+        except Exception as e:
+            logger.info(f"editEphemeralMessageText testo fallito ({e}), provo editMessageText standard.")
+
+    await query.edit_message_text(
+        text=text,
+        reply_markup=reply_markup,
+        parse_mode=parse_mode,
+        disable_web_page_preview=True
+    )
+
+async def edit_dish_rich_message(query, bot, dish_name: str):
+    """Aggiorna la programmazione del piatto in formato Rich Message con supporto messaggi effimeri e fallback."""
+    blocks, fallback_text, fallback_markup = build_dish_rich_message(dish_name)
+    try:
+        await safe_edit_message(bot, query, rich_blocks=blocks)
     except BadRequest as e:
         if "Message is not modified" in str(e):
             return
-        logger.warning(f"Rich dish edit fallito con BadRequest ({e}), provo fallback standard.")
+        logger.warning(f"Rich dish edit fallito con BadRequest ({e}), provo fallback.")
         try:
-            if query.inline_message_id:
-                await bot.edit_message_text(
-                    inline_message_id=query.inline_message_id,
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN
-                )
-            else:
-                await query.edit_message_text(
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN
-                )
+            await safe_edit_message(bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.MARKDOWN)
         except Exception:
             pass
     except Exception as e:
-        logger.warning(f"Rich dish edit fallito ({e}), provo fallback standard.")
+        logger.warning(f"Rich dish edit fallito ({e}), provo fallback.")
         try:
-            if query.inline_message_id:
-                await bot.edit_message_text(
-                    inline_message_id=query.inline_message_id,
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN
-                )
-            else:
-                await query.edit_message_text(
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN
-                )
+            await safe_edit_message(bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.MARKDOWN)
         except Exception:
             pass
 
@@ -1049,65 +1083,22 @@ def build_canteen_info_rich_message(canteen):
     return blocks, fallback_text, fallback_markup
 
 async def edit_canteen_info_rich_message(query, bot, canteen):
-    """Aggiorna il Rich Message delle info mensa con fallback standard."""
+    """Aggiorna il Rich Message delle info mensa con supporto messaggi effimeri e fallback standard."""
     blocks, fallback_text, fallback_markup = build_canteen_info_rich_message(canteen)
-    if query.inline_message_id:
-        rich_payload = {
-            "inline_message_id": query.inline_message_id,
-            "rich_message": {
-                "blocks": blocks
-            }
-        }
-    else:
-        rich_payload = {
-            "chat_id": query.message.chat_id,
-            "message_id": query.message.message_id,
-            "rich_message": {
-                "blocks": blocks
-            }
-        }
     try:
-        await bot._post("editMessageText", data=rich_payload)
+        await safe_edit_message(bot, query, rich_blocks=blocks)
     except BadRequest as e:
         if "Message is not modified" in str(e):
             return
         logger.warning(f"Rich canteen info edit fallito ({e}), provo fallback standard.")
         try:
-            if query.inline_message_id:
-                await bot.edit_message_text(
-                    inline_message_id=query.inline_message_id,
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.HTML,
-                    disable_web_page_preview=True
-                )
-            else:
-                await query.edit_message_text(
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.HTML,
-                    disable_web_page_preview=True
-                )
+            await safe_edit_message(bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.HTML)
         except Exception:
             pass
     except Exception as e:
         logger.warning(f"Rich canteen info edit fallito ({e}), provo fallback standard.")
         try:
-            if query.inline_message_id:
-                await bot.edit_message_text(
-                    inline_message_id=query.inline_message_id,
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.HTML,
-                    disable_web_page_preview=True
-                )
-            else:
-                await query.edit_message_text(
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.HTML,
-                    disable_web_page_preview=True
-                )
+            await safe_edit_message(bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.HTML)
         except Exception:
             pass
 
@@ -1745,8 +1736,13 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         button = InlineQueryResultsButton(text="Piatto che non servono!", start_parameter="help")
     await update.inline_query.answer(results, cache_time=5, button=button)
 
-def build_welcome_rich_message():
+def build_welcome_rich_message(is_group: bool = False):
     """Costruisce il Rich Message di benvenuto senza emoji, con comandi e funzioni inline in collapse e bottone Instagram."""
+    if is_group:
+        intro_text = "Per consultare i menù e le informazioni utilizza le funzioni inline del bot."
+    else:
+        intro_text = "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso."
+
     blocks = [
         {
             "type": "heading",
@@ -1755,9 +1751,13 @@ def build_welcome_rich_message():
         },
         {
             "type": "paragraph",
-            "text": "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso."
-        },
-        {
+            "text": intro_text
+        }
+    ]
+
+    # In chat di gruppo non mostriamo i comandi (es. /start)
+    if not is_group:
+        blocks.append({
             "type": "details",
             "summary": "Comandi disponibili",
             "blocks": [
@@ -1769,85 +1769,116 @@ def build_welcome_rich_message():
                     )
                 }
             ]
-        },
-        {
-            "type": "details",
-            "summary": "Funzioni inline",
-            "blocks": [
-                {
-                    "type": "paragraph",
-                    "text": (
-                        "• Ricerca piatto: @cibounipibot p:nome piatto\n"
-                        "• Menu di oggi: @cibounipibot in chat\n"
-                        "• Info e orari: @cibounipibot i:\n"
-                        "• Tariffe ISEE: @cibounipibot t:"
-                    )
-                }
-            ]
-        },
-        {
-            "type": "buttons",
-            "align": "center",
-            "buttons": [
-                {
-                    "text": "SEGUICI SU INSTAGRAM",
-                    "url": "https://instagram.com/cibounipibot"
-                }
-            ]
-        }
-    ]
+        })
 
-    fallback_text = (
-        "*CIBOUNIPI BOT*\n\n"
-        "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso.\n\n"
-        "> *Comandi disponibili*\n"
-        "> • /start - Messaggio di benvenuto\n"
-        "> • /links - Link utili DSU e contatti\n\n"
-        "> *Funzioni inline*\n"
-        "> • Ricerca piatto: `@cibounipibot p:nome`\n"
-        "> • Menu di oggi: `@cibounipibot` in chat\n"
-        "> • Info e orari: `@cibounipibot i:`\n"
-        "> • Tariffe ISEE: `@cibounipibot t:`"
-    )
+    blocks.append({
+        "type": "details",
+        "summary": "Funzioni inline",
+        "blocks": [
+            {
+                "type": "paragraph",
+                "text": (
+                    "• Ricerca piatto: @cibounipibot p:nome piatto\n"
+                    "• Menu di oggi: @cibounipibot in chat\n"
+                    "• Info e orari: @cibounipibot i:\n"
+                    "• Tariffe ISEE: @cibounipibot t:"
+                )
+            }
+        ]
+    })
+
+    blocks.append({
+        "type": "buttons",
+        "align": "center",
+        "buttons": [
+            {
+                "text": "SEGUICI SU INSTAGRAM",
+                "url": "https://instagram.com/cibounipibot"
+            }
+        ]
+    })
+
+    if is_group:
+        fallback_text = (
+            "*CIBOUNIPI BOT*\n\n"
+            "Per consultare i menù e le informazioni utilizza le funzioni inline del bot.\n\n"
+            "> *Funzioni inline*\n"
+            "> • Ricerca piatto: `@cibounipibot p:nome`\n"
+            "> • Menu di oggi: `@cibounipibot` in chat\n"
+            "> • Info e orari: `@cibounipibot i:`\n"
+            "> • Tariffe ISEE: `@cibounipibot t:`"
+        )
+    else:
+        fallback_text = (
+            "*CIBOUNIPI BOT*\n\n"
+            "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso.\n\n"
+            "> *Comandi disponibili*\n"
+            "> • /start - Messaggio di benvenuto\n"
+            "> • /links - Link utili DSU e contatti\n\n"
+            "> *Funzioni inline*\n"
+            "> • Ricerca piatto: `@cibounipibot p:nome`\n"
+            "> • Menu di oggi: `@cibounipibot` in chat\n"
+            "> • Info e orari: `@cibounipibot i:`\n"
+            "> • Tariffe ISEE: `@cibounipibot t:`"
+        )
     fallback_markup = InlineKeyboardMarkup([
         [InlineKeyboardButton("SEGUICI SU INSTAGRAM", url="https://instagram.com/cibounipibot")]
     ])
     return blocks, fallback_text, fallback_markup
 
-async def send_welcome_rich_message(bot, chat_id: int):
-    """Invia il messaggio di benvenuto come Rich Message con fallback standard."""
-    blocks, fallback_text, fallback_markup = build_welcome_rich_message()
+async def send_welcome_rich_message(bot, chat_id: int, user_id: int = None, is_group: bool = False):
+    """Invia il messaggio di benvenuto come Rich Message (effimero se in gruppo) con fallback standard."""
+    blocks, fallback_text, fallback_markup = build_welcome_rich_message(is_group=is_group)
     rich_payload = {
         "chat_id": chat_id,
         "rich_message": {
             "blocks": blocks
         }
     }
+    if user_id:
+        rich_payload["ephemeral_message_parameters"] = {
+            "receiver_user_id": user_id
+        }
     try:
         await bot._post("sendRichMessage", data=rich_payload)
     except Exception as e:
         logger.warning(f"Rich welcome message fallito ({e}), invio fallback standard.")
+        send_kwargs = {}
+        if user_id:
+            send_kwargs["api_kwargs"] = {
+                "ephemeral_message_parameters": {
+                    "receiver_user_id": user_id
+                }
+            }
         await bot.send_message(
             chat_id=chat_id,
             text=fallback_text,
             reply_markup=fallback_markup,
             parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
+            **send_kwargs
         )
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il comando /start."""
-    is_private = update.effective_chat.type == "private"
-    reply_keyboard = get_canteen_reply_keyboard() if is_private else None
-    
-    # Invia lo sticker di benvenuto e imposta la tastiera persistente con le mense
-    await update.message.reply_sticker(
-        "CAACAgQAAxkBAAIpKGqiv6MPsEBXcmawt0aBHsU3PrmSAAJwHwACOxwRUYGOMtqXij1vPQQ",
-        reply_markup=reply_keyboard
-    )
+    """Gestisce il comando /start (effimero e senza bottoni mense se evocato in gruppo)."""
+    chat = update.effective_chat
+    user = update.effective_user
+    is_private = chat.type == "private"
+    is_group = chat.type in ("group", "supergroup")
+    user_id = user.id if (user and is_group) else None
 
-    # Invia il Rich Message di benvenuto
-    await send_welcome_rich_message(context.bot, update.effective_chat.id)
+    # In chat privata: mostra lo sticker con la tastiera persistente dei bottoni mense
+    if is_private:
+        try:
+            await update.message.reply_sticker(
+                "CAACAgQAAxkBAAIpKGqiv6MPsEBXcmawt0aBHsU3PrmSAAJwHwACOxwRUYGOMtqXij1vPQQ",
+                reply_markup=get_canteen_reply_keyboard()
+            )
+        except Exception as e:
+            logger.warning(f"Invio sticker fallito: {e}")
+
+    # Invia il Rich Message di benvenuto (effimero per l'utente se in gruppo, senza bottoni mense)
+    await send_welcome_rich_message(context.bot, chat.id, user_id=user_id, is_group=is_group)
 
 def build_links_rich_message():
     """Costruisce il Rich Message per il comando /links diviso tra i nostri canali e i canali DSU."""
@@ -1908,8 +1939,8 @@ def build_links_rich_message():
     fallback_markup = None
     return blocks, fallback_text, fallback_markup
 
-async def send_links_rich_message(bot, chat_id: int):
-    """Invia il comando /links come Rich Message con fallback standard."""
+async def send_links_rich_message(bot, chat_id: int, user_id: int = None):
+    """Invia il comando /links come Rich Message (effimero se in gruppo) con fallback standard."""
     blocks, fallback_text, fallback_markup = build_links_rich_message()
     rich_payload = {
         "chat_id": chat_id,
@@ -1917,21 +1948,37 @@ async def send_links_rich_message(bot, chat_id: int):
             "blocks": blocks
         }
     }
+    if user_id:
+        rich_payload["ephemeral_message_parameters"] = {
+            "receiver_user_id": user_id
+        }
     try:
         await bot._post("sendRichMessage", data=rich_payload)
     except Exception as e:
         logger.warning(f"Rich links message fallito ({e}), invio fallback standard.")
+        send_kwargs = {}
+        if user_id:
+            send_kwargs["api_kwargs"] = {
+                "ephemeral_message_parameters": {
+                    "receiver_user_id": user_id
+                }
+            }
         await bot.send_message(
             chat_id=chat_id,
             text=fallback_text,
             reply_markup=fallback_markup,
             parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
+            **send_kwargs
         )
 
 async def links_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il comando /links. Mostra link utili come Rich Message."""
-    await send_links_rich_message(context.bot, update.effective_chat.id)
+    """Gestisce il comando /links. Mostra link utili come Rich Message (effimero se in gruppo)."""
+    chat = update.effective_chat
+    user = update.effective_user
+    is_group = chat.type in ("group", "supergroup")
+    user_id = user.id if (user and is_group) else None
+    await send_links_rich_message(context.bot, chat.id, user_id=user_id)
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce i cl sui bottoni inline."""
@@ -1963,7 +2010,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             [InlineKeyboardButton("INDIETRO", callback_data="an_back")]
         ])
         try:
-            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+            await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
         except BadRequest as e:
             if "Message is not modified" not in str(e):
                 logger.warning(f"Errore an_menu: {e}")
@@ -1973,13 +2020,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         text = format_all_canteens_info_for_today()
         keyboard = build_aperti_ora_keyboard()
         try:
-            await query.edit_message_text(text=text, reply_markup=keyboard, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+            await safe_edit_message(context.bot, query, text=text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
         except BadRequest as e:
             if "Message is not modified" not in str(e):
                 logger.warning(f"Errore an_back: {e}")
         return
-
-
 
     if action == "sel_canteen":
         # Data format: sel_canteen|canteen_id
@@ -1992,10 +2037,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             # Se il messaggio originale contiene "CIBOUNIPI BOT", è il messaggio di start
             # In questo caso mandiamo un NUOVO messaggio.
             # Altrimenti (siamo già nel flusso menu), modifichiamo il messaggio esistente.
-            if "CIBOUNIPI BOT" in query.message.text:
-                 await context.bot.send_message(chat_id=query.message.chat_id, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+            msg_text = query.message.text or ""
+            if "CIBOUNIPI BOT" in msg_text:
+                chat = query.message.chat
+                is_group = chat.type in ("group", "supergroup")
+                send_kwargs = {}
+                if is_group:
+                    send_kwargs["api_kwargs"] = {
+                        "ephemeral_message_parameters": {
+                            "receiver_user_id": query.from_user.id
+                        }
+                    }
+                await context.bot.send_message(chat_id=query.message.chat_id, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, **send_kwargs)
             else:
-                 await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+                await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
             return
             
         # Selezionata una mensa, mostra il menù di oggi
@@ -2011,7 +2066,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         reply_markup = get_keyboard(current_date, meal_type, canteen_id)
         
         # Modifica il messaggio esistente
-        await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
         return
 
     if action in ("upd", "upd_rm"):
@@ -2053,14 +2108,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     reply_markup = get_keyboard(date_str, meal_type, canteen_id, is_inline=is_inline_msg)
 
     try:
-        if is_inline_msg:
-            await context.bot.edit_message_text(inline_message_id=query.inline_message_id, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-        else:
-            await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+        await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
     except BadRequest as e:
-        if "Message is not modified" in str(e):
-            pass
-        else:
+        if "Message is not modified" not in str(e):
             logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
     except Exception as e:
         logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
@@ -2266,8 +2316,8 @@ def build_canteen_rich_message(canteen_id: str, date_str: str, meal_type: str):
 
     return blocks, fallback_text, fallback_markup
 
-async def send_canteen_rich_message(bot, chat_id: int, canteen_id: str, date_str: str, meal_type: str):
-    """Invia il menù come Rich Message (Bot API 10.3) con fallback a messaggio standard."""
+async def send_canteen_rich_message(bot, chat_id: int, canteen_id: str, date_str: str, meal_type: str, user_id: int = None, is_group: bool = False):
+    """Invia il menù come Rich Message (Bot API 10.3) con fallback a messaggio standard (supporta messaggi effimeri nei gruppi)."""
     blocks, fallback_text, fallback_markup = build_canteen_rich_message(canteen_id, date_str, meal_type)
     rich_payload = {
         "chat_id": chat_id,
@@ -2275,82 +2325,41 @@ async def send_canteen_rich_message(bot, chat_id: int, canteen_id: str, date_str
             "blocks": blocks
         }
     }
+    if is_group and user_id:
+        rich_payload["ephemeral_message_parameters"] = {
+            "receiver_user_id": user_id
+        }
     try:
         await bot._post("sendRichMessage", data=rich_payload)
     except Exception as e:
         logger.warning(f"Rich message send fallito ({e}), invio messaggio standard di fallback.")
+        send_kwargs = {}
+        if is_group and user_id:
+            send_kwargs["api_kwargs"] = {
+                "ephemeral_message_parameters": {
+                    "receiver_user_id": user_id
+                }
+            }
         await bot.send_message(
             chat_id=chat_id,
             text=fallback_text,
             reply_markup=fallback_markup,
             parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
+            **send_kwargs
         )
 
 async def edit_canteen_rich_message(query, bot, canteen_id: str, date_str: str, meal_type: str):
     """Aggiorna un Rich Message esistente (Bot API 10.3) con fallback a modifica standard."""
     blocks, fallback_text, fallback_markup = build_canteen_rich_message(canteen_id, date_str, meal_type)
-    
-    if query.inline_message_id:
-        rich_payload = {
-            "inline_message_id": query.inline_message_id,
-            "rich_message": {
-                "blocks": blocks
-            }
-        }
-    else:
-        rich_payload = {
-            "chat_id": query.message.chat_id,
-            "message_id": query.message.message_id,
-            "rich_message": {
-                "blocks": blocks
-            }
-        }
-    
     try:
-        await bot._post("editMessageText", data=rich_payload)
-    except BadRequest as e:
-        if "Message is not modified" in str(e):
-            return
-        logger.warning(f"Rich message edit fallito con BadRequest ({e}), provo fallback.")
-        try:
-            if query.inline_message_id:
-                await bot.edit_message_text(
-                    inline_message_id=query.inline_message_id,
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN,
-                    disable_web_page_preview=True
-                )
-            else:
-                await query.edit_message_text(
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN,
-                    disable_web_page_preview=True
-                )
-        except Exception:
-            pass
+        await safe_edit_message(bot, query, rich_blocks=blocks)
     except Exception as e:
-        logger.warning(f"Rich message edit fallito ({e}), provo fallback.")
+        logger.warning(f"Rich message edit fallito ({e}), provo fallback testuale.")
         try:
-            if query.inline_message_id:
-                await bot.edit_message_text(
-                    inline_message_id=query.inline_message_id,
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN,
-                    disable_web_page_preview=True
-                )
-            else:
-                await query.edit_message_text(
-                    text=fallback_text,
-                    reply_markup=fallback_markup,
-                    parse_mode=ParseMode.MARKDOWN,
-                    disable_web_page_preview=True
-                )
-        except Exception:
-            pass
+            await safe_edit_message(bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.MARKDOWN)
+        except Exception as e2:
+            logger.warning(f"Fallback edit fallito: {e2}")
 
 async def handle_canteen_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il tap sui pulsanti delle mense (MARTIRI, BETTI, CAMMEO)."""
@@ -2372,12 +2381,72 @@ async def handle_canteen_text_message(update: Update, context: ContextTypes.DEFA
 
     await send_canteen_rich_message(context.bot, update.effective_chat.id, canteen_id, today_str, meal_type)
 
+async def handle_group_mention(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Gestisce l'evocazione del bot nei gruppi, rispondendo con messaggi effimeri visibili solo all'utente."""
+    if not update.message:
+        return
+    chat = update.effective_chat
+    user = update.effective_user
+    if not chat or chat.type not in ("group", "supergroup") or not user:
+        return
+
+    text = (update.message.text or update.message.caption or "").strip()
+    bot_username = (context.bot.username or "cibounipibot").lower()
+    msg_lower = text.lower()
+
+    # Verifica che il messaggio contenga effettivamente una menzione del bot
+    if f"@{bot_username}" not in msg_lower and "@cibounipibot" not in msg_lower:
+        return
+
+    # Controlla se viene specificata una mensa nel messaggio
+    canteen_id = None
+    for c_id, c_name in CANTEENS.items():
+        clean = c_name.replace("Mensa ", "").lower()
+        if clean in msg_lower or c_id.lower() in msg_lower:
+            canteen_id = c_id
+            break
+
+    if canteen_id:
+        tz = pytz.timezone('Europe/Rome')
+        now = datetime.now(tz)
+        today_str = now.strftime("%Y-%m-%d")
+        meal_type = "Cena" if now.time() >= time(15, 0) else "Pranzo"
+        await send_canteen_rich_message(
+            bot=context.bot,
+            chat_id=chat.id,
+            canteen_id=canteen_id,
+            date_str=today_str,
+            meal_type=meal_type,
+            user_id=user.id,
+            is_group=True
+        )
+    else:
+        # Invia il benvenuto effimero dedicato al gruppo (senza comandi e senza bottoni mense)
+        await send_welcome_rich_message(
+            bot=context.bot,
+            chat_id=chat.id,
+            user_id=user.id,
+            is_group=True
+        )
+
 async def post_init(application: Application) -> None:
-    """Inizializza i comandi del bot."""
-    await application.bot.set_my_commands([
-        ("start", "Messaggio di benvenuto"),
-        ("links", "Link utili DSU e contatti")
-    ])
+    """Inizializza i comandi del bot: visibili solo nelle chat private, nascosti nei gruppi."""
+    try:
+        # Comandi per le chat private
+        await application.bot.set_my_commands(
+            commands=[
+                BotCommand("start", "Messaggio di benvenuto"),
+                BotCommand("links", "Link utili DSU e contatti")
+            ],
+            scope=BotCommandScopeAllPrivateChats()
+        )
+        # Rimuove tutti i comandi dalle chat di gruppo
+        await application.bot.set_my_commands(
+            commands=[],
+            scope=BotCommandScopeAllGroupChats()
+        )
+    except Exception as e:
+        logger.warning(f"Configurazione set_my_commands fallita: {e}")
 
 async def self_ping(context: ContextTypes.DEFAULT_TYPE):
     """Pinga il server per evitare che vada in sleep su Render."""
@@ -2409,6 +2478,13 @@ def main() -> None:
     canteen_pattern = f"^(?i)({'|'.join(canteen_names)})$"
     application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.Regex(canteen_pattern), handle_canteen_text_message))
     application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.Regex("^APERTE ORA$"), handle_aperti_ora))
+    
+    # Risposta effimera alle menzioni o evocazioni del bot nei gruppi
+    application.add_handler(MessageHandler(
+        filters.ChatType.GROUPS & (filters.Entity("mention") | filters.Regex(r"(?i)@cibounipibot")),
+        handle_group_mention
+    ))
+
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(InlineQueryHandler(inline_query))
 
