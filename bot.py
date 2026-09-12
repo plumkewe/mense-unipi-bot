@@ -4,8 +4,29 @@ import logging
 import pytz
 import asyncio
 import requests
+import hashlib
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
+_asset_cache = {}
+
+def get_asset_url(rel_path: str) -> str:
+    """Restituisce l'URL GitHub Raw con cache-busting automatico calcolato dall'hash MD5 del file locale."""
+    fpath = os.path.join(ASSETS_DIR, rel_path)
+    if os.path.isfile(fpath):
+        mtime = os.path.getmtime(fpath)
+        cached = _asset_cache.get(rel_path)
+        if cached and cached[0] == mtime:
+            return cached[1]
+        try:
+            with open(fpath, "rb") as f:
+                h = hashlib.md5(f.read()).hexdigest()[:10]
+        except Exception:
+            h = str(int(mtime))
+        url = f"https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/{rel_path}?v={h}"
+        _asset_cache[rel_path] = (mtime, url)
+        return url
+    return f"https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/{rel_path}"
 
 # --- FIX per APScheduler < 3.10 su Python recenti ---
 # APScheduler 3.6.3 (usato da python-telegram-bot su certi setup) crasha
@@ -1206,7 +1227,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 id=str(uuid4()),
                 title="TUTTE",
                 description="Visualizza il menù di tutte le mense oggi...",
-                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/tutte.png?v=5",
+                thumbnail_url=get_asset_url("icons/tutte.png"),
                 input_message_content=CustomInputRichMessageContent(blocks_all)
             )
         )
@@ -1222,7 +1243,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     id=str(uuid4()),
                     title=clean_name,
                     description="Visualizza il menù di oggi...",
-                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png?v=2", 
+                    thumbnail_url=get_asset_url("icons/mensa.png"), 
                     input_message_content=CustomInputRichMessageContent(blocks_canteen)
                 )
             )
@@ -1247,7 +1268,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                         ]
                     }
                 ],
-                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
+                "thumb": get_asset_url("icons/info.png")
             },
             {
                 "id": "inst_i",
@@ -1267,7 +1288,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                         ]
                     }
                 ],
-                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
+                "thumb": get_asset_url("icons/info.png")
             },
             {
                 "id": "inst_t",
@@ -1287,7 +1308,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                         ]
                     }
                 ],
-                "thumb": "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/info.png?v=2"
+                "thumb": get_asset_url("icons/info.png")
             }
         ]
 
@@ -1310,7 +1331,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 id=str(uuid4()),
                 title="Seguici su Instagram",
                 description="Ora puoi scoprire il menù anche tramite il nostro profilo Instagram.",
-                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/instagram.png?v=1",
+                thumbnail_url=get_asset_url("icons/instagram.png"),
                 input_message_content=CustomInputRichMessageContent([
                     {"type": "heading", "size": 1, "text": "SEGUICI SU INSTAGRAM"},
                     {"type": "paragraph", "text": "Scopri i menù del giorno illustrati nelle storie e nei post del nostro profilo e non scordarti di seguirci per rimanere sempre aggiornato!"},
@@ -1331,7 +1352,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                 id=str(uuid4()),
                 title="Repository GitHub",
                 description="Mettici una stella!",
-                thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/github.png?v=3",
+                thumbnail_url=get_asset_url("icons/github.png"),
                 input_message_content=CustomInputRichMessageContent([
                     {"type": "heading", "size": 1, "text": "REPOSITORY GITHUB"},
                     {"type": "paragraph", "text": "Il bot è open source! Visita la repository ufficiale su GitHub per vedere il codice sorgente o lasciare una stella al progetto."},
@@ -1368,7 +1389,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                         id=str(uuid4()),
                         title=f"{c_name} (Informazioni)",
                         description=f"Capienza: {seats} posti",
-                        thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/mensa.png?v=3", 
+                        thumbnail_url=get_asset_url("icons/mensa.png"), 
                         input_message_content=CustomInputRichMessageContent(blocks)
                     )
                 )
@@ -1391,7 +1412,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     id=str(uuid4()),
                     title="TABELLA TARIFFE ISEE",
                     description="Visualizza la tabella riassuntiva di tutte le fasce ISEE...",
-                    thumbnail_url="https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/table.png?v=1",
+                    thumbnail_url=get_asset_url("icons/table.png"),
                     input_message_content=CustomInputRichMessageContent(blocks_all_rates)
                 )
             )
@@ -1425,7 +1446,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     ("pasto_ridotto_b", "PASTO RIDOTTO B"),
                     ("pasto_ridotto_c", "PASTO RIDOTTO C")
                 ]
-                thumb_money = "https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/icons/money.png?v=2"
+                thumb_money = get_asset_url("icons/money.png")
                 
                 # Ognuno invierà il Rich Message con la tabella
                 for key, label in items_ord:
@@ -1533,7 +1554,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                                  description_text += f"\n{canteen_desc}"
                              
                              # Immagine con il numero di giorni
-                             thumb_url = f"https://raw.githubusercontent.com/plumkewe/mense-unipi-bot/main/assets/numbers/{days_diff}.png?v=5"
+                             thumb_url = get_asset_url(f"numbers/{days_diff}.png")
                              
                              # ID Univoco per il risultato
                              result_id = str(uuid4())
