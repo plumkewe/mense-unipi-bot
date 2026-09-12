@@ -36,7 +36,7 @@ from uuid import uuid4
 from telegram import (
     InlineKeyboardButton, InlineKeyboardMarkup, Update, InlineQueryResultArticle,
     InlineQueryResultsButton, ReplyKeyboardMarkup, KeyboardButton,
-    BotCommand, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats, ReplyKeyboardRemove
+    BotCommand, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats
 )
 from telegram.constants import ParseMode
 from telegram.error import BadRequest
@@ -101,6 +101,25 @@ def get_holiday_status(canteen_id, date_obj):
         except Exception:
             continue
     return "normal"
+
+def get_canteen_meal_availability(canteen_id, date_obj):
+    """Restituisce (ha_pranzo, ha_cena) per la mensa nella data specificata."""
+    canteen = next((c for c in CANTEENS_FULL if c.get("id") == canteen_id), None)
+    if not canteen:
+        return False, False
+    day_idx = date_obj.weekday()
+    oh_mensa = canteen.get("opening_hours", {}).get("mensa", {})
+    slots = oh_mensa.get(str(day_idx), [])
+    has_lunch = any(int(s.split(":")[0]) < 16 for s in slots)
+    has_dinner = any(int(s.split(":")[0]) >= 16 for s in slots)
+    day_status = get_holiday_status(canteen_id, date_obj)
+    if day_status == "closed":
+        return False, False
+    elif day_status == "lunch_only":
+        has_dinner = False
+    elif day_status == "dinner_only":
+        has_lunch = False
+    return has_lunch, has_dinner
 
 def get_future_closures_text(canteen_id, target_date):
     """Calcola se ci sono chiusure future rispetto alla data target"""
@@ -269,43 +288,7 @@ def get_canteen_selection_keyboard():
         
     return InlineKeyboardMarkup(buttons)
 
-def get_keyboard(date_str, meal_type, canteen_id, is_inline=False):
-    """Crea la tastiera inline con i pulsanti di navigazione."""
-    
-    # Bottone per cambiare pasto (Pranzo <-> Cena)
-    other_meal = "Cena" if meal_type == "Pranzo" else "Pranzo"
-    # callback_data format: action|date|meal|canteen_id
-    toggle_button = InlineKeyboardButton(other_meal.upper(), callback_data=f"toggle|{date_str}|{other_meal}|{canteen_id}")
-    
-    try:
-        current_date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-    except ValueError:
-        current_date_obj = datetime.now(pytz.timezone('Europe/Rome'))
 
-    prev_date = (current_date_obj - timedelta(days=1)).strftime("%Y-%m-%d")
-    next_date = (current_date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
-    today_date = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
-
-    # Logica bottone centrale (Oggi/Home)
-    if not is_inline and date_str == today_date:
-        # Se NON è inline e siamo già a oggi, torna alla selezione mense
-        center_callback = "sel_canteen|reset"
-    else:
-        # Altrimenti (inline o data diversa da oggi), torna sempre a oggi per la stessa mensa
-        center_callback = f"nav|{today_date}|{meal_type}|{canteen_id}"
-
-    nav_buttons = [
-        InlineKeyboardButton("◀︎\uFE0E", callback_data=f"nav|{prev_date}|{meal_type}|{canteen_id}"),
-        InlineKeyboardButton("○︎\uFE0E", callback_data=center_callback),
-        InlineKeyboardButton("▶︎\uFE0E", callback_data=f"nav|{next_date}|{meal_type}|{canteen_id}"),
-    ]
-    
-    keyboard = [
-        nav_buttons,
-        [toggle_button]
-    ]
-    
-    return InlineKeyboardMarkup(keyboard)
 
 def format_date_it(date_obj):
     days = ["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"]
@@ -567,9 +550,23 @@ def build_dish_rich_message(dish_name: str):
     fallback_markup = get_update_keyboard(dish_name)
     return blocks, fallback_text, fallback_markup
 
+def _get_ephemeral_id(message):
+    """Estrae l'ephemeral_message_id da un oggetto Message, cercando in api_kwargs se il campo non è mappato nativamente."""
+    # 1. Campo nativo (versioni future della libreria)
+    eph_id = getattr(message, "ephemeral_message_id", None)
+    if eph_id:
+        return eph_id
+    # 2. Campo nei dati raw non mappati dalla libreria
+    api_kw = getattr(message, "api_kwargs", {}) or {}
+    eph_id = api_kw.get("ephemeral_message_id")
+    if eph_id:
+        return eph_id
+    return None
+
 async def safe_edit_message(bot, query, text: str = None, rich_blocks: list = None, reply_markup = None, parse_mode = ParseMode.MARKDOWN):
     """Modifica un messaggio supportando sia messaggi effimeri nei gruppi sia messaggi standard o inline."""
     is_group = bool(query.message and query.message.chat.type in ("group", "supergroup"))
+    eph_id = _get_ephemeral_id(query.message) if query.message else None
     
     if rich_blocks is not None:
         if query.inline_message_id:
@@ -580,8 +577,7 @@ async def safe_edit_message(bot, query, text: str = None, rich_blocks: list = No
             await bot._post("editMessageText", data=rich_payload)
             return
         
-        if is_group:
-            eph_id = getattr(query.message, "ephemeral_message_id", None) or query.message.message_id
+        if is_group and eph_id:
             eph_payload = {
                 "chat_id": query.message.chat_id,
                 "receiver_user_id": query.from_user.id,
@@ -613,8 +609,7 @@ async def safe_edit_message(bot, query, text: str = None, rich_blocks: list = No
         )
         return
 
-    if is_group:
-        eph_id = getattr(query.message, "ephemeral_message_id", None) or query.message.message_id
+    if is_group and eph_id:
         try:
             payload = {
                 "chat_id": query.message.chat_id,
@@ -661,32 +656,18 @@ async def edit_dish_rich_message(query, bot, dish_name: str):
 # --- FUNZIONI PER ORARI MENSE ---
 DAYS_REV = ["LUN", "MAR", "MER", "GIO", "VEN", "SAB", "DOM"]
 
-def get_canteen_status_info(canteen_id, schedule_map, service_name=""):
-    """Calcola stato attuale (Aperta/Chiusa) e orari formattati per ogni giorno."""
+def format_schedule_block(canteen_id, schedule_map):
+    """Calcola la tabella orari formattata per ogni giorno della settimana tenendo conto delle festività."""
     tz = pytz.timezone('Europe/Rome')
     now = datetime.now(tz)
-    now_time = now.time()
     today_idx = now.weekday()
-    today_date = now.date()
-    
-    # Determina genere grammaticale
-    # Default femminile (Mensa, Pizzeria), maschile se "Prendi e vai"
-    is_female = True
-    if "prendi" in service_name.lower():
-        is_female = False
-        
-    txt_open = "APERTA" if is_female else "APERTO"
-    txt_closed = "CHIUSA" if is_female else "CHIUSO"
-    
-    # Applica feste alla settimana corrente per calcolare orari effettivi
-    # Creiamo una copia della map per non modificare l'originale
+
     effective_schedule = {}
     for i in range(7):
         day_date = now.date() - timedelta(days=today_idx) + timedelta(days=i)
         status = get_holiday_status(canteen_id, day_date)
-        
         orig_slots = schedule_map.get(str(i), [])
-        
+
         if status == "closed":
             effective_schedule[str(i)] = []
         elif status == "lunch_only":
@@ -695,171 +676,31 @@ def get_canteen_status_info(canteen_id, schedule_map, service_name=""):
             effective_schedule[str(i)] = [s for s in orig_slots if int(s.split(":")[0]) >= 16]
         else:
             effective_schedule[str(i)] = orig_slots.copy()
-            
-    # Oggi status testuale
-    today_status = get_holiday_status(canteen_id, today_date)
-    
-    # 1. Calcola Stato
-    status_text = txt_closed
-    today_slots_str = []
-    
-    if today_status == "closed":
-        status_text = f"{txt_closed} (CHIUSURA PROGRAMMATA)"
-    else:
-        # Recupera gli slot effettivi di oggi
-        today_slots_str = effective_schedule.get(str(today_idx), [])
-    
-    # Converti in oggetti time per confronto
-    today_slots_objs = []
-    for slot in today_slots_str:
-        times = re.findall(r"(\d{1,2})[:.](\d{2})", slot)
-        if len(times) == 2:
-            try:
-                t1 = time(int(times[0][0]), int(times[0][1]))
-                t2 = time(int(times[1][0]), int(times[1][1]))
-                today_slots_objs.append((t1, t2))
-            except ValueError:
-                pass
-    
-    today_slots_objs.sort(key=lambda x: x[0])
-    
-    is_open = False
-    next_open = None
-    
-    for start_t, end_t in today_slots_objs:
-        if start_t <= now_time <= end_t:
-            is_open = True
-            # Controlla chiusura imminente (es. entro 30 min)
-            dt_end = tz.localize(datetime.combine(today_date, end_t))
-            
-            closing_in = dt_end - now
-            if closing_in < timedelta(minutes=30):
-                status_text = f"CHIUDE ALLE {end_t.strftime('%H:%M')}"
-            else:
-                status_text = f"{txt_open} FINO ALLE {end_t.strftime('%H:%M')}"
-            break
-        elif now_time < start_t:
-            if next_open is None:
-                next_open = start_t
-                
-    if not is_open and status_text == txt_closed:
-        if next_open:
-            status_text = f"{txt_closed} (Apre {next_open.strftime('%H:%M')})"
-        else:
-            if today_status == "lunch_only":
-                status_text = f"{txt_closed} (SOLO PRANZO)"
-            elif today_status == "dinner_only":
-                status_text = f"{txt_closed} (SOLO CENA)"
 
-    # 2. Formatta Tabella Orari (Lun ... Dom)
     lines = []
     for i in range(7):
         day_date = now.date() - timedelta(days=today_idx) + timedelta(days=i)
         day_name = DAYS_REV[i]
-        
+
         day_status = get_holiday_status(canteen_id, day_date)
         if day_status == "closed":
-             lines.append(f"{day_name:<3} Chiuso per festa")
-             continue
-             
-        # Recupera stringhe orari effettivi
+            lines.append(f"{day_name:<3} Chiuso per festa")
+            continue
+
         slots_str = effective_schedule.get(str(i), [])
-        
         if not slots_str:
-             lines.append(f"{day_name:<3} Chiuso")
-             continue
-            
+            lines.append(f"{day_name:<3} Chiuso")
+            continue
+
         first_slot = True
         for slot in slots_str:
-            # Slot è già "HH:MM-HH:MM", lo usiamo così
             if first_slot:
                 lines.append(f"{day_name:<3} {slot}")
                 first_slot = False
             else:
                 lines.append(f"    {slot}")
-                
-    formatted_schedule = "\n".join(lines) if lines else "    Chiuso"
-    
-    return status_text, formatted_schedule
 
-def format_canteen_info_for_day(canteen, date_str):
-    """Genera il testo HTML con gli orari di una mensa per un giorno specifico."""
-    c_name = canteen.get("name", "").replace("Mensa ", "")
-    
-    try:
-        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        day_idx = target_date.weekday()
-        day_name = DAYS_REV[day_idx]
-    except ValueError:
-        return f"<b>MENSA {c_name.upper()}</b>\nErrore data."
-        
-    tz = pytz.timezone('Europe/Rome')
-    today_date = datetime.now(tz).date()
-        
-    message_lines = [f"<b>MENSA {c_name.upper()}</b>"]
-    
-    if "opening_hours" in canteen:
-        oh = canteen["opening_hours"]
-        for service_type, schedule_map in oh.items():
-            
-            svc_title = service_type.replace("_", " ").capitalize()
-            if svc_title.lower() == "mensa":
-                svc_title = "Mensa"
-            
-            if target_date == today_date:
-                status_text, _ = get_canteen_status_info(canteen.get("id"), schedule_map, service_name=service_type)
-                message_lines.append(f"<b>{svc_title}</b> {status_text}")
-            else:
-                message_lines.append(f"<b>{svc_title}</b>")
-            
-            day_status = get_holiday_status(canteen.get("id"), target_date)
-            slots_str = schedule_map.get(str(day_idx), [])
-            
-            if day_status == "closed":
-                slots_str = []
-            elif day_status == "lunch_only":
-                slots_str = [s for s in slots_str if int(s.split(":")[0]) < 16]
-            elif day_status == "dinner_only":
-                slots_str = [s for s in slots_str if int(s.split(":")[0]) >= 16]
-            
-            schedule_block = ""
-            if not slots_str:
-                 if day_status == "closed":
-                     schedule_block = f"{day_name:<3} Chiuso per festa"
-                 else:
-                     schedule_block = f"{day_name:<3} Chiuso"
-            else:
-                 lines = []
-                 first_slot = True
-                 for slot in slots_str:
-                     if first_slot:
-                         lines.append(f"{day_name:<3} {slot}")
-                         first_slot = False
-                     else:
-                         lines.append(f"    {slot}")
-                 schedule_block = "\n".join(lines)
-                 
-            message_lines.append(f"<pre>{schedule_block}</pre>")
-            
-    day_status = get_holiday_status(canteen.get("id"), target_date)
-    if day_status != "closed":
-        future_closure = get_future_closures_text(canteen.get("id"), target_date)
-        if future_closure:
-            message_lines.append(future_closure)
-                         
-    return "\n".join(message_lines)
-
-def format_all_canteens_info_for_today():
-    """Genera il testo HTML con gli orari di tutte le mense per oggi."""
-    tz = pytz.timezone('Europe/Rome')
-    today_date = datetime.now(tz).date()
-    date_str = today_date.strftime("%Y-%m-%d")
-    
-    blocks = []
-    for canteen in CANTEENS_FULL:
-        blocks.append(format_canteen_info_for_day(canteen, date_str))
-        
-    return "\n\n".join(blocks)
+    return "\n".join(lines) if lines else "    Chiuso"
 
 def format_canteen_info(canteen):
     """Genera il testo HTML con le informazioni della mensa (stato, orari, ecc)."""
@@ -883,7 +724,7 @@ def format_canteen_info(canteen):
         oh = canteen["opening_hours"]
         # Iteriamo su tutti i tipi di orari (mensa, prendi_e_vai, ecc)
         for service_type, schedule_map in oh.items():
-            _, schedule_block = get_canteen_status_info(canteen.get("id"), schedule_map, service_name=service_type)
+            schedule_block = format_schedule_block(canteen.get("id"), schedule_map)
             
             # Pretty service name
             svc_title = service_type.replace("_", " ").capitalize()
@@ -1081,26 +922,6 @@ def build_canteen_info_rich_message(canteen):
     fallback_text = format_canteen_info(canteen)
     fallback_markup = get_info_keyboard(canteen)
     return blocks, fallback_text, fallback_markup
-
-async def edit_canteen_info_rich_message(query, bot, canteen):
-    """Aggiorna il Rich Message delle info mensa con supporto messaggi effimeri e fallback standard."""
-    blocks, fallback_text, fallback_markup = build_canteen_info_rich_message(canteen)
-    try:
-        await safe_edit_message(bot, query, rich_blocks=blocks)
-    except BadRequest as e:
-        if "Message is not modified" in str(e):
-            return
-        logger.warning(f"Rich canteen info edit fallito ({e}), provo fallback standard.")
-        try:
-            await safe_edit_message(bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.HTML)
-        except Exception:
-            pass
-    except Exception as e:
-        logger.warning(f"Rich canteen info edit fallito ({e}), provo fallback standard.")
-        try:
-            await safe_edit_message(bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.HTML)
-        except Exception:
-            pass
 
 def get_rates_for_isee(isee_value):
     """Trova la fascia di prezzo corrispondente al valore ISEE."""
@@ -1739,7 +1560,7 @@ async def inline_query(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 def build_welcome_rich_message(is_group: bool = False):
     """Costruisce il Rich Message di benvenuto senza emoji, con comandi e funzioni inline in collapse e bottone Instagram."""
     if is_group:
-        intro_text = "Per consultare i menù e le informazioni utilizza le funzioni inline del bot."
+        intro_text = "Per consultare i menù e le informazioni utilizza i comandi e le funzioni inline del bot."
     else:
         intro_text = "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso."
 
@@ -1755,21 +1576,30 @@ def build_welcome_rich_message(is_group: bool = False):
         }
     ]
 
-    # In chat di gruppo non mostriamo i comandi (es. /start)
-    if not is_group:
-        blocks.append({
-            "type": "details",
-            "summary": "Comandi disponibili",
-            "blocks": [
-                {
-                    "type": "paragraph",
-                    "text": (
-                        "• /start - Messaggio di benvenuto\n"
-                        "• /links - Link utili DSU e contatti"
-                    )
-                }
-            ]
-        })
+    # Mostriamo i comandi sia in privato che in gruppo (nei gruppi sono effimeri)
+    if is_group:
+        commands_text = (
+            "• /start - Messaggio di benvenuto\n"
+            "• /menu - Menù di oggi\n"
+            "• /links - Link utili DSU e contatti\n\n"
+            "I comandi nei gruppi sono visibili solo a te."
+        )
+    else:
+        commands_text = (
+            "• /start - Messaggio di benvenuto\n"
+            "• /menu - Menù di oggi\n"
+            "• /links - Link utili DSU e contatti"
+        )
+    blocks.append({
+        "type": "details",
+        "summary": "Comandi disponibili",
+        "blocks": [
+            {
+                "type": "paragraph",
+                "text": commands_text
+            }
+        ]
+    })
 
     blocks.append({
         "type": "details",
@@ -1801,7 +1631,12 @@ def build_welcome_rich_message(is_group: bool = False):
     if is_group:
         fallback_text = (
             "*CIBOUNIPI BOT*\n\n"
-            "Per consultare i menù e le informazioni utilizza le funzioni inline del bot.\n\n"
+            "Per consultare i menù e le informazioni utilizza i comandi e le funzioni inline del bot.\n\n"
+            "> *Comandi disponibili*\n"
+            "> • /start - Messaggio di benvenuto\n"
+            "> • /menu - Menù di oggi\n"
+            "> • /links - Link utili DSU e contatti\n"
+            "> I comandi nei gruppi sono visibili solo a te.\n\n"
             "> *Funzioni inline*\n"
             "> • Ricerca piatto: `@cibounipibot p:nome`\n"
             "> • Menu di oggi: `@cibounipibot` in chat\n"
@@ -1814,6 +1649,7 @@ def build_welcome_rich_message(is_group: bool = False):
             "Per vedere il menù di oggi non ti basta che cliccare su uno dei bottoni presenti in basso.\n\n"
             "> *Comandi disponibili*\n"
             "> • /start - Messaggio di benvenuto\n"
+            "> • /menu - Menù di oggi\n"
             "> • /links - Link utili DSU e contatti\n\n"
             "> *Funzioni inline*\n"
             "> • Ricerca piatto: `@cibounipibot p:nome`\n"
@@ -1850,14 +1686,21 @@ async def send_welcome_rich_message(bot, chat_id: int, user_id: int = None, is_g
                     "receiver_user_id": user_id
                 }
             }
-        await bot.send_message(
-            chat_id=chat_id,
-            text=fallback_text,
-            reply_markup=fallback_markup,
-            parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True,
-            **send_kwargs
-        )
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=fallback_text,
+                reply_markup=fallback_markup,
+                parse_mode=ParseMode.MARKDOWN,
+                disable_web_page_preview=True,
+                **send_kwargs
+            )
+        except Exception as e2:
+            if is_group and user_id:
+                # Non inviare messaggio pubblico nel gruppo: il bot probabilmente non è admin
+                logger.warning(f"Fallback welcome effimero fallito ({e2}), messaggio non inviato nel gruppo.")
+            else:
+                raise
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /start (effimero e senza bottoni mense se evocato in gruppo)."""
@@ -1879,6 +1722,116 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # Invia il Rich Message di benvenuto (effimero per l'utente se in gruppo, senza bottoni mense)
     await send_welcome_rich_message(context.bot, chat.id, user_id=user_id, is_group=is_group)
+
+def build_menu_selection_rich_message():
+    """Costruisce il Rich Message per la selezione mensa del comando /menu con tabella di apertura e bottoni."""
+    sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
+
+    blocks = [
+        {
+            "type": "heading",
+            "size": 1,
+            "text": "SELEZIONA UNA MENSA"
+        },
+        {
+            "type": "paragraph",
+            "text": "Scegli la mensa per visualizzare il menù di oggi:"
+        }
+    ]
+
+    tz = pytz.timezone('Europe/Rome')
+    today_date = datetime.now(tz).date()
+
+    table_cells = [
+        [
+            {"text": "MENSA", "is_header": True, "align": "left"},
+            {"text": "PRANZO", "is_header": True, "align": "center"},
+            {"text": "CENA", "is_header": True, "align": "center"}
+        ]
+    ]
+    for c_id, c_name in sorted_canteens:
+        clean_name = c_name.replace("Mensa ", "")
+        has_l, has_d = get_canteen_meal_availability(c_id, today_date)
+        table_cells.append([
+            {"text": clean_name, "align": "left"},
+            {"text": "Aperta" if has_l else "Chiusa", "align": "center"},
+            {"text": "Aperta" if has_d else "Chiusa", "align": "center"}
+        ])
+
+    blocks.append({
+        "type": "table",
+        "cells": table_cells
+    })
+
+    # Bottone TUTTE e bottoni mense
+    canteen_buttons = [{"text": "TUTTE", "callback_data": "sel_canteen|all"}]
+    for c_id, c_name in sorted_canteens:
+        clean_name = c_name.replace("Mensa ", "").upper()
+        canteen_buttons.append({"text": clean_name, "callback_data": f"sel_canteen|{c_id}"})
+
+    blocks.append({
+        "type": "buttons",
+        "align": "center",
+        "buttons": canteen_buttons
+    })
+
+    fallback_lines = ["*STATO MENSE OGGI*", ""]
+    for c_id, c_name in sorted_canteens:
+        clean_name = c_name.replace("Mensa ", "")
+        has_l, has_d = get_canteen_meal_availability(c_id, today_date)
+        l_str = "Aperta" if has_l else "Chiusa"
+        d_str = "Aperta" if has_d else "Chiusa"
+        fallback_lines.append(f"• *{clean_name}*: Pranzo {l_str} | Cena {d_str}")
+    fallback_lines.append("\n*Seleziona una mensa per vedere il menù:*")
+    fallback_text = "\n".join(fallback_lines)
+    fallback_markup = get_canteen_selection_keyboard()
+    return blocks, fallback_text, fallback_markup
+
+async def send_menu_selection_rich_message(bot, chat_id: int, user_id: int = None, is_group: bool = False):
+    """Invia la selezione mensa come Rich Message (effimero se in gruppo) con fallback standard."""
+    blocks, fallback_text, fallback_markup = build_menu_selection_rich_message()
+    rich_payload = {
+        "chat_id": chat_id,
+        "rich_message": {
+            "blocks": blocks
+        }
+    }
+    if user_id:
+        rich_payload["ephemeral_message_parameters"] = {
+            "receiver_user_id": user_id
+        }
+    try:
+        await bot._post("sendRichMessage", data=rich_payload)
+    except Exception as e:
+        logger.warning(f"Rich menu selection fallito ({e}), invio fallback standard.")
+        send_kwargs = {}
+        if user_id:
+            send_kwargs["api_kwargs"] = {
+                "ephemeral_message_parameters": {
+                    "receiver_user_id": user_id
+                }
+            }
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=fallback_text,
+                reply_markup=fallback_markup,
+                parse_mode=ParseMode.MARKDOWN,
+                **send_kwargs
+            )
+        except Exception as e2:
+            if is_group and user_id:
+                logger.warning(f"Fallback menu selection effimero fallito ({e2}), messaggio non inviato nel gruppo.")
+            else:
+                raise
+
+async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Gestisce il comando /menu. Mostra la selezione mensa come Rich Message (effimero se in gruppo)."""
+    chat = update.effective_chat
+    user = update.effective_user
+    is_group = chat.type in ("group", "supergroup")
+    user_id = user.id if (user and is_group) else None
+    await send_menu_selection_rich_message(context.bot, chat.id, user_id=user_id, is_group=is_group)
 
 def build_links_rich_message():
     """Costruisce il Rich Message per il comando /links diviso tra i nostri canali e i canali DSU."""
@@ -1939,7 +1892,7 @@ def build_links_rich_message():
     fallback_markup = None
     return blocks, fallback_text, fallback_markup
 
-async def send_links_rich_message(bot, chat_id: int, user_id: int = None):
+async def send_links_rich_message(bot, chat_id: int, user_id: int = None, is_group: bool = False):
     """Invia il comando /links come Rich Message (effimero se in gruppo) con fallback standard."""
     blocks, fallback_text, fallback_markup = build_links_rich_message()
     rich_payload = {
@@ -1963,14 +1916,20 @@ async def send_links_rich_message(bot, chat_id: int, user_id: int = None):
                     "receiver_user_id": user_id
                 }
             }
-        await bot.send_message(
-            chat_id=chat_id,
-            text=fallback_text,
-            reply_markup=fallback_markup,
-            parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True,
-            **send_kwargs
-        )
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=fallback_text,
+                reply_markup=fallback_markup,
+                parse_mode=ParseMode.MARKDOWN,
+                disable_web_page_preview=True,
+                **send_kwargs
+            )
+        except Exception as e2:
+            if is_group and user_id:
+                logger.warning(f"Fallback links effimero fallito ({e2}), messaggio non inviato nel gruppo.")
+            else:
+                raise
 
 async def links_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce il comando /links. Mostra link utili come Rich Message (effimero se in gruppo)."""
@@ -1978,12 +1937,15 @@ async def links_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     user = update.effective_user
     is_group = chat.type in ("group", "supergroup")
     user_id = user.id if (user and is_group) else None
-    await send_links_rich_message(context.bot, chat.id, user_id=user_id)
+    await send_links_rich_message(context.bot, chat.id, user_id=user_id, is_group=is_group)
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Gestisce i cl sui bottoni inline."""
     query = update.callback_query
-    await query.answer() 
+    try:
+        await query.answer()
+    except Exception:
+        pass 
 
     data = query.data.split("|")
     action = data[0]
@@ -1996,43 +1958,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await edit_canteen_rich_message(query, context.bot, canteen_id, date_str, meal_type)
         return
 
-    if action == "an_menu":
-        canteen_id = data[1]
-        today = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
-        now_time = datetime.now(pytz.timezone('Europe/Rome')).time()
-        meal_type = "Cena" if now_time >= time(15, 0) else "Pranzo"
-        if canteen_id == "all":
-            canteen_name = "TUTTE"
-        else:
-            canteen_name = CANTEENS.get(canteen_id)
-        text = get_menu_text(today, meal_type, canteen_name)
-        reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton("INDIETRO", callback_data="an_back")]
-        ])
-        try:
-            await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-        except BadRequest as e:
-            if "Message is not modified" not in str(e):
-                logger.warning(f"Errore an_menu: {e}")
-        return
-
-    if action == "an_back":
-        text = format_all_canteens_info_for_today()
-        keyboard = build_aperti_ora_keyboard()
-        try:
-            await safe_edit_message(context.bot, query, text=text, reply_markup=keyboard, parse_mode=ParseMode.HTML)
-        except BadRequest as e:
-            if "Message is not modified" not in str(e):
-                logger.warning(f"Errore an_back: {e}")
-        return
-
     if action == "sel_canteen":
         # Data format: sel_canteen|canteen_id
         canteen_id = data[1]
         
         if canteen_id == "reset":
-            text = "*Seleziona una mensa per vedere il menù:*"
-            reply_markup = get_canteen_selection_keyboard()
+            blocks, fallback_text, fallback_markup = build_menu_selection_rich_message()
             
             # Se il messaggio originale contiene "CIBOUNIPI BOT", è il messaggio di start
             # In questo caso mandiamo un NUOVO messaggio.
@@ -2041,94 +1972,44 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             if "CIBOUNIPI BOT" in msg_text:
                 chat = query.message.chat
                 is_group = chat.type in ("group", "supergroup")
-                send_kwargs = {}
+                rich_payload = {
+                    "chat_id": query.message.chat_id,
+                    "rich_message": {"blocks": blocks}
+                }
                 if is_group:
-                    send_kwargs["api_kwargs"] = {
-                        "ephemeral_message_parameters": {
-                            "receiver_user_id": query.from_user.id
-                        }
+                    rich_payload["ephemeral_message_parameters"] = {
+                        "receiver_user_id": query.from_user.id
                     }
-                await context.bot.send_message(chat_id=query.message.chat_id, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN, **send_kwargs)
+                try:
+                    await context.bot._post("sendRichMessage", data=rich_payload)
+                except Exception:
+                    send_kwargs = {}
+                    if is_group:
+                        send_kwargs["api_kwargs"] = {
+                            "ephemeral_message_parameters": {
+                                "receiver_user_id": query.from_user.id
+                            }
+                        }
+                    await context.bot.send_message(chat_id=query.message.chat_id, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.MARKDOWN, **send_kwargs)
             else:
-                await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+                try:
+                    await safe_edit_message(context.bot, query, rich_blocks=blocks)
+                except Exception:
+                    await safe_edit_message(context.bot, query, text=fallback_text, reply_markup=fallback_markup, parse_mode=ParseMode.MARKDOWN)
             return
             
-        # Selezionata una mensa, mostra il menù di oggi
-        if canteen_id == "all":
-            canteen_name = "TUTTE"
-        else:
-            canteen_name = CANTEENS.get(canteen_id)
-
-        current_date = datetime.now(pytz.timezone('Europe/Rome')).strftime("%Y-%m-%d")
-        meal_type = "Pranzo" # Default
-        
-        text = get_menu_text(current_date, meal_type, canteen_name)
-        reply_markup = get_keyboard(current_date, meal_type, canteen_id)
-        
-        # Modifica il messaggio esistente
-        await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
+        # Selezionata una mensa, mostra il menù di oggi come Rich Message
+        tz = pytz.timezone('Europe/Rome')
+        now = datetime.now(tz)
+        current_date = now.strftime("%Y-%m-%d")
+        meal_type = "Cena" if now.time() >= time(15, 0) else "Pranzo"
+        await edit_canteen_rich_message(query, context.bot, canteen_id, current_date, meal_type)
         return
 
     if action in ("upd", "upd_rm"):
         dish_name = data[1]
         await edit_dish_rich_message(query, context.bot, dish_name)
         return
-
-    if action in ("upd_info", "upd_info_rm"):
-        canteen_id = data[1]
-        canteen = next((c for c in CANTEENS_FULL if c["id"] == canteen_id), None)
-        if canteen:
-            await edit_canteen_info_rich_message(query, context.bot, canteen)
-        return
-
-
-    # Navigazione o Toggle: nav|date|meal|canteen_id
-    if len(data) < 4:
-        # Fallback per vecchi bottoni o errori
-        return
-
-    date_str = data[1]
-    meal_type = data[2]
-    canteen_id = data[3]
-    
-    # Gestione "None" o id non valido
-    if canteen_id == "all":
-        canteen_name = "TUTTE"
-    else:
-        canteen_name = CANTEENS.get(canteen_id)
-    
-    # Se canteen_id è "None" (stringa) o non trovato, canteen_name è None -> mostra tutto (ma senza logica TUTTE)
-    if canteen_id == "None":
-        canteen_name = None
-    
-    # Check if query is from inline message
-    is_inline_msg = query.inline_message_id is not None
-
-    text = get_menu_text(date_str, meal_type, canteen_name)
-    reply_markup = get_keyboard(date_str, meal_type, canteen_id, is_inline=is_inline_msg)
-
-    try:
-        await safe_edit_message(context.bot, query, text=text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
-    except BadRequest as e:
-        if "Message is not modified" not in str(e):
-            logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
-    except Exception as e:
-        logger.warning(f"Non è stato possibile aggiornare il messaggio: {e}")
-
-def build_aperti_ora_keyboard():
-    """Tastiera inline con i bottoni per ogni mensa sotto la risposta APERTE ORA."""
-    sorted_canteens = sorted(CANTEENS.items(), key=lambda x: x[1])
-    rows = [[InlineKeyboardButton("TUTTE", callback_data="an_menu|all")]]
-    for c_id, c_name in sorted_canteens:
-        clean = c_name.replace("Mensa ", "")
-        rows.append([InlineKeyboardButton(clean, callback_data=f"an_menu|{c_id}")])
-    return InlineKeyboardMarkup(rows)
-
-async def handle_aperti_ora(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Gestisce il pulsante APERTE ORA della tastiera."""
-    text = format_all_canteens_info_for_today()
-    keyboard = build_aperti_ora_keyboard()
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True, reply_markup=keyboard)
 
 def get_canteen_reply_keyboard():
     """Tastiera persistente con i bottoni per ogni mensa (MARTIRI, BETTI, CAMMEO)."""
@@ -2297,6 +2178,10 @@ def build_canteen_rich_message(canteen_id: str, date_str: str, meal_type: str):
         {
             "text": target_date_label,
             "callback_data": f"rm|{canteen_id}|{target_date_str}|{meal_type_clean}"
+        },
+        {
+            "text": "‹ MENSE",
+            "callback_data": "sel_canteen|reset"
         }
     ]
 
@@ -2310,7 +2195,8 @@ def build_canteen_rich_message(canteen_id: str, date_str: str, meal_type: str):
     fallback_text = get_menu_text(date_str, meal_type_clean, canteen_name)
     fb_row = [
         InlineKeyboardButton(other_meal.upper(), callback_data=f"rm|{canteen_id}|{date_str}|{other_meal}"),
-        InlineKeyboardButton(target_date_label, callback_data=f"rm|{canteen_id}|{target_date_str}|{meal_type_clean}")
+        InlineKeyboardButton(target_date_label, callback_data=f"rm|{canteen_id}|{target_date_str}|{meal_type_clean}"),
+        InlineKeyboardButton("‹ MENSE", callback_data="sel_canteen|reset")
     ]
     fallback_markup = InlineKeyboardMarkup([fb_row])
 
@@ -2340,14 +2226,20 @@ async def send_canteen_rich_message(bot, chat_id: int, canteen_id: str, date_str
                     "receiver_user_id": user_id
                 }
             }
-        await bot.send_message(
-            chat_id=chat_id,
-            text=fallback_text,
-            reply_markup=fallback_markup,
-            parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True,
-            **send_kwargs
-        )
+        try:
+            await bot.send_message(
+                chat_id=chat_id,
+                text=fallback_text,
+                reply_markup=fallback_markup,
+                parse_mode=ParseMode.MARKDOWN,
+                disable_web_page_preview=True,
+                **send_kwargs
+            )
+        except Exception as e2:
+            if is_group and user_id:
+                logger.warning(f"Fallback menù effimero fallito ({e2}), messaggio non inviato nel gruppo.")
+            else:
+                raise
 
 async def edit_canteen_rich_message(query, bot, canteen_id: str, date_str: str, meal_type: str):
     """Aggiorna un Rich Message esistente (Bot API 10.3) con fallback a modifica standard."""
@@ -2430,21 +2322,36 @@ async def handle_group_mention(update: Update, context: ContextTypes.DEFAULT_TYP
         )
 
 async def post_init(application: Application) -> None:
-    """Inizializza i comandi del bot: visibili solo nelle chat private, nascosti nei gruppi."""
+    """Inizializza i comandi del bot: standard nelle chat private, effimeri nei gruppi."""
     try:
         # Comandi per le chat private
         await application.bot.set_my_commands(
             commands=[
                 BotCommand("start", "Messaggio di benvenuto"),
+                BotCommand("menu", "Menù di oggi"),
                 BotCommand("links", "Link utili DSU e contatti")
             ],
             scope=BotCommandScopeAllPrivateChats()
         )
-        # Rimuove tutti i comandi dalle chat di gruppo
-        await application.bot.set_my_commands(
-            commands=[],
-            scope=BotCommandScopeAllGroupChats()
-        )
+        # Comandi effimeri per le chat di gruppo (visibili solo all'utente che li usa)
+        try:
+            await application.bot._post(
+                "setMyCommands",
+                data={
+                    "commands": [
+                        {"command": "start", "description": "Messaggio di benvenuto", "is_ephemeral": True},
+                        {"command": "menu", "description": "Menù di oggi", "is_ephemeral": True},
+                        {"command": "links", "description": "Link utili DSU e contatti", "is_ephemeral": True}
+                    ],
+                    "scope": {"type": "all_group_chats"}
+                }
+            )
+        except Exception as e_eph:
+            logger.warning(f"Comandi effimeri per gruppi non supportati ({e_eph}), rimuovo comandi gruppi.")
+            await application.bot.set_my_commands(
+                commands=[],
+                scope=BotCommandScopeAllGroupChats()
+            )
     except Exception as e:
         logger.warning(f"Configurazione set_my_commands fallita: {e}")
 
@@ -2473,11 +2380,11 @@ def main() -> None:
     application = Application.builder().token(token).post_init(post_init).build()
 
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("menu", menu_command))
     application.add_handler(CommandHandler("links", links_command))
     canteen_names = [re.escape(c.replace("Mensa ", "").upper()) for c in CANTEENS.values()]
     canteen_pattern = f"^(?i)({'|'.join(canteen_names)})$"
     application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.Regex(canteen_pattern), handle_canteen_text_message))
-    application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.Regex("^APERTE ORA$"), handle_aperti_ora))
     
     # Risposta effimera alle menzioni o evocazioni del bot nei gruppi
     application.add_handler(MessageHandler(
