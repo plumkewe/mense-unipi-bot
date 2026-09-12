@@ -37,9 +37,9 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/screenshots/bot-b.JPEG">
-    <source media="(prefers-color-scheme: light)" srcset="assets/screenshots/bot-w.JPEG">
-    <img src="assets/screenshots/bot-w.JPEG" alt="Screenshot del bot">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/screenshots/bot.webp">
+    <source media="(prefers-color-scheme: light)" srcset="assets/screenshots/bot.webp">
+    <img src="assets/screenshots/bot.webp" alt="Screenshot del bot">
   </picture>
 </p>
 
