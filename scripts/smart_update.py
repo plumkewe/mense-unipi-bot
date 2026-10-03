@@ -250,17 +250,22 @@ def update_site(data_dir, label):
         print(f"[{label}] Nessuna modifica rilevata su menu_history.json.")
 
     # Genera sempre menu_today.json con il menu di oggi
-    if today_str in sorted_menu:
-        today_menu = {today_str: sorted_menu[today_str]}
-        with open(_today_path, 'w', encoding='utf-8') as f:
-            json.dump(today_menu, f, separators=(',', ':'), ensure_ascii=False)
-        print(f"[{label}] menu_today.json generato per {today_str}.")
-    else:
-        with open(_today_path, 'w', encoding='utf-8') as f:
-            json.dump({}, f, separators=(',', ':'), ensure_ascii=False)
-        print(f"[{label}] Nessun menu trovato per oggi ({today_str}). menu_today.json vuoto.")
+    today_menu = {today_str: sorted_menu[today_str]} if today_str in sorted_menu else {}
+    new_today_json = json.dumps(today_menu, separators=(',', ':'), ensure_ascii=False)
+    old_today_raw, _ = _load_json_raw(_today_path)
+    today_changed = old_today_raw.strip() != new_today_json
 
-    return menu_changed or history_changed, sorted_menu
+    if today_changed:
+        with open(_today_path, 'w', encoding='utf-8') as f:
+            f.write(new_today_json)
+        if today_menu:
+            print(f"[{label}] menu_today.json generato per {today_str}.")
+        else:
+            print(f"[{label}] Nessun menu trovato per oggi ({today_str}). menu_today.json vuoto.")
+    else:
+        print(f"[{label}] Nessuna modifica rilevata su menu_today.json.")
+
+    return menu_changed or history_changed or today_changed, sorted_menu
 
 
 # --- Generazione shortcuts.json ---
@@ -356,9 +361,18 @@ def generate_shortcuts(all_today_menus):
                 }
 
     _shortcuts_path = os.path.join(DATA_DIR, 'shortcuts.json')
-    with open(_shortcuts_path, 'w', encoding='utf-8') as f:
-        json.dump(shortcuts, f, indent=2, ensure_ascii=False)
-    print(f"\nshortcuts.json generato con {len(shortcuts)} mense.")
+    old_shortcuts_raw, _ = _load_json_raw(_shortcuts_path)
+    new_shortcuts_json = json.dumps(shortcuts, indent=2, ensure_ascii=False)
+    shortcuts_changed = old_shortcuts_raw.strip() != new_shortcuts_json
+
+    if shortcuts_changed:
+        with open(_shortcuts_path, 'w', encoding='utf-8') as f:
+            f.write(new_shortcuts_json)
+        print(f"\nshortcuts.json aggiornato con {len(shortcuts)} mense.")
+    else:
+        print(f"\nshortcuts.json invariato ({len(shortcuts)} mense).")
+
+    return shortcuts_changed
 
 
 def main():
@@ -383,7 +397,9 @@ def main():
             all_today_menus.append({today_str: sorted_menu[today_str]})
 
     # Genera sempre shortcuts.json (anche se i menu non sono cambiati)
-    generate_shortcuts(all_today_menus)
+    shortcuts_changed = generate_shortcuts(all_today_menus)
+    if shortcuts_changed:
+        any_changed = True
 
     if not any_changed:
         print("\nNessuna modifica rilevata su nessun sito.")

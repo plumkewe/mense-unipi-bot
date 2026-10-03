@@ -67,7 +67,9 @@
 │   ├── menu.json             <- menù da oggi in poi (snapshot corrente)
 │   ├── menu_today.json       <- snapshot del solo menù di oggi
 │   ├── menu_history.json     <- storico menù passati (append-only)
-│   └── rates.json            <- tariffe per fascia ISEE
+│   ├── rates.json            <- tariffe per fascia ISEE
+│   ├── shortcuts.json        <- riassunto testuale per mense (Siri Shortcuts / integrazioni)
+│   └── unifi/                <- dati e menù per l'Università di Firenze (UNIFI)
 ├── bot.py                    <- entrypoint del bot Telegram (Bot API 10.x, Rich Messages, messaggi effimeri)
 ├── scripts/
 │   ├── extract_menu.py       <- scraper menù da canteen.dsutoscana.cloud

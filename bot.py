@@ -6,7 +6,8 @@ import asyncio
 import requests
 import hashlib
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+BASE_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+DATA_DIR = os.getenv('DATA_DIR', BASE_DATA_DIR)
 ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 _asset_cache = {}
 
@@ -103,11 +104,15 @@ CANTEENS = load_canteens()
 CANTEENS_FULL = load_canteens_full()
 
 def load_feste():
-    try:
-        with open(os.path.join(DATA_DIR, "feste.json"), "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
+    for d in [DATA_DIR, BASE_DATA_DIR]:
+        path = os.path.join(d, "feste.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    return {}
 
 FESTE = load_feste()
 
@@ -160,23 +165,31 @@ def get_future_closures_text(canteen_id, target_date):
 
 # Carica il file rates.json
 def load_rates():
-    try:
-        with open(os.path.join(DATA_DIR, "rates.json"), "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        logger.error("Errore: rates.json non trovato!")
-        return []
+    for d in [DATA_DIR, BASE_DATA_DIR]:
+        path = os.path.join(d, "rates.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.error(f"Errore caricamento rates.json: {e}")
+    logger.error("Errore: rates.json non trovato!")
+    return []
 
 RATES = load_rates()
 
 # Carica il file combinations.json
 def load_combinations():
-    try:
-        with open(os.path.join(DATA_DIR, "combinations.json"), "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        logger.error("Errore: combinations.json non trovato!")
-        return {}
+    for d in [DATA_DIR, BASE_DATA_DIR]:
+        path = os.path.join(d, "combinations.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.error(f"Errore caricamento combinations.json: {e}")
+    logger.error("Errore: combinations.json non trovato!")
+    return {}
 
 COMBINATIONS = load_combinations()
 
