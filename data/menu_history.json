@@ -57391,5 +57391,96 @@
         }
       ]
     }
+  },
+  "2026-10-03": {
+    "date": "2026-10-03",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RIGATONI DORATI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/465-rigatoni-dorati/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RISOTTO AI FUNGHI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/16-risotto-ai-funghi/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "BISTECCHINA DI MAIALE ALLA PIASTRA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/238-bistecchina-di-maiale-alla-piastra/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "MILLEFOGLIE DI PATATE E FUNGHI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/490-millefoglie-di-patate-e-funghi/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "POLPETTE IN UMIDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/288-polpette-in-umido/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PATATE FRITTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/570-patate-fritte/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "ZUCCHINE BIO TRIFOLATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/485-zucchine-bio-trifolate/3/3/1790589600",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
