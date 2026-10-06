@@ -2,18 +2,17 @@ name: Aggiorna Worker per cambio ora (DST)
 
 on:
   schedule:
-    # Sabato prima dell'ultima domenica di marzo → per preparare il passaggio a CEST, alle 21:00 UTC (22:00 CET)
-    - cron: "0 21 24-30 3 6"
-    # Sabato prima dell'ultima domenica di ottobre → per preparare il passaggio a CET, alle 21:00 UTC (23:00 CEST)
-    - cron: "0 21 24-30 10 6"
+    # Controlla ogni domenica di marzo e ottobre alle 02:30 UTC (dopo il cambio ora delle 01:00 UTC)
+    - cron: "30 2 * 3,10 0"
   workflow_dispatch:
     inputs:
       season:
-        description: "Stagione da applicare"
-        required: true
-        default: "winter"
+        description: "Stagione da applicare (lascia vuoto per rilevamento automatico)"
+        required: false
+        default: ""
         type: choice
         options:
+          - ""
           - winter
           - summer
 
@@ -28,27 +27,44 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Determina stagione
-        id: season
-        run: |
-          if [ -n "${{ github.event.inputs.season }}" ]; then
-            echo "season=${{ github.event.inputs.season }}" >> $GITHUB_OUTPUT
-          elif [ "$(date -u +%m)" = "03" ]; then
-            echo "season=summer" >> $GITHUB_OUTPUT
-          else
-            echo "season=winter" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Aggiorna cron in wrangler.toml
+      - name: Controlla e aggiorna cron in wrangler.toml
+        id: check_update
         env:
-          SEASON: ${{ steps.season.outputs.season }}
+          INPUT_SEASON: ${{ github.event.inputs.season }}
         run: |
           python3 << 'EOF'
-          import re, os, textwrap
+          import os, re, textwrap, zoneinfo
+          from datetime import datetime
 
-          season = os.environ['SEASON']
+          # 1. Determina la stagione target
+          forced_season = os.environ.get("INPUT_SEASON", "").strip()
+          if forced_season:
+              target_season = forced_season
+              print(f"Stagione forzata da input manuale: {target_season}")
+          else:
+              tz = zoneinfo.ZoneInfo("Europe/Rome")
+              now = datetime.now(tz)
+              is_dst = bool(now.dst())
+              target_season = "summer" if is_dst else "winter"
+              print(f"Ora italiana corrente: {now} (DST attivo: {is_dst}) → Stagione target: {target_season}")
 
-          if season == 'summer':
+          # 2. Leggi wrangler.toml corrente
+          with open("cloudflare-worker/wrangler.toml", "r") as f:
+              content = f.read()
+
+          current_season = "summer" if "0 22 * * *" in content else "winter"
+          print(f"Configurazione attuale in wrangler.toml: {current_season}")
+
+          # 3. Verifica se è necessario aggiornare
+          if current_season == target_season and not forced_season:
+              print(f"wrangler.toml è già configurato correttamente per {target_season}. Nessun aggiornamento necessario.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
+                  gh_out.write("needs_update=false\n")
+                  gh_out.write(f"season={target_season}\n")
+              exit(0)
+
+          # 4. Applica nuovi trigger
+          if target_season == "summer":
               triggers = textwrap.dedent("""\
                   [triggers]
                   crons = [
@@ -65,37 +81,41 @@ jobs:
                     "17 8 * * *",    # publish_instagram — CET  (inverno, 09:17 IT)
                   ]""")
 
-          with open('cloudflare-worker/wrangler.toml', 'r') as f:
-              content = f.read()
-
           # Sostituisce tutto da [triggers] in poi
           content = re.sub(r'\[triggers\][\s\S]*$', triggers, content)
 
-          with open('cloudflare-worker/wrangler.toml', 'w') as f:
+          with open("cloudflare-worker/wrangler.toml", "w") as f:
               f.write(content)
 
-          print(f"wrangler.toml aggiornato per stagione: {season}")
+          print(f"wrangler.toml aggiornato per stagione: {target_season}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as gh_out:
+              gh_out.write("needs_update=true\n")
+              gh_out.write(f"season={target_season}\n")
           EOF
 
       - name: Setup Node.js
+        if: steps.check_update.outputs.needs_update == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Installa dipendenze
+        if: steps.check_update.outputs.needs_update == 'true'
         run: npm install
         working-directory: cloudflare-worker
 
       - name: Deploy Worker con nuovi cron
+        if: steps.check_update.outputs.needs_update == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx wrangler deploy
         working-directory: cloudflare-worker
 
       - name: Commit wrangler.toml aggiornato
+        if: steps.check_update.outputs.needs_update == 'true'
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "actions@github.com"
           git add cloudflare-worker/wrangler.toml
-          git diff --staged --quiet || git commit -m "chore: aggiorna cron worker DST → ${{ steps.season.outputs.season }} $(date -u '+%Y-%m-%d') [skip ci]"
+          git diff --staged --quiet || git commit -m "chore: aggiorna cron worker DST → ${{ steps.check_update.outputs.season }} $(date -u '+%Y-%m-%d') [skip ci]"
           git push
