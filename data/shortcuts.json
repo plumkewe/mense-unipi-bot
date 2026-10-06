@@ -1,12 +1,52 @@
 {
-  "Mensa Martiri": {
+  "Mensa Betti": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Ragù Di Verdure, Pasta Pomodoro, Tortellini Al Ragu'; per quanto riguarda i secondi: Peposo, Piatto Freddo, Torta Salata Ai Funghi, Tortino Di Spinaci E Farina Di Ceci; e come contorni: Cicoria Saltata, Insalata Mista, Patate Soute; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Ragù Di Verdure, Pasta Pomodoro, Tortellini Al Ragu'; as for second courses: Peposo, Piatto Freddo, Torta Salata Ai Funghi, Tortino Di Spinaci E Farina Di Ceci; and for sides: Cicoria Saltata, Insalata Mista, Patate Soute; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; per quanto riguarda i secondi: Hamburger Alla Piastra, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; e come contorni: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; tra i salati: Focacce Del Panaio, Pizza Del Panaio Margherita; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; as for second courses: Hamburger Alla Piastra, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; and for sides: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; for savory snacks: Focacce Del Panaio, Pizza Del Panaio Margherita; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Ragù Di Verdure, Pasta Pomodoro, Tortellini Al Ragu'; per quanto riguarda i secondi: Peposo, Piatto Freddo, Torta Salata Ai Funghi, Tortino Di Spinaci E Farina Di Ceci; e come contorni: Cicoria Saltata, Insalata Mista, Patate Soute; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Ragù Di Verdure, Pasta Pomodoro, Tortellini Al Ragu'; as for second courses: Peposo, Piatto Freddo, Torta Salata Ai Funghi, Tortino Di Spinaci E Farina Di Ceci; and for sides: Cicoria Saltata, Insalata Mista, Patate Soute; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; per quanto riguarda i secondi: Coscia Di Pollo Bio Alla Diavola, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Totani E Piselli; e come contorni: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; as for second courses: Coscia Di Pollo Bio Alla Diavola, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Totani E Piselli; and for sides: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; for salads: Insalatona."
+    }
+  },
+  "Mensa Cammeo": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; per quanto riguarda i secondi: Coscia Di Pollo Al Forno, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; e come contorni: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; as for second courses: Coscia Di Pollo Al Forno, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; and for sides: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Nessun piatto disponibile per oggi.",
+      "en": "No dishes available for today."
+    }
+  },
+  "Mensa Martiri": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; per quanto riguarda i secondi: Hamburger Alla Piastra, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; e come contorni: Contorno Fantasia Rustica, Insalata Mista, Patate Arrosto; tra i salati: Baguette Al Crudo, Focaccina Caprese; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; as for second courses: Hamburger Alla Piastra, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; and for sides: Contorno Fantasia Rustica, Insalata Mista, Patate Arrosto; for savory snacks: Baguette Al Crudo, Focaccina Caprese; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; per quanto riguarda i secondi: Coscia Di Pollo Bio Alla Diavola, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Pizza Margherita A Tranci, Totani E Piselli; e come contorni: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; as for second courses: Coscia Di Pollo Bio Alla Diavola, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Pizza Margherita A Tranci, Totani E Piselli; and for sides: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; for salads: Insalatona."
+    }
+  },
+  "Mensa Calamandrei": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; per quanto riguarda i secondi: Hamburger Alla Piastra, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; e come contorni: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; as for second courses: Hamburger Alla Piastra, Piatto Freddo, Tortino Ceci E Porri, Verdesca Alla Siciliana; and for sides: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; per quanto riguarda i secondi: Coscia Di Pollo Al Forno, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Totani E Piselli; e come contorni: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; as for second courses: Coscia Di Pollo Al Forno, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Totani E Piselli; and for sides: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; for salads: Insalatona."
+    }
+  },
+  "Mensa Caponnetto": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; per quanto riguarda i secondi: Hamburger Alla Piastra, Piatto Freddo, Pizza Margherita A Tranci, Tortino Ceci E Porri, Verdesca Alla Siciliana; e come contorni: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Pomodoro, Pesto E Ricotta, Risotto Alla Viareggina; as for second courses: Hamburger Alla Piastra, Piatto Freddo, Pizza Margherita A Tranci, Tortino Ceci E Porri, Verdesca Alla Siciliana; and for sides: Contorno Fantasia Rustica, Insalata Mista, Patate Fritte; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; per quanto riguarda i secondi: Coscia Di Pollo Al Forno, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Totani E Piselli; e come contorni: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Patate, Pasta Alle Vongole, Pasta Pomodoro, Pasta Zucca E Porri; as for second courses: Coscia Di Pollo Al Forno, Piadina Hummus E Verdure Grigliate, Piatto Freddo, Totani E Piselli; and for sides: Insalata Mista, Peperonata Con Patate, Zucchine Bio All'Olio; for salads: Insalatona."
     }
   }
 }
