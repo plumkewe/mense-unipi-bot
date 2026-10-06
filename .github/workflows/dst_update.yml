@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Controlla e aggiorna cron in wrangler.toml
         id: check_update
@@ -95,9 +95,9 @@ jobs:
 
       - name: Setup Node.js
         if: steps.check_update.outputs.needs_update == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Installa dipendenze
         if: steps.check_update.outputs.needs_update == 'true'

@@ -14,10 +14,10 @@ jobs:
       TZ: "Europe/Rome"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: "pip"
@@ -38,7 +38,7 @@ jobs:
           python scripts/publish_instagram.py
 
       - name: Commit publish lock
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "Instagram auto-publish completed"
           file_pattern: "assets/posts/*.lock"
