@@ -1,52 +1,32 @@
 {
-  "Mensa Betti": {
+  "Mensa Martiri": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; per quanto riguarda i secondi: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; e come contorni: Insalata Mista, Patate Rosties, Verdure Grigliate; tra i salati: Focacce Del Panaio, Pizza Del Panaio Margherita; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; as for second courses: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; and for sides: Insalata Mista, Patate Rosties, Verdure Grigliate; for savory snacks: Focacce Del Panaio, Pizza Del Panaio Margherita; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Oggi per i primi abbiamo: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; per quanto riguarda i secondi: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Trota Salmonata Alle Erbette; e come contorni: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; as for second courses: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Trota Salmonata Alle Erbette; and for sides: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; for salads: Insalatona."
-    }
-  },
-  "Mensa Cammeo": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; per quanto riguarda i secondi: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; e come contorni: Insalata Mista, Patate Rosties, Verdure Grigliate; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; as for second courses: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; and for sides: Insalata Mista, Patate Rosties, Verdure Grigliate; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Cannelloni, Pasta All'Amatriciana, Pasta Pomodoro; per quanto riguarda i secondi: Bocconcini Di Tacchino Al Curry, Piatto Freddo, Polpette In Umido, Torta Salata Ai Funghi; e come contorni: Insalata Mista, Mix Cipolla E Zucchine Fritte, Piselli Al Tegame; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Cannelloni, Pasta All'Amatriciana, Pasta Pomodoro; as for second courses: Bocconcini Di Tacchino Al Curry, Piatto Freddo, Polpette In Umido, Torta Salata Ai Funghi; and for sides: Insalata Mista, Mix Cipolla E Zucchine Fritte, Piselli Al Tegame; for salads: Insalatona."
     },
     "Cena": {
       "it": "Nessun piatto disponibile per oggi.",
       "en": "No dishes available for today."
     }
   },
-  "Mensa Martiri": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; per quanto riguarda i secondi: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; e come contorni: Insalata Mista, Patate Rosties, Verdure Grigliate; tra i salati: Piadina Cotto E Mozzarella, Tramezzino All'Uovo; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; as for second courses: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; and for sides: Insalata Mista, Patate Rosties, Verdure Grigliate; for savory snacks: Piadina Cotto E Mozzarella, Tramezzino All'Uovo; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Oggi per i primi abbiamo: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; per quanto riguarda i secondi: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Pizza Margherita A Tranci, Trota Salmonata Alle Erbette; e come contorni: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; as for second courses: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Pizza Margherita A Tranci, Trota Salmonata Alle Erbette; and for sides: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; for salads: Insalatona."
-    }
-  },
   "Mensa Calamandrei": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; per quanto riguarda i secondi: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; e come contorni: Insalata Mista, Patate Rosties, Verdure Grigliate; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; as for second courses: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; and for sides: Insalata Mista, Patate Rosties, Verdure Grigliate; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; per quanto riguarda i secondi: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza A Tranci, Torta Salata Ai Funghi; e come contorni: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; as for second courses: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza A Tranci, Torta Salata Ai Funghi; and for sides: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; per quanto riguarda i secondi: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Trota Salmonata Alle Erbette; e come contorni: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; as for second courses: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Trota Salmonata Alle Erbette; and for sides: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Passato Di Carote, Pasta Al Pesto, Pasta Pomodoro, Risotto Funghi E Curcuma; per quanto riguarda i secondi: Fettina Di Tacchino Al Limone, Piatto Freddo, Pizza A Tranci, Sformato Vegetale Di Patate E Broccoli, Suppli'; e come contorni: Fagiolini Al Vapore, Insalata, Patate Arrosto; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Carote, Pasta Al Pesto, Pasta Pomodoro, Risotto Funghi E Curcuma; as for second courses: Fettina Di Tacchino Al Limone, Piatto Freddo, Pizza A Tranci, Sformato Vegetale Di Patate E Broccoli, Suppli'; and for sides: Fagiolini Al Vapore, Insalata, Patate Arrosto; for salads: Insalatona."
     }
   },
   "Mensa Caponnetto": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; per quanto riguarda i secondi: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; e come contorni: Insalata Mista, Patate Rosties, Verdure Grigliate; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Mediterranea, Pasta Pomodoro, Ravioli Burro E Salvia, Ribollita; as for second courses: Cotoletta Vegetale Con Hummus Di Piselli, Fagioli Alla Messicana, Gateau Funghi E Patate, Piatto Freddo; and for sides: Insalata Mista, Patate Rosties, Verdure Grigliate; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; per quanto riguarda i secondi: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza Margherita A Tranci, Torta Salata Ai Funghi; e come contorni: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; as for second courses: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza Margherita A Tranci, Torta Salata Ai Funghi; and for sides: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; per quanto riguarda i secondi: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Trota Salmonata Alle Erbette; e come contorni: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crema Di Piselli, Pasta All'Arrabbiata, Pasta Pomodoro, Risotto Ai Polpetti; as for second courses: Arista Al Forno, Hamburger Melanzane, Pomodori E Origano, Piatto Freddo, Trota Salmonata Alle Erbette; and for sides: Broccoli Al Vapore, Insalata Mista, Patate Alla Ghiotta; for salads: Insalatona."
+      "it": "Nessun piatto disponibile per oggi.",
+      "en": "No dishes available for today."
     }
   }
 }
