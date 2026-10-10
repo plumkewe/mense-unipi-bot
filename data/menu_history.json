@@ -58991,5 +58991,96 @@
         }
       ]
     }
+  },
+  "2026-10-10": {
+    "date": "2026-10-10",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "CANNELLONI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/5-cannelloni/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PASTA ALL'AMATRICIANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/198-pasta-allamatriciana/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "BOCCONCINI DI TACCHINO AL CURRY",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/126-bocconcini-di-tacchino-al-curry/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "POLPETTE IN UMIDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/288-polpette-in-umido/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "TORTA SALATA AI FUNGHI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/455-torta-salata-ai-funghi/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "MIX CIPOLLA E ZUCCHINE FRITTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/46-mix-cipolla-e-zucchine-fritte/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PISELLI AL TEGAME",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/719-piselli-al-tegame/3/3/1791194400",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }

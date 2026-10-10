@@ -1,32 +1,12 @@
 {
   "Mensa Martiri": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Cannelloni, Pasta All'Amatriciana, Pasta Pomodoro; per quanto riguarda i secondi: Bocconcini Di Tacchino Al Curry, Piatto Freddo, Polpette In Umido, Torta Salata Ai Funghi; e come contorni: Insalata Mista, Mix Cipolla E Zucchine Fritte, Piselli Al Tegame; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Cannelloni, Pasta All'Amatriciana, Pasta Pomodoro; as for second courses: Bocconcini Di Tacchino Al Curry, Piatto Freddo, Polpette In Umido, Torta Salata Ai Funghi; and for sides: Insalata Mista, Mix Cipolla E Zucchine Fritte, Piselli Al Tegame; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Pasta Pomodoro, Ravioli Di Patate Al Ragu', Risotto Zucca Gialla E Porri; per quanto riguarda i secondi: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; e come contorni: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Pomodoro, Ravioli Di Patate Al Ragu', Risotto Zucca Gialla E Porri; as for second courses: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; and for sides: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Nessun piatto disponibile per oggi.",
-      "en": "No dishes available for today."
-    }
-  },
-  "Mensa Calamandrei": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; per quanto riguarda i secondi: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza A Tranci, Torta Salata Ai Funghi; e come contorni: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; as for second courses: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza A Tranci, Torta Salata Ai Funghi; and for sides: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Oggi per i primi abbiamo: Passato Di Carote, Pasta Al Pesto, Pasta Pomodoro, Risotto Funghi E Curcuma; per quanto riguarda i secondi: Fettina Di Tacchino Al Limone, Piatto Freddo, Pizza A Tranci, Sformato Vegetale Di Patate E Broccoli, Suppli'; e come contorni: Fagiolini Al Vapore, Insalata, Patate Arrosto; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Passato Di Carote, Pasta Al Pesto, Pasta Pomodoro, Risotto Funghi E Curcuma; as for second courses: Fettina Di Tacchino Al Limone, Piatto Freddo, Pizza A Tranci, Sformato Vegetale Di Patate E Broccoli, Suppli'; and for sides: Fagiolini Al Vapore, Insalata, Patate Arrosto; for salads: Insalatona."
-    }
-  },
-  "Mensa Caponnetto": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; per quanto riguarda i secondi: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza Margherita A Tranci, Torta Salata Ai Funghi; e come contorni: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Lasagne Casalinghe Al Ragù, Passato Di Verdure, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro; as for second courses: Coscia Di Pollo Alla Diavola, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza Margherita A Tranci, Torta Salata Ai Funghi; and for sides: Insalata Mista, Patate Fritte, Piselli Bio Al Tegame; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Nessun piatto disponibile per oggi.",
-      "en": "No dishes available for today."
+      "it": "Oggi per i primi abbiamo: Pasta Pomodoro, Risotto Zucca Gialla E Porri; per quanto riguarda i secondi: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; e come contorni: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Pomodoro, Risotto Zucca Gialla E Porri; as for second courses: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; and for sides: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; for salads: Insalatona."
     }
   }
 }
