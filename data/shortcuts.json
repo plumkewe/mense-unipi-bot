@@ -1,12 +1,52 @@
 {
-  "Mensa Martiri": {
+  "Mensa Betti": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Pomodoro, Ravioli Di Patate Al Ragu', Risotto Zucca Gialla E Porri; per quanto riguarda i secondi: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; e come contorni: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Pomodoro, Ravioli Di Patate Al Ragu', Risotto Zucca Gialla E Porri; as for second courses: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; and for sides: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; per quanto riguarda i secondi: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; e come contorni: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; tra i salati: Focacce Del Panaio, Pizza Del Panaio Margherita; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; as for second courses: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; and for sides: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; for savory snacks: Focacce Del Panaio, Pizza Del Panaio Margherita; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Pasta Pomodoro, Risotto Zucca Gialla E Porri; per quanto riguarda i secondi: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; e come contorni: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Pomodoro, Risotto Zucca Gialla E Porri; as for second courses: Anelli Di Totano Pastellati, Arista Porchettata, Hummus Di Ceci E Verdure Grigliate, Piatto Freddo; and for sides: Insalata Mista, Patate Arrosto, Spinaci Alla Partenopea; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; per quanto riguarda i secondi: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Sformato Carote E Pecorino; e come contorni: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; as for second courses: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Sformato Carote E Pecorino; and for sides: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; for salads: Insalatona."
+    }
+  },
+  "Mensa Cammeo": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; per quanto riguarda i secondi: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; e come contorni: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; as for second courses: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; and for sides: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Nessun piatto disponibile per oggi.",
+      "en": "No dishes available for today."
+    }
+  },
+  "Mensa Martiri": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; per quanto riguarda i secondi: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; e come contorni: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; tra i salati: Focaccina Con Mortadella, Panino Arabo; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; as for second courses: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; and for sides: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; for savory snacks: Focaccina Con Mortadella, Panino Arabo; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; per quanto riguarda i secondi: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Pizza Margherita A Tranci, Sformato Carote E Pecorino; e come contorni: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; as for second courses: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Pizza Margherita A Tranci, Sformato Carote E Pecorino; and for sides: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; for salads: Insalatona."
+    }
+  },
+  "Mensa Calamandrei": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; per quanto riguarda i secondi: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; e come contorni: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; as for second courses: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo; and for sides: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; per quanto riguarda i secondi: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Sformato Carote E Pecorino; e come contorni: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; as for second courses: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Sformato Carote E Pecorino; and for sides: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; for salads: Insalatona."
+    }
+  },
+  "Mensa Caponnetto": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; per quanto riguarda i secondi: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Pizza Margherita A Tranci; e come contorni: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Verdure Bio, Pasta Pomodoro, Pasta Salsiccia E Cipolla, Risotto Alla Parmigiana; as for second courses: Fettina Di Pollo Alla Piastra, Frittata Di Patate, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Pizza Margherita A Tranci; and for sides: Fagiolini Al Vapore, Insalata Mista, Patate Rosties; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; per quanto riguarda i secondi: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Sformato Carote E Pecorino; e come contorni: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Alla Gricia, Pasta Pomodoro, Spaghetti Alla Pomarola, Zuppa Di Farro; as for second courses: Bocconcini Di Maiale Alle Olive, Goulash Vegetale Con Ceci, Piatto Freddo, Sformato Carote E Pecorino; and for sides: Cavolini Di Bruxelles In Umido, Insalata Mista, Patate Alla Paprika; for salads: Insalatona."
     }
   }
 }
