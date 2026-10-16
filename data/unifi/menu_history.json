@@ -6542,5 +6542,227 @@
         }
       ]
     }
+  },
+  "2026-10-16": {
+    "date": "2026-10-16",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PASTA AL RAGU' DI SOIA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/2814-pasta-al-ragu-di-soia/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "RISOTTO TALEGGIO E ZUCCHINE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/281-risotto-taleggio-e-zucchine/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "ZUPPA DI LEGUMI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/166-zuppa-di-legumi/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "HUMMUS DI CECI E POLPETTE ALLE ALGHE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/184-hummus-di-ceci-e-polpette-alle-alghe/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "MOZZARELLA PIZZAIOLATA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/531-mozzarella-pizzaiolata/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIZZA MARGHERITA A TRANCI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/505-pizza-margherita-a-tranci/5/3/1791799200",
+          "available_at": [
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "SPEZZATINO DI LENTICCHIE CURRY E LIMONE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/86-spezzatino-di-lenticchie-curry-e-limone/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CONTORNO TRICOLORE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/526-contorno-tricolore/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PISELLI BIO AL TEGAME",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/557-piselli-bio-al-tegame/2/3/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ]
+    },
+    "Cena": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "CRESPELLE AL RADICCHIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/4-crespelle-al-radicchio/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASSATO DI VERDURE BIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/255-passato-di-verdure-bio/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA AL TONNO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/230-pasta-al-tonno/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "HAMBURGER FARRO E PEPERONI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/626-hamburger-farro-e-peperoni/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PETTO DI POLLO ALLA DIAVOLA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/83-petto-di-pollo-alla-diavola/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "ZUPPA DI PESCE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/31-zuppa-di-pesce/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CAROTINE SALTATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/672-carotine-saltate/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "MIX CIPOLLA E ZUCCHINE FRITTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/46-mix-cipolla-e-zucchine-fritte/2/5/1791799200",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ]
+    }
   }
 }

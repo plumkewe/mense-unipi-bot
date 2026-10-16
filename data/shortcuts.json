@@ -1,52 +1,32 @@
 {
-  "Mensa Betti": {
+  "Mensa Martiri": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; per quanto riguarda i secondi: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone; e come contorni: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; tra i salati: Focacce Del Panaio, Pizza Del Panaio Margherita; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; as for second courses: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone; and for sides: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; for savory snacks: Focacce Del Panaio, Pizza Del Panaio Margherita; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Oggi per i primi abbiamo: Crespelle Al Radicchio, Passato Di Verdure, Pasta Al Tonno, Pasta Pomodoro; per quanto riguarda i secondi: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Zuppa Di Pesce; e come contorni: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crespelle Al Radicchio, Passato Di Verdure, Pasta Al Tonno, Pasta Pomodoro; as for second courses: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Zuppa Di Pesce; and for sides: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; for salads: Insalatona."
-    }
-  },
-  "Mensa Cammeo": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; per quanto riguarda i secondi: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone; e come contorni: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; as for second courses: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone; and for sides: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Pasta Pomodoro, Rigatoni Dorati, Risotto Alla Zucca; per quanto riguarda i secondi: Arrosto Di Manzo, Bistecchina Di Maiale Alla Piastra, Piatto Freddo, Tortino Di Spinaci E Farina Di Ceci; e come contorni: Insalata Mista, Pure' Di Patate, Spadellata Dell' Orto; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Pomodoro, Rigatoni Dorati, Risotto Alla Zucca; as for second courses: Arrosto Di Manzo, Bistecchina Di Maiale Alla Piastra, Piatto Freddo, Tortino Di Spinaci E Farina Di Ceci; and for sides: Insalata Mista, Pure' Di Patate, Spadellata Dell' Orto; for salads: Insalatona."
     },
     "Cena": {
       "it": "Nessun piatto disponibile per oggi.",
       "en": "No dishes available for today."
     }
   },
-  "Mensa Martiri": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; per quanto riguarda i secondi: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone, Suppli'; e come contorni: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; tra i salati: Focaccina Al Tacchino; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; as for second courses: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone, Suppli'; and for sides: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; for savory snacks: Focaccina Al Tacchino; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Oggi per i primi abbiamo: Crespelle Al Radicchio, Passato Di Verdure Bio, Pasta Al Tonno, Pasta Pomodoro; per quanto riguarda i secondi: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Pizza Margherita A Tranci, Zuppa Di Pesce; e come contorni: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crespelle Al Radicchio, Passato Di Verdure Bio, Pasta Al Tonno, Pasta Pomodoro; as for second courses: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Pizza Margherita A Tranci, Zuppa Di Pesce; and for sides: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; for salads: Insalatona."
-    }
-  },
   "Mensa Calamandrei": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; per quanto riguarda i secondi: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone; e come contorni: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; as for second courses: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Spezzatino Di Lenticchie Curry E Limone; and for sides: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Alla Zucca, Tortellini Al Ragu'; per quanto riguarda i secondi: Fettina Di Tacchino Alla Piastra, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Pizza A Tranci, Polpette Di Melanzane; e come contorni: Contorno Fantasia Rustica, Insalata, Verdure Miste Stufate; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Alla Zucca, Tortellini Al Ragu'; as for second courses: Fettina Di Tacchino Alla Piastra, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Pizza A Tranci, Polpette Di Melanzane; and for sides: Contorno Fantasia Rustica, Insalata, Verdure Miste Stufate; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Crespelle Al Radicchio, Passato Di Verdure Bio, Pasta Al Tonno, Pasta Pomodoro; per quanto riguarda i secondi: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Zuppa Di Pesce; e come contorni: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crespelle Al Radicchio, Passato Di Verdure Bio, Pasta Al Tonno, Pasta Pomodoro; as for second courses: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Zuppa Di Pesce; and for sides: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Pasta Alla Carrettiera, Pasta Pomodoro, Ravioli Al Pomodoro, Zuppa Di Farro; per quanto riguarda i secondi: Hamburger Alla Piastra, Piatto Freddo, Pizza A Tranci, Polpettine Vegetali Di Lenticchie, Strudel Di Verdure; e come contorni: Insalata, Patate Alla Ghiotta, Zucchine Bio Trifolate; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Alla Carrettiera, Pasta Pomodoro, Ravioli Al Pomodoro, Zuppa Di Farro; as for second courses: Hamburger Alla Piastra, Piatto Freddo, Pizza A Tranci, Polpettine Vegetali Di Lenticchie, Strudel Di Verdure; and for sides: Insalata, Patate Alla Ghiotta, Zucchine Bio Trifolate; for salads: Insalatona."
     }
   },
   "Mensa Caponnetto": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; per quanto riguarda i secondi: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Pizza Margherita A Tranci, Spezzatino Di Lenticchie Curry E Limone; e come contorni: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Ragu' Di Soia, Pasta Pomodoro, Risotto Taleggio E Zucchine, Zuppa Di Legumi; as for second courses: Hummus Di Ceci E Polpette Alle Alghe, Mozzarella Pizzaiolata, Piatto Freddo, Pizza Margherita A Tranci, Spezzatino Di Lenticchie Curry E Limone; and for sides: Contorno Tricolore, Insalata Mista, Piselli Bio Al Tegame; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Alla Zucca, Tortellini Al Ragu'; per quanto riguarda i secondi: Fettina Di Tacchino Alla Piastra, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Pizza Margherita A Tranci, Polpette Di Melanzane; e come contorni: Broccoli Al Vapore, Contorno Fantasia Rustica, Insalata; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Alla Zucca, Tortellini Al Ragu'; as for second courses: Fettina Di Tacchino Alla Piastra, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Pizza Margherita A Tranci, Polpette Di Melanzane; and for sides: Broccoli Al Vapore, Contorno Fantasia Rustica, Insalata; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Crespelle Al Radicchio, Passato Di Verdure Bio, Pasta Al Tonno, Pasta Pomodoro; per quanto riguarda i secondi: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Zuppa Di Pesce; e come contorni: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crespelle Al Radicchio, Passato Di Verdure Bio, Pasta Al Tonno, Pasta Pomodoro; as for second courses: Hamburger Farro E Peperoni, Petto Di Pollo Alla Diavola, Piatto Freddo, Zuppa Di Pesce; and for sides: Carotine Saltate, Insalata Mista, Mix Cipolla E Zucchine Fritte; for salads: Insalatona."
+      "it": "Nessun piatto disponibile per oggi.",
+      "en": "No dishes available for today."
     }
   }
 }
