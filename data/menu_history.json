@@ -60584,5 +60584,96 @@
         }
       ]
     }
+  },
+  "2026-10-17": {
+    "date": "2026-10-17",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RIGATONI DORATI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/465-rigatoni-dorati/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RISOTTO ALLA ZUCCA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/91-risotto-alla-zucca/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "ARROSTO DI MANZO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/274-arrosto-di-manzo/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "BISTECCHINA DI MAIALE ALLA PIASTRA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/238-bistecchina-di-maiale-alla-piastra/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "TORTINO DI SPINACI E FARINA DI CECI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/21-tortino-di-spinaci-e-farina-di-ceci/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PURE' DI PATATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/80-pure-di-patate/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SPADELLATA DELL' ORTO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/603-spadellata-dell-orto/3/3/1791799200",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
