@@ -1,12 +1,52 @@
 {
-  "Mensa Martiri": {
+  "Mensa Betti": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Salmone, Pasta Pomodoro, Ravioli Al Pomodoro; per quanto riguarda i secondi: Arista Con Funghi, Frittura Di Pesce, Piatto Freddo, Polpettine Vegetali Di Lenticchie; e come contorni: Insalata Mista, Patate Alla Paprika, Rape Saltate; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Salmone, Pasta Pomodoro, Ravioli Al Pomodoro; as for second courses: Arista Con Funghi, Frittura Di Pesce, Piatto Freddo, Polpettine Vegetali Di Lenticchie; and for sides: Insalata Mista, Patate Alla Paprika, Rape Saltate; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; per quanto riguarda i secondi: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; e come contorni: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; tra i salati: Focacce Del Panaio, Pizza Del Panaio Margherita; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; as for second courses: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; and for sides: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; for savory snacks: Focacce Del Panaio, Pizza Del Panaio Margherita; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Pasta Al Salmone, Pasta Pomodoro, Ravioli Al Pomodoro; per quanto riguarda i secondi: Arista Con Funghi, Frittura Di Pesce, Piatto Freddo, Polpettine Vegetali Di Lenticchie; e come contorni: Insalata Mista, Patate Alla Paprika, Rape Saltate; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Al Salmone, Pasta Pomodoro, Ravioli Al Pomodoro; as for second courses: Arista Con Funghi, Frittura Di Pesce, Piatto Freddo, Polpettine Vegetali Di Lenticchie; and for sides: Insalata Mista, Patate Alla Paprika, Rape Saltate; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; per quanto riguarda i secondi: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Strudel Di Verdure; e come contorni: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; as for second courses: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Strudel Di Verdure; and for sides: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; for salads: Insalatona."
+    }
+  },
+  "Mensa Cammeo": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; per quanto riguarda i secondi: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; e come contorni: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; as for second courses: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; and for sides: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Nessun piatto disponibile per oggi.",
+      "en": "No dishes available for today."
+    }
+  },
+  "Mensa Martiri": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; per quanto riguarda i secondi: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; e come contorni: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; tra i salati: Focaccina Al Cotto, Focaccina Caprese; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; as for second courses: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; and for sides: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; for savory snacks: Focaccina Al Cotto, Focaccina Caprese; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; per quanto riguarda i secondi: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Pizza Margherita A Tranci, Strudel Di Verdure; e come contorni: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; as for second courses: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Pizza Margherita A Tranci, Strudel Di Verdure; and for sides: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; for salads: Insalatona."
+    }
+  },
+  "Mensa Calamandrei": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; per quanto riguarda i secondi: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; e come contorni: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; as for second courses: Bocconcini Di Camembert, Piatto Freddo, Polpette In Umido, Tortino Ceci, Porri E Peperoni; and for sides: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; per quanto riguarda i secondi: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Strudel Di Verdure; e come contorni: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; as for second courses: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Strudel Di Verdure; and for sides: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; for salads: Insalatona."
+    }
+  },
+  "Mensa Caponnetto": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; per quanto riguarda i secondi: Bocconcini Di Camembert, Piatto Freddo, Pizza Margherita A Tranci, Polpette In Umido, Tortino Ceci, Porri E Peperoni; e come contorni: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crema Di Zucca Con Crostini Piccanti, Pasta Alla Calabrese, Pasta Pomodoro, Risotto Zucchine E Curry; as for second courses: Bocconcini Di Camembert, Piatto Freddo, Pizza Margherita A Tranci, Polpette In Umido, Tortino Ceci, Porri E Peperoni; and for sides: Carote Al Vapore, Crocchette Di Patate, Insalata Mista; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; per quanto riguarda i secondi: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Strudel Di Verdure; e come contorni: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestrone Di Verdure Bio, Pasta Mediterranea, Pasta Pomodoro, Risotto Alla Milanese; as for second courses: Curry Verde Con Fagioli Neri E Soia, Fettina Di Pollo Alla Piastra, Piatto Freddo, Strudel Di Verdure; and for sides: Insalata Mista, Verdure Miste Stufate, Zucchine Bio Trifolate; for salads: Insalatona."
     }
   }
 }
