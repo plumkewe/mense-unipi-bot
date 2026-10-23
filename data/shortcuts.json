@@ -1,52 +1,32 @@
 {
-  "Mensa Betti": {
+  "Mensa Martiri": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; per quanto riguarda i secondi: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; e come contorni: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; tra i salati: Focacce Del Panaio, Pizza Del Panaio Margherita; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; as for second courses: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; and for sides: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; for savory snacks: Focacce Del Panaio, Pizza Del Panaio Margherita; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Oggi per i primi abbiamo: Crema Di Patate E Porri, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Ai Polpetti; per quanto riguarda i secondi: Bocconcini Di Maiale Alla Mediterranea, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Verdesca Alla Siciliana; e come contorni: Cicoria Saltata, Insalata Mista, Patate Fritte; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crema Di Patate E Porri, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Ai Polpetti; as for second courses: Bocconcini Di Maiale Alla Mediterranea, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Verdesca Alla Siciliana; and for sides: Cicoria Saltata, Insalata Mista, Patate Fritte; for salads: Insalatona."
-    }
-  },
-  "Mensa Cammeo": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; per quanto riguarda i secondi: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; e come contorni: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; as for second courses: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; and for sides: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Pasta Alla Chiantigiana, Pasta Pomodoro, Tortellini Al Pomodoro; per quanto riguarda i secondi: Fagottini Al Formaggio, Piatto Freddo, Sformato Vegetale Di Carote, Spezzatino Di Manzo Con Piselli; e come contorni: Insalata Mista, Patate E Carciofi Al Forno, Ratatouille; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Alla Chiantigiana, Pasta Pomodoro, Tortellini Al Pomodoro; as for second courses: Fagottini Al Formaggio, Piatto Freddo, Sformato Vegetale Di Carote, Spezzatino Di Manzo Con Piselli; and for sides: Insalata Mista, Patate E Carciofi Al Forno, Ratatouille; for salads: Insalatona."
     },
     "Cena": {
       "it": "Nessun piatto disponibile per oggi.",
       "en": "No dishes available for today."
     }
   },
-  "Mensa Martiri": {
-    "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; per quanto riguarda i secondi: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; e come contorni: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; tra i salati: Focaccina Con Cecina E Melanzane Marinat, Tramezzino Al Tonno; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; as for second courses: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; and for sides: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; for savory snacks: Focaccina Con Cecina E Melanzane Marinat, Tramezzino Al Tonno; for salads: Insalatona."
-    },
-    "Cena": {
-      "it": "Oggi per i primi abbiamo: Crema Di Patate E Porri, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Ai Polpetti; per quanto riguarda i secondi: Bocconcini Di Maiale Alla Mediterranea, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza Margherita A Tranci, Verdesca Alla Siciliana; e come contorni: Cicoria Saltata, Insalata Mista, Patate Fritte; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Crema Di Patate E Porri, Pasta Aglio, Olio E Peperoncino, Pasta Pomodoro, Risotto Ai Polpetti; as for second courses: Bocconcini Di Maiale Alla Mediterranea, Hamburger Fave Broccoli E Grano Saraceno, Piatto Freddo, Pizza Margherita A Tranci, Verdesca Alla Siciliana; and for sides: Cicoria Saltata, Insalata Mista, Patate Fritte; for salads: Insalatona."
-    }
-  },
   "Mensa Calamandrei": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; per quanto riguarda i secondi: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; e come contorni: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; as for second courses: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo; and for sides: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Crespelle Ricotta E Spinaci, Pasta E Ceci, Pasta Pomodoro, Pasta Ragu' Di Asparagi E Zucchine; per quanto riguarda i secondi: Hamburger Farro E Peperoni, Piatto Freddo, Pizza A Tranci, Spezzatino Di Pollo, Strudel Di Verdure; e come contorni: Contorno Campagnolo, Insalata, Piselli E Carote Saltati; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crespelle Ricotta E Spinaci, Pasta E Ceci, Pasta Pomodoro, Pasta Ragu' Di Asparagi E Zucchine; as for second courses: Hamburger Farro E Peperoni, Piatto Freddo, Pizza A Tranci, Spezzatino Di Pollo, Strudel Di Verdure; and for sides: Contorno Campagnolo, Insalata, Piselli E Carote Saltati; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Pasta Alla Carrettiera, Pasta Pomodoro, Spaghetti Al Pomodoro, Tortellini Panna E Prosciutto; per quanto riguarda i secondi: Frittata Cipolle, Pomodoro E Basilico, Piatto Freddo, Polpettone, Tortino Ceci E Cavolo Nero; e come contorni: Cicoria Saltata, Finocchi Gratinati, Insalata Mista; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Pasta Alla Carrettiera, Pasta Pomodoro, Spaghetti Al Pomodoro, Tortellini Panna E Prosciutto; as for second courses: Frittata Cipolle, Pomodoro E Basilico, Piatto Freddo, Polpettone, Tortino Ceci E Cavolo Nero; and for sides: Cicoria Saltata, Finocchi Gratinati, Insalata Mista; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Passato Di Carote, Pasta Al Ragu', Pasta Pomodoro, Risotto Alla Parmigiana; per quanto riguarda i secondi: Hamburger Alla Piastra, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Polpette Di Melanzane; e come contorni: Insalata, Patate Alla Ghiotta, Zucchine Bio Trifolate; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Passato Di Carote, Pasta Al Ragu', Pasta Pomodoro, Risotto Alla Parmigiana; as for second courses: Hamburger Alla Piastra, Miniburger Quinoa E Semi Di Lino, Piatto Freddo, Polpette Di Melanzane; and for sides: Insalata, Patate Alla Ghiotta, Zucchine Bio Trifolate; for salads: Insalatona."
     }
   },
   "Mensa Caponnetto": {
     "Pranzo": {
-      "it": "Oggi per i primi abbiamo: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; per quanto riguarda i secondi: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo, Pizza Margherita A Tranci; e come contorni: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; tra le insalatone: Insalatona.",
-      "en": "Today for first courses we have: Gnocchi Al Pesto, Minestra Contadina, Pasta Cacio E Pepe, Pasta Pomodoro; as for second courses: Flan Di Broccoli Con Fonduta Al Pecorino, Hummus Alla Zucca Con Verdure Pastellate, Mozzarella Pizzaiolata, Piatto Freddo, Pizza Margherita A Tranci; and for sides: Contorno Fantasia Rustica, Fagiolini Al Vapore, Insalata Mista; for salads: Insalatona."
+      "it": "Oggi per i primi abbiamo: Crespelle Ricotta E Spinaci, Pasta E Ceci, Pasta Pomodoro, Pasta Ragu' Di Asparagi E Zucchine; per quanto riguarda i secondi: Hamburger Farro E Peperoni, Piatto Freddo, Pizza Margherita A Tranci, Spezzatino Di Pollo, Strudel Di Verdure; e come contorni: Contorno Campagnolo, Insalata, Piselli E Carote Saltati; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Crespelle Ricotta E Spinaci, Pasta E Ceci, Pasta Pomodoro, Pasta Ragu' Di Asparagi E Zucchine; as for second courses: Hamburger Farro E Peperoni, Piatto Freddo, Pizza Margherita A Tranci, Spezzatino Di Pollo, Strudel Di Verdure; and for sides: Contorno Campagnolo, Insalata, Piselli E Carote Saltati; for salads: Insalatona."
     },
     "Cena": {
-      "it": "Oggi per i primi abbiamo: Pasta Alla Carrettiera, Pasta Pomodoro, Spaghetti Al Pomodoro, Tortellini Panna E Prosciutto; per quanto riguarda i secondi: Frittata Cipolle, Pomodoro E Basilico, Piatto Freddo, Polpettone, Tortino Ceci E Cavolo Nero; e come contorni: Cicoria Saltata, Finocchi Gratinati, Insalata Mista.",
-      "en": "Today for first courses we have: Pasta Alla Carrettiera, Pasta Pomodoro, Spaghetti Al Pomodoro, Tortellini Panna E Prosciutto; as for second courses: Frittata Cipolle, Pomodoro E Basilico, Piatto Freddo, Polpettone, Tortino Ceci E Cavolo Nero; and for sides: Cicoria Saltata, Finocchi Gratinati, Insalata Mista."
+      "it": "Nessun piatto disponibile per oggi.",
+      "en": "No dishes available for today."
     }
   }
 }
