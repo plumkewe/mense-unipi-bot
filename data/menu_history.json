@@ -62172,5 +62172,96 @@
         }
       ]
     }
+  },
+  "2026-10-24": {
+    "date": "2026-10-24",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PASTA ALLA CHIANTIGIANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/74-pasta-alla-chiantigiana/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "TORTELLINI AL POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/454-tortellini-al-pomodoro/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FAGOTTINI AL FORMAGGIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/642-fagottini-al-formaggio/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SFORMATO VEGETALE DI CAROTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/482-sformato-vegetale-di-carote/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "SPEZZATINO DI MANZO CON PISELLI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/155-spezzatino-di-manzo-con-piselli/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "PATATE E CARCIOFI AL FORNO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/105-patate-e-carciofi-al-forno/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        },
+        {
+          "name": "RATATOUILLE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/389-ratatouille/3/3/1792404000",
+          "available_at": [
+            "Mensa Martiri"
+          ]
+        }
+      ]
+    },
+    "Cena": {}
   }
 }
