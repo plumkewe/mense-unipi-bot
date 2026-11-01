@@ -1,1 +1,52 @@
-{}
+{
+  "Mensa Betti": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; per quanto riguarda i secondi: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; e come contorni: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; tra i salati: Focacce Del Panaio, Pizza Del Panaio Margherita; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; as for second courses: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; and for sides: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; for savory snacks: Focacce Del Panaio, Pizza Del Panaio Margherita; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; per quanto riguarda i secondi: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Salsiccia Di Pollo E Tacchino Al Forno; e come contorni: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; as for second courses: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Salsiccia Di Pollo E Tacchino Al Forno; and for sides: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; for salads: Insalatona."
+    }
+  },
+  "Mensa Cammeo": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; per quanto riguarda i secondi: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; e come contorni: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; as for second courses: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; and for sides: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Nessun piatto disponibile per oggi.",
+      "en": "No dishes available for today."
+    }
+  },
+  "Mensa Martiri": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; per quanto riguarda i secondi: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; e come contorni: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; tra i salati: Focaccina Al Cotto, Piadina Vegetariana; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; as for second courses: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; and for sides: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; for savory snacks: Focaccina Al Cotto, Piadina Vegetariana; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; per quanto riguarda i secondi: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Pizza Margherita A Tranci, Salsiccia Di Pollo E Tacchino Al Forno; e come contorni: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; as for second courses: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Pizza Margherita A Tranci, Salsiccia Di Pollo E Tacchino Al Forno; and for sides: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; for salads: Insalatona."
+    }
+  },
+  "Mensa Calamandrei": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; per quanto riguarda i secondi: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; e come contorni: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; as for second courses: Frittata Di Zucchine, Piatto Freddo, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; and for sides: Insalata Mista, Piselli Bio Al Tegame, Tris Vegetale; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; per quanto riguarda i secondi: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Salsiccia Di Pollo E Tacchino Al Forno; e come contorni: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; as for second courses: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Salsiccia Di Pollo E Tacchino Al Forno; and for sides: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; for salads: Insalatona."
+    }
+  },
+  "Mensa Caponnetto": {
+    "Pranzo": {
+      "it": "Oggi per i primi abbiamo: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; per quanto riguarda i secondi: Frittata Di Zucchine, Piatto Freddo, Pizza Margherita A Tranci, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; e come contorni: Carote Al Vapore, Insalata Mista, Piselli Bio Al Tegame; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Minestra Contadina, Pasta Ai Pomodori Secchi, Pasta Gorgonzola, Zafferano E Noci, Pasta Pomodoro; as for second courses: Frittata Di Zucchine, Piatto Freddo, Pizza Margherita A Tranci, Scamerita Alla Piastra, Verdure Pastellate E Hummus Barbe Rosse; and for sides: Carote Al Vapore, Insalata Mista, Piselli Bio Al Tegame; for salads: Insalatona."
+    },
+    "Cena": {
+      "it": "Oggi per i primi abbiamo: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; per quanto riguarda i secondi: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Salsiccia Di Pollo E Tacchino Al Forno; e come contorni: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; tra le insalatone: Insalatona.",
+      "en": "Today for first courses we have: Pasta Integrale Al Pomodoro Piccante, Pasta Pomodoro, Risotto Radicchio E Stracchino, Zuppa Di Lenticchie E Farro; as for second courses: Fagottini Pomodoro E Mozzarella, Goulash Vegetale Di Funghi E Patate, Piatto Freddo, Salsiccia Di Pollo E Tacchino Al Forno; and for sides: Cavolfiore Al Vapore, Crocchette Di Patate, Insalata Mista; for salads: Insalatona."
+    }
+  }
+}
