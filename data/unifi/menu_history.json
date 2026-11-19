@@ -12993,5 +12993,227 @@
         }
       ]
     }
+  },
+  "2026-11-19": {
+    "date": "2026-11-19",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "PAPPA AL POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/439-pappa-al-pomodoro/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA AL PESTO TOSCANO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/208-pasta-al-pesto-toscano/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "RISOTTO AGLI ASPARAGI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/355-risotto-agli-asparagi/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FAGIOLI ALL'UCCELLETTO CROSTONE CEREALI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/550-fagioli-alluccelletto-crostone-cereali/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PEPOSO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/399-peposo/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIZZA MARGHERITA A TRANCI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/505-pizza-margherita-a-tranci/5/3/1794826800",
+          "available_at": [
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "ZUPPA DI PESCE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/31-zuppa-di-pesce/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CAVOLFIORE AL VAPORE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/736-cavolfiore-al-vapore/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PATATE AL VAPORE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/733-patate-al-vapore/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ]
+    },
+    "Cena": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "MINESTRA DI ZUCCA E PATATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/442-minestra-di-zucca-e-patate/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA CARCIOFI E PANCETTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/587-pasta-carciofi-e-pancetta/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "RAVIOLI AL POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/452-ravioli-al-pomodoro/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "CROSTONI DI POLENTA CAVOLO NERO E FAGIOL",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/112-crostoni-di-polenta-cavolo-nero-e-fagiol/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "FAGOTTINI AL FORMAGGIO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/642-fagottini-al-formaggio/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "SOVRACCOSCE IN CROSTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/329-sovraccosce-in-crosta/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "FINOCCHI GRATINATI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/72-finocchi-gratinati/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PISELLI BIO AL TEGAME",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/557-piselli-bio-al-tegame/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ]
+    }
   }
 }
