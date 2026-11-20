@@ -13215,5 +13215,227 @@
         }
       ]
     }
+  },
+  "2026-11-20": {
+    "date": "2026-11-20",
+    "Pranzo": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "GNOCCHI AL PESTO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/202-gnocchi-al-pesto/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "MINESTRA CONTADINA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/161-minestra-contadina/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA CACIO E PEPE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/720-pasta-cacio-e-pepe/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "FLAN DI BROCCOLI CON FONDUTA AL PECORINO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/123-flan-di-broccoli-con-fonduta-al-pecorino/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "HUMMUS ALLA ZUCCA CON VERDURE PASTELLATE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/343-hummus-alla-zucca-con-verdure-pastellate/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "MOZZARELLA PIZZAIOLATA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/531-mozzarella-pizzaiolata/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIZZA MARGHERITA A TRANCI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/505-pizza-margherita-a-tranci/5/3/1794826800",
+          "available_at": [
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CONTORNO FANTASIA RUSTICA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/401-contorno-fantasia-rustica/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "FAGIOLINI AL VAPORE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/731-fagiolini-al-vapore/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/2/3/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ]
+    },
+    "Cena": {
+      "Insalatone": [
+        {
+          "name": "INSALATONA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/510-insalatona/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Primi Piatti": [
+        {
+          "name": "CREMA DI PATATE E PORRI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/258-crema-di-patate-e-porri/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA AGLIO, OLIO E PEPERONCINO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/687-pasta-aglio-olio-e-peperoncino/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PASTA POMODORO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/353-pasta-pomodoro/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "RISOTTO AI POLPETTI",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/384-risotto-ai-polpetti/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Secondi Piatti": [
+        {
+          "name": "BOCCONCINI DI MAIALE ALLA MEDITERRANEA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/122-bocconcini-di-maiale-alla-mediterranea/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "HAMBURGER FAVE BROCCOLI E GRANO SARACENO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/561-hamburger-fave-broccoli-e-grano-saraceno/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PIATTO FREDDO",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/1690-piatto-freddo/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "VERDESCA ALLA SICILIANA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/354-verdesca-alla-siciliana/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ],
+      "Contorni": [
+        {
+          "name": "CICORIA SALTATA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/648-cicoria-saltata/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "INSALATA MISTA",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/319-insalata-mista/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        },
+        {
+          "name": "PATATE FRITTE",
+          "link": "https://canteen.dsutoscana.cloud/menu#cbp=https://canteen.dsutoscana.cloud/piatto/570-patate-fritte/2/5/1794826800",
+          "available_at": [
+            "Mensa Calamandrei",
+            "Mensa Caponnetto"
+          ]
+        }
+      ]
+    }
   }
 }
